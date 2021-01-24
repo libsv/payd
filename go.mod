@@ -11,8 +11,8 @@ require (
 	github.com/labstack/gommon v0.3.0
 	github.com/libsv/go-bt v0.0.7
 	github.com/mrz1836/go-validate v0.2.0
-	github.com/mrz1836/paymail-inspector v0.1.13
-	github.com/spf13/viper v1.7.0
+	github.com/mrz1836/paymail-inspector v0.3.6
+	github.com/spf13/viper v1.7.1
 	github.com/tonicpow/go-paymail v0.1.2
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
