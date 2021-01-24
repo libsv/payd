@@ -1,0 +1,6 @@
+debug
+.history
+.idea/*
+.DS_Store
+build/
+dist/
