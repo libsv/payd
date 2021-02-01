@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
-	"github.com/libsv/go-payd/paymail"
+	"github.com/libsv/go-payd/ipaymail"
 )
 
 // SolicitPaymentRequestHandler is used to obtain a BIP270
@@ -20,14 +20,14 @@ func SolicitPaymentRequestHandler(c echo.Context) error {
 
 	// TODO: get amount from paymentID key (badger db) and get paymail p2p outputs when creating invoice not here
 
-	ref, os, err := paymail.GetP2POutputs("jad@moneybutton.com", 10000)
+	ref, os, err := ipaymail.GetP2POutputs("jad@moneybutton.com", 10000)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "error getting paymail outputs")
 	}
 
 	fmt.Println("reference: ", ref)
 
-	paymail.ReferencesMap[paymentID] = ref
+	ipaymail.ReferencesMap[paymentID] = ref
 
 	// change returned hexString output script into bytes
 	var outs []*Output
@@ -72,12 +72,12 @@ func PaymentHandler(c echo.Context) error {
 		return err
 	}
 
-	ref := paymail.ReferencesMap[paymentID]
+	ref := ipaymail.ReferencesMap[paymentID]
 	pa := &PaymentACK{
 		Payment: p,
 	}
 
-	txid, note, err := paymail.SubmitTx("jad@moneybutton.com", p.Transaction, ref)
+	txid, note, err := ipaymail.SubmitTx("jad@moneybutton.com", p.Transaction, ref)
 	if err != nil {
 		pa.Error = 1
 		pa.Memo = err.Error()

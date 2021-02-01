@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/mrz1836/paymail-inspector/paymail"
+	"github.com/tonicpow/go-paymail"
 )
 
 // SubmitTx function
-func SubmitTx(paymailAddress, txHexStr, reference string) (string, string, error) {
-	paymailInput := parseIfHandcashHandle(paymailAddress)
-	domain, address := paymail.ExtractParts(paymailInput)
+func SubmitTx(paymailAddress, txHexStr, reference string) (txid string, note string, err error) {
+	// Set the domain and paymail
+	alias, domain, address := paymail.SanitizePaymail(paymail.ConvertHandle(paymailAddress, false))
 
 	// Did we get a paymail address?
 	if len(address) == 0 {
@@ -24,9 +23,6 @@ func SubmitTx(paymailAddress, txHexStr, reference string) (string, string, error
 		return "", "", err
 	}
 
-	parts := strings.Split(address, "@")
-	alias := parts[0]
-
 	capability := GlobalPaymailCapabilities[domain]
 
 	// Extract the URL from the capabilities response
@@ -36,15 +32,16 @@ func SubmitTx(paymailAddress, txHexStr, reference string) (string, string, error
 		return "", "", err
 	}
 
-	p2pRequest := &paymail.P2PTransactionRequest{
+	p2pRequest := &paymail.P2PTransaction{
 		Hex:       txHexStr,
 		Reference: reference,
 	}
 
-	p2pRequest.MetaData = new(paymail.MetaData)
+	p2pRequest.MetaData = new(paymail.P2PMetaData)
 
-	p2pResponse, err := paymail.SendP2PTransaction(p2pDestinationURL, alias, domain, p2pRequest, true)
-	if err != nil {
+	// Fire the tx to the P2P endpoint
+	var p2pResponse *paymail.P2PTransactionResponse
+	if p2pResponse, err = submitTx(p2pDestinationURL, alias, domain, satoshis, p2pRequest); err != nil {
 		return "", "", err
 	}
 

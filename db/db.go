@@ -1,95 +1,86 @@
 package database
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-	"time"
+// var (
+// 	db *badger.DB // The active database connection
+// )
 
-	"github.com/dgraph-io/badger/v3"
-)
+// type invoice struct {
+// 	fiatAmount          float32 // TODO: change to double
+// 	satoshiAmouont      uint64
+// 	recipient           string
+// 	CreationTimestamp   string
+// 	ExpirationTimestamp string
+// }
 
-var (
-	db *badger.DB // The active database connection
-)
+// // Connect will make a new database connection and new folder/file(s) if needed
+// func Connect(folder string) (err error) {
 
-type invoice struct {
-	fiatAmount          float32 // TODO: change to double
-	satoshiAmouont      uint64
-	recipient           string
-	CreationTimestamp   string
-	ExpirationTimestamp string
-}
+// 	// Get the home dir
+// 	var home string
+// 	if home, err = os.UserHomeDir(); err != nil {
+// 		return err
+// 	}
 
-// Connect will make a new database connection and new folder/file(s) if needed
-func Connect(folder string) (err error) {
+// 	// Set the database file and connect (disable logging for now)
+// 	opts := badger.DefaultOptions(filepath.Join(home, folder, "database")).WithLogger(nil)
+// 	db, err = badger.Open(opts)
+// 	return
+// }
 
-	// Get the home dir
-	var home string
-	if home, err = os.UserHomeDir(); err != nil {
-		return err
-	}
+// // Disconnect will close the db connection
+// func Disconnect() error {
+// 	return db.Close()
+// }
 
-	// Set the database file and connect (disable logging for now)
-	opts := badger.DefaultOptions(filepath.Join(home, folder, "database")).WithLogger(nil)
-	db, err = badger.Open(opts)
-	return
-}
+// // Set will store a new key/value pair (expiration optional)
+// func Set(key, value string, ttl time.Duration) error {
+// 	if db == nil {
+// 		return fmt.Errorf("database is not connected")
+// 	}
+// 	return db.Update(func(txn *badger.Txn) error {
+// 		entry := badger.NewEntry([]byte(key), []byte(value))
+// 		if ttl > 0 {
+// 			entry = entry.WithTTL(ttl)
+// 		}
 
-// Disconnect will close the db connection
-func Disconnect() error {
-	return db.Close()
-}
+// 		return txn.SetEntry(entry)
+// 	})
+// }
 
-// Set will store a new key/value pair (expiration optional)
-func Set(key, value string, ttl time.Duration) error {
-	if db == nil {
-		return fmt.Errorf("database is not connected")
-	}
-	return db.Update(func(txn *badger.Txn) error {
-		entry := badger.NewEntry([]byte(key), []byte(value))
-		if ttl > 0 {
-			entry = entry.WithTTL(ttl)
-		}
+// // Get will retrieve a value from a key (if found)
+// func Get(key string) (string, error) {
+// 	if db == nil {
+// 		return "", fmt.Errorf("database is not connected")
+// 	}
+// 	var valCopy []byte
+// 	err := db.View(func(txn *badger.Txn) error {
+// 		item, err := txn.Get([]byte(key))
+// 		if err != nil {
+// 			return err
+// 		}
 
-		return txn.SetEntry(entry)
-	})
-}
+// 		valCopy, err = item.ValueCopy(nil)
+// 		return err
+// 	})
 
-// Get will retrieve a value from a key (if found)
-func Get(key string) (string, error) {
-	if db == nil {
-		return "", fmt.Errorf("database is not connected")
-	}
-	var valCopy []byte
-	err := db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
+// 	// Not found (don't return an error, as we want to use this as cache)
+// 	if err == badger.ErrKeyNotFound {
+// 		err = nil
+// 	}
 
-		valCopy, err = item.ValueCopy(nil)
-		return err
-	})
+// 	return string(valCopy), err
+// }
 
-	// Not found (don't return an error, as we want to use this as cache)
-	if err == badger.ErrKeyNotFound {
-		err = nil
-	}
+// // Flush will empty the entire database
+// func Flush() error {
+// 	return db.DropAll()
+// }
 
-	return string(valCopy), err
-}
-
-// Flush will empty the entire database
-func Flush() error {
-	return db.DropAll()
-}
-
-// GarbageCollection will clean up some garbage in the database (reduces space, etc)
-func GarbageCollection() error {
-	err := db.RunValueLogGC(0.5)
-	if err == badger.ErrNoRewrite {
-		return nil
-	}
-	return err
-}
+// // GarbageCollection will clean up some garbage in the database (reduces space, etc)
+// func GarbageCollection() error {
+// 	err := db.RunValueLogGC(0.5)
+// 	if err == badger.ErrNoRewrite {
+// 		return nil
+// 	}
+// 	return err
+// }
