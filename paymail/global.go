@@ -1,4 +1,4 @@
-package paymail
+package ipaymail
 
 import "github.com/tonicpow/go-paymail"
 

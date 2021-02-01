@@ -1,4 +1,4 @@
-package paymail
+package ipaymail
 
 import (
 	"fmt"

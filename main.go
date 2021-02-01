@@ -7,13 +7,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/libsv/go-bmerchant/bip270"
-	ipaymail "github.com/libsv/go-bmerchant/paymail"
+	"github.com/libsv/go-payd/bip270"
+	ipaymail "github.com/libsv/go-payd/paymail"
 	"github.com/spf13/viper"
 	"github.com/tonicpow/go-paymail"
 )
 
-const appname = "bmerchant"
+const appname = "payd"
 
 // Version & commit strings injected at build with -ldflags -X...
 var version string
@@ -78,7 +78,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "bmerchant")
+		return c.String(http.StatusOK, "payd")
 	})
 
 	//Load the V1 routes

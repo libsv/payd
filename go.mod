@@ -1,4 +1,4 @@
-module github.com/libsv/go-bmerchant
+module github.com/libsv/go-payd
 
 go 1.15
 

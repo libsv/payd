@@ -7,8 +7,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"github.com/libsv/go-bmerchant/paymail"
 	"github.com/libsv/go-bt"
+	"github.com/libsv/go-payd/paymail"
 )
 
 // SolicitPaymentRequestHandler is used to obtain a BIP270
