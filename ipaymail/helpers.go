@@ -167,8 +167,8 @@ func getSrvRecord(domain string, validate bool, allowCache bool) (srv *net.SRV, 
 	return
 }
 
-// getCapabilities will check SRV first, then attempt default domain:port check (logging and basic error handling)
-func getCapabilities(domain string, allowCache bool) (capabilities *paymail.Capabilities, err error) {
+// GetCapabilities will check SRV first, then attempt default domain:port check (logging and basic error handling)
+func GetCapabilities(domain string, allowCache bool) (capabilities *paymail.Capabilities, err error) {
 
 	capabilityDomain := ""
 	capabilityPort := paymail.DefaultPort

@@ -10,7 +10,6 @@ import (
 	"github.com/libsv/go-payd/bip270"
 	"github.com/libsv/go-payd/ipaymail"
 	"github.com/spf13/viper"
-	"github.com/tonicpow/go-paymail"
 )
 
 const appname = "payd"
@@ -36,37 +35,22 @@ func main() {
 	fmt.Printf("Version: %s\n", version)
 	fmt.Printf("Commit: %s\n", commit)
 
-	// TODO: add paymail capabilities/etc. to key value db with expiry and remove from here
-	// ------ get paymail capabilities (START) ------
+	viper.SetDefault("bsvalias", "1.0")
+
+	ipaymail.PaymailInit()
+	// TODO: add paymail capabilities/etc. to key value db with expiry and remove from here (REDIS)
 	const handcashDomain = "handcash.io"
 	const moneybuttonDomain = "moneybutton.com"
+	var err error
 
-	// Load the client
-	client, err := paymail.NewClient(nil, nil, nil)
+	ipaymail.GlobalPaymailCapabilities[handcashDomain], err = ipaymail.GetCapabilities(handcashDomain, false)
 	if err != nil {
-		log.Fatalf("error loading client: %s", err.Error())
-	}
-
-	// Get the capabilities
-	// This is required first to get the corresponding P2P PaymentResolution endpoint url
-
-	// handcash // TODO: FIX not working 2021/01/24 17:13:11 error getting capabilities: invalid character '<' looking for beginning of value
-	// var handcashCap *paymail.Capabilities
-	// if handcashCap, err = client.GetCapabilities(handcashDomain, paymail.DefaultPort); err != nil {
-	// 	log.Fatal("error getting capabilities: " + err.Error())
-	// }
-	// log.Println("found capabilities: ", len(handcashCap.Capabilities))
-
-	// moneybutton
-	var moneybuttonCap *paymail.Capabilities
-	if moneybuttonCap, err = client.GetCapabilities(moneybuttonDomain, paymail.DefaultPort); err != nil {
 		log.Fatal("error getting capabilities: " + err.Error())
 	}
-	log.Println("found capabilities: ", len(moneybuttonCap.Capabilities))
-
-	// ipaymail.GlobalPaymailCapabilities[handcashDomain] = handcashCap
-	ipaymail.GlobalPaymailCapabilities[moneybuttonDomain] = moneybuttonCap
-	// ------ get paymail capabilities (END) ------
+	ipaymail.GlobalPaymailCapabilities[moneybuttonDomain], err = ipaymail.GetCapabilities(moneybuttonDomain, false)
+	if err != nil {
+		log.Fatal("error getting capabilities: " + err.Error())
+	}
 
 	// viperSetup() // TODO: setup viper prooperly
 
