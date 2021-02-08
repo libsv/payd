@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
 	"github.com/libsv/go-payd/ipaymail"
+	"github.com/libsv/go-payd/wallet"
 )
 
 // SolicitPaymentRequestHandler is used to obtain a BIP270
@@ -20,22 +21,51 @@ func SolicitPaymentRequestHandler(c echo.Context) error {
 
 	// TODO: get amount from paymentID key (badger db) and get paymail p2p outputs when creating invoice not here
 
-	ref, os, err := ipaymail.GetP2POutputs("jad@moneybutton.com", 10000)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "error getting paymail outputs")
-	}
+	usePaymail := false // TODO: use setting or something like that
 
-	fmt.Println("reference: ", ref)
-
-	ipaymail.ReferencesMap[paymentID] = ref
-
-	// change returned hexString output script into bytes
 	var outs []*Output
 
-	for _, o := range os {
+	if usePaymail == true {
+		ref, os, err := ipaymail.GetP2POutputs("jad@moneybutton.com", 10000)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "error getting paymail outputs")
+		}
+
+		fmt.Println("reference: ", ref)
+
+		ipaymail.ReferencesMap[paymentID] = ref
+
+		// change returned hexString output script into bytes TODO: understand what i wrote
+
+		for _, o := range os {
+			out := &Output{
+				Amount: o.Satoshis,
+				Script: o.Script,
+			}
+
+			outs = append(outs, out)
+		}
+	} else {
+		xprv, err := wallet.GetPrivateKey("keyname") // TODO: get from settings
+		if err != nil {
+			return err
+		}
+
+		// TODO: derive new key for each payment!
+
+		pubKey, err := wallet.PubFromXPrv(xprv)
+		if err != nil {
+			return err
+		}
+
+		o, err := bt.NewP2PKHOutputFromPubKeyBytes(pubKey, 10000) // TODO: get amount from invoice
+		if err != nil {
+			return err
+		}
+
 		out := &Output{
 			Amount: o.Satoshis,
-			Script: o.Script,
+			Script: o.GetLockingScriptHexString(),
 		}
 
 		outs = append(outs, out)
@@ -51,9 +81,9 @@ func SolicitPaymentRequestHandler(c echo.Context) error {
 		ExpirationTimestamp: time.Now().AddDate(0, 0, 1).UTC().Unix(),
 		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", endpoint, paymentID),
 		Memo:                fmt.Sprintf("Payment request for invoice %s", paymentID),
-		MerchantData: &MerchantData{
+		MerchantData: &MerchantData{ // TODO: get from settings
 			AvatarURL:    "https://bit.ly/3c4iaup",
-			MerchantName: "Medium Coffee 12oz",
+			MerchantName: "go-payd",
 		},
 	}
 
@@ -72,19 +102,27 @@ func PaymentHandler(c echo.Context) error {
 		return err
 	}
 
-	ref := ipaymail.ReferencesMap[paymentID]
 	pa := &PaymentACK{
 		Payment: p,
 	}
 
-	txid, note, err := ipaymail.SubmitTx("jad@moneybutton.com", p.Transaction, ref)
-	if err != nil {
-		pa.Error = 1
-		pa.Memo = err.Error()
+	usePaymail := false // TODO: use setting or something like that
+
+	if usePaymail == true {
+
+		ref := ipaymail.ReferencesMap[paymentID]
+
+		txid, note, err := ipaymail.SubmitTx("jad@moneybutton.com", p.Transaction, ref)
+		if err != nil {
+			pa.Error = 1
+			pa.Memo = err.Error()
+		} else {
+			log.Info(txid)
+			pa.Error = 0
+			pa.Memo = note
+		}
 	} else {
-		log.Info(txid)
-		pa.Error = 0
-		pa.Memo = note
+		// TODO: insert tx into db
 	}
 
 	return c.JSON(http.StatusOK, pa)
