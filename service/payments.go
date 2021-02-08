@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
 	"github.com/pkg/errors"
+	validator "github.com/theflyingcodr/govalidator"
 
 	gopayd "github.com/libsv/go-payd"
 	"github.com/libsv/go-payd/ipaymail"
@@ -22,7 +23,9 @@ func NewPaymentService() *paymentService {
 }
 
 func (p *paymentService) CreatePaymentRequest(ctx context.Context, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
-
+	if err := validator.New().Validate("hostname", validator.NotEmpty(args.Hostname)); err.Err() != nil {
+		return nil, err
+	}
 	// TODO: get amount from paymentID key (badger db) and get paymail p2p outputs when creating invoice not here
 	// TODO: if no paymentID, generate a random one
 	var pID string
@@ -60,29 +63,21 @@ func (p *paymentService) CreatePaymentRequest(ctx context.Context, args gopayd.P
 		if err != nil {
 			return nil, err
 		}
-
 		o, err := bt.NewP2PKHOutputFromPubKeyBytes(pubKey, 10000) // TODO: get amount from invoice
 		if err != nil {
 			return nil, err
 		}
-
-		out := &gopayd.Output{
+		outs = append(outs, &gopayd.Output{
 			Amount: o.Satoshis,
 			Script: o.GetLockingScriptHexString(),
-		}
-
-		outs = append(outs, out)
+		})
 	}
-
-	// endpoint := "localhost:1323" // TODO: get from settings
-	endpoint := "178.62.87.120:1323" // TODO: get from settings
-
 	return &gopayd.PaymentRequest{
 		Network:             "bitcoin-sv", // TODO: check if bitcoin or bitcoin-sv?
 		Outputs:             outs,
 		CreationTimestamp:   time.Now().UTC().Unix(),
-		ExpirationTimestamp: time.Now().AddDate(0, 0, 1).UTC().Unix(),
-		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", endpoint, pID),
+		ExpirationTimestamp: time.Now().Add(24 * time.Hour).UTC().Unix(),
+		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", args.Hostname, pID),
 		Memo:                fmt.Sprintf("Payment request for invoice %s", pID),
 		MerchantData: &gopayd.MerchantData{ // TODO: get from settings
 			AvatarURL:    "https://bit.ly/3c4iaup",

@@ -33,7 +33,7 @@ func NewViperConfig(appname string) *Config {
 // WithServer will setup the web server configuration if required.
 func (c *Config) WithServer() *Config {
 	viper.SetDefault(EnvServerPort, ":1323")
-	viper.SetDefault(EnvServerHost, "localhost")
+	viper.SetDefault(EnvServerHost, "localhost:1323")
 	c.Server = &Server{
 		Port:     viper.GetString(EnvServerPort),
 		Hostname: viper.GetString(EnvServerHost),
@@ -69,7 +69,7 @@ func (c *Config) WithLog() *Config {
 // WithDb sets up and returns database configuration.
 func (c *Config) WithDb() *Config {
 	viper.SetDefault(EnvDb, "sqlite")
-	viper.SetDefault("db.dsn", "data/db.sql")
+	viper.SetDefault("db.dsn", "file:db/wallet.db?cache=shared")
 	c.Db = &Db{
 		Type: viper.GetString(EnvDb),
 		Dsn:  viper.GetString(EnvDbDsn),

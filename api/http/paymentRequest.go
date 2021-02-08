@@ -14,13 +14,15 @@ import (
 type paymentHandler struct {
 	svc gopayd.PaymentRequestService
 	cfg *config.Paymail
+	env *config.Server
 }
 
 // NewPaymentHandler will create and return a new PaymentHandler.
-func NewPaymentHandler(cfg *config.Paymail, svc gopayd.PaymentRequestService) *paymentHandler {
+func NewPaymentHandler(cfg *config.Paymail, env *config.Server, svc gopayd.PaymentRequestService) *paymentHandler {
 	return &paymentHandler{
 		svc: svc,
 		cfg: cfg,
+		env: env,
 	}
 }
 
@@ -32,6 +34,7 @@ func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
 func (h *paymentHandler) createPaymentRequest(e echo.Context) error {
 	args := gopayd.PaymentRequestArgs{
 		UsePaymail: h.cfg.UsePaymail,
+		Hostname:   h.env.Hostname,
 	}
 	pID := e.QueryParam("paymentID")
 	if pID != "" {

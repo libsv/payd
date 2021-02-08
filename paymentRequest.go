@@ -56,8 +56,11 @@ type MerchantData struct {
 // PaymentRequestArgs are request arguments that can be passed to the service.
 type PaymentRequestArgs struct {
 	// PaymentID is an optional identifier for an invoice.
-	PaymentID  *string
+	PaymentID *string
+	// UsePaymail if true then we will use paymail to transmit payments.
 	UsePaymail bool
+	// Hostname is the base href where we direct users to complete payments.
+	Hostname string
 }
 
 // PaymentRequestService can be implemented to enforce business rules

@@ -1,5 +1,10 @@
 CREATE TABLE keys (
-    keyname   VARCHAR
-    ,xprv     VARCHAR
-    PRIMARY KEY (keyname)
+    name   VARCHAR NOT NULL PRIMARY KEY
+    ,xprv     VARCHAR NOT NULL
+    ,createdAt INTEGER NOT NULL
 );
+
+
+
+
+
