@@ -1,4 +1,4 @@
-package gopayd
+package bip270
 
 import (
 	"testing"

@@ -1,8 +1,10 @@
-package gopayd
+package bip270
 
 import (
 	"context"
+	"errors"
 
+	"github.com/libsv/go-bt"
 	validator "github.com/theflyingcodr/govalidator"
 )
 
@@ -29,7 +31,16 @@ type CreatePayment struct {
 // Validate will ensure the users request is correct.
 func (c CreatePayment) Validate() validator.ErrValidation {
 	v := validator.New().
-		Validate("transaction", validator.NoPrefix(c.Transaction, "0x"), validator.IsHex(c.Transaction))
+		Validate("transaction",
+			validator.NoPrefix(c.Transaction, "0x"),
+			validator.IsHex(c.Transaction),
+			func() error {
+				if _, err := bt.NewTxFromString(c.Transaction); err != nil {
+					return errors.New("not a valid bitcoin transaction")
+				}
+				return nil
+			},
+		)
 	if c.MerchantData != nil {
 		v = v.Validate("merchantData", validator.Length(*c.MerchantData, 0, 10000))
 	}
@@ -57,7 +68,8 @@ type PaymentACK struct {
 }
 
 type CreatePaymentArgs struct {
-	PaymentID *string
+	PaymentID  string
+	UsePaymail bool
 }
 
 type PaymentService interface {

@@ -7,12 +7,14 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
-	"github.com/libsv/go-payd/api/http"
-	paydMiddleware "github.com/libsv/go-payd/api/http/middleware"
+	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/libsv/go-payd/api/paydHttp"
+	paydMiddleware "github.com/libsv/go-payd/api/paydHttp/middleware"
+	"github.com/libsv/go-payd/bip270/api/http"
+	service2 "github.com/libsv/go-payd/bip270/service"
 	"github.com/libsv/go-payd/config"
 	"github.com/libsv/go-payd/db/sqlite"
-	"github.com/libsv/go-payd/service"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 const appname = "payd"
@@ -43,6 +45,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
 	g := e.Group("/v1")
-	http.NewPaymentHandler(cfg.Paymail, cfg.Server, service.NewPaymentService()).RegisterRoutes(g)
+	http.NewPaymentHandler
+	paydHttp.NewPaymentHandler(cfg.Paymail, cfg.Server, service2.NewPaymentService()).RegisterRoutes(g)
 	e.Logger.Fatal(e.Start(cfg.Server.Hostname))
 }

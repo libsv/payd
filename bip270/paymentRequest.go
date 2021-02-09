@@ -1,4 +1,4 @@
-package gopayd
+package bip270
 
 import (
 	"context"
@@ -55,8 +55,8 @@ type MerchantData struct {
 
 // PaymentRequestArgs are request arguments that can be passed to the service.
 type PaymentRequestArgs struct {
-	// PaymentID is an optional identifier for an invoice.
-	PaymentID *string
+	// PaymentID is an identifier for an invoice.
+	PaymentID string
 	// UsePaymail if true then we will use paymail to transmit payments.
 	UsePaymail bool
 	// Hostname is the base href where we direct users to complete payments.

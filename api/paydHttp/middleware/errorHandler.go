@@ -7,5 +7,8 @@ import (
 
 // ErrorHandler we can flesh this out.
 func ErrorHandler(err error, c echo.Context) {
-	log.Error(err)
+	if err != nil {
+		log.Error(err)
+		c.Error(err)
+	}
 }

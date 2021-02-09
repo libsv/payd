@@ -9,6 +9,7 @@ const (
 	EnvServerPort  = "server.port"
 	EnvServerHost  = "server.host"
 	EnvEnvironment = "env.environment"
+	EnvMainNet     = "env.mainnet"
 	EnvRegion      = "env.region"
 	EnvVersion     = "env.version"
 	EnvCommit      = "env.commit"
@@ -42,6 +43,7 @@ type Deployment struct {
 	Version     string
 	Commit      string
 	BuildDate   time.Time
+	MainNet     bool
 }
 
 // IsDev determines if this app is running on a dev environment.

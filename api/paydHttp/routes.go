@@ -1,4 +1,4 @@
-package http
+package paydHttp
 
 const (
 	RoutePaymentRequest = "/r/:paymentID"

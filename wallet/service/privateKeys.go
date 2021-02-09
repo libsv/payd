@@ -1,65 +1,80 @@
-package wallet
+package service
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bitcoinsv/bsvd/bsvec"
 	"github.com/bitcoinsv/bsvd/chaincfg"
 	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/pkg/errors"
+
+	"github.com/libsv/go-payd/wallet"
 )
 
 var (
 	numericPlusTick = regexp.MustCompile(`^[0-9]+'{0,1}$`)
 )
 
-// CreatePrivateKey creates a extended private key for a keyname
-func CreatePrivateKey(keyname string) error { // get keyname from settings in caller
+type privateKey struct {
+	store      wallet.KeyStorer
+	useMainNet bool
+}
 
-	// TODO: open conn to sqlite db and defer
+// NewPrivateKeys will setup and return a new PrivateKey service.
+func NewPrivateKeys(store wallet.KeyStorer, useMainNet bool) *privateKey {
+	return &privateKey{store: store, useMainNet: useMainNet}
+}
 
-	// TODO: check if key exists
-
+// Create creates a extended private key for a keyName
+func (svc *privateKey) Create(ctx context.Context, keyName string) error { // get keyname from settings in caller
+	key, err := svc.store.PrivateKey(ctx, wallet.KeyArgs{Name: keyName})
+	if err != nil {
+		return errors.Wrapf(err, "failed to get key %s by name", keyName)
+	}
+	if key != nil {
+		return nil
+	}
 	seed, err := hdkeychain.GenerateSeed(hdkeychain.RecommendedSeedLen)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate seed")
 	}
-
-	mainNet := false // TODO: get get config
-
-	var chain *chaincfg.Params
-
-	if mainNet {
+	chain := &chaincfg.TestNet3Params
+	if svc.useMainNet {
 		chain = &chaincfg.MainNetParams
-	} else {
-		chain = &chaincfg.TestNet3Params
 	}
-
 	xprv, err := hdkeychain.NewMaster(seed, chain)
 	if err != nil {
 		return errors.Wrap(err, "failed to create master node for given seed and chain")
 	}
-
-	// TODO: insert xprv into db
-	fmt.Println(xprv)
-
+	if _, err := svc.store.Create(ctx, wallet.PrivateKey{
+		Name:      keyName,
+		Xpriv:     xprv.String(),
+		CreatedAt: time.Now().UTC(),
+	}); err != nil {
+		return errors.Wrap(err, "failed to create private key")
+	}
 	return nil
 }
 
-// GetPrivateKey returns the extended private key for a keyname
-func GetPrivateKey(keyname string) (*hdkeychain.ExtendedKey, error) {
-
-	xpriv := "" // TODO: get from db
-
-	key, err := hdkeychain.NewKeyFromString(xpriv)
+// PrivateKey returns the extended private key for a keyname
+func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeychain.ExtendedKey, error) {
+	key, err := svc.store.PrivateKey(ctx, wallet.KeyArgs{Name: keyName})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}
-
-	return key, nil
+	if key == nil {
+		return nil, errors.Wrap(err, "key not found")
+	}
+	xKey, err := hdkeychain.NewKeyFromString(key.Xpriv)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get extended key from xpriv")
+	}
+	return xKey, nil
 }
 
 // DeriveChildFromKey derives a child extended private key from an extended private key

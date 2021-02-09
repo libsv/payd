@@ -8,8 +8,20 @@ import (
 	"github.com/tonicpow/go-paymail"
 )
 
+// TransactionSubmitter is a stub interface for now, to decouple, bip270 and make it unit testable.
+type TransactionSubmitter interface {
+	SubmitTx(paymailAddress, txHexStr, reference string) (txid, note string, err error)
+}
+
+type transactionService struct {
+}
+
+func NewRransactionService() *transactionService {
+	return &transactionService{}
+}
+
 // SubmitTx function
-func SubmitTx(paymailAddress, txHexStr, reference string) (txid string, note string, err error) {
+func (t *transactionService) SubmitTx(paymailAddress, txHexStr, reference string) (txid, note string, err error) {
 	// Set the domain and paymail
 	alias, domain, address := paymail.SanitizePaymail(paymail.ConvertHandle(paymailAddress, false))
 

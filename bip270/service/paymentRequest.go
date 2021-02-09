@@ -10,30 +10,30 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
-	gopayd "github.com/libsv/go-payd"
+	"github.com/libsv/go-payd/bip270"
 	"github.com/libsv/go-payd/ipaymail"
 	"github.com/libsv/go-payd/wallet"
+	"github.com/libsv/go-payd/wallet/service"
 )
 
-type paymentService struct {
+type paymentRequestService struct {
+	privKeySvc wallet.PrivateKeyService
 }
 
-func NewPaymentService() *paymentService {
-	return &paymentService{}
+// NewPaymentRequestService
+func NewPaymentRequestService(privKeySvc wallet.PrivateKeyService) *paymentRequestService {
+	return &paymentRequestService{privKeySvc: privKeySvc}
 }
 
-func (p *paymentService) CreatePaymentRequest(ctx context.Context, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
-	if err := validator.New().Validate("hostname", validator.NotEmpty(args.Hostname)); err.Err() != nil {
+// CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
+func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args bip270.PaymentRequestArgs) (*bip270.PaymentRequest, error) {
+	if err := validator.New().
+		Validate("paymentID", validator.NotEmpty(args.PaymentID)).
+		Validate("hostname", validator.NotEmpty(args.Hostname)); err.Err() != nil {
 		return nil, err
 	}
 	// TODO: get amount from paymentID key (badger db) and get paymail p2p outputs when creating invoice not here
-	// TODO: if no paymentID, generate a random one
-	var pID string
-	if args.PaymentID != nil {
-		pID = *args.PaymentID
-	}
-	var outs []*gopayd.Output
-
+	var outs []*bip270.Output
 	if args.UsePaymail {
 		ref, os, err := ipaymail.GetP2POutputs("jad@moneybutton.com", 10000)
 		if err != nil {
@@ -41,25 +41,25 @@ func (p *paymentService) CreatePaymentRequest(ctx context.Context, args gopayd.P
 		}
 		log.Debugf("reference: %s", ref)
 
-		ipaymail.ReferencesMap[pID] = ref
+		ipaymail.ReferencesMap[args.PaymentID] = ref
 
 		// change returned hexString output script into bytes TODO: understand what i wrote
 		for _, o := range os {
-			out := &gopayd.Output{
+			out := &bip270.Output{
 				Amount: o.Satoshis,
 				Script: o.Script,
 			}
 			outs = append(outs, out)
 		}
 	} else {
-		xprv, err := wallet.GetPrivateKey("keyname") // TODO: get from settings
+		xprv, err := p.privKeySvc.PrivateKey(ctx, "keyname") // TODO: get from settings
 		if err != nil {
 			return nil, err
 		}
 
 		// TODO: derive new key for each payment!
 
-		pubKey, err := wallet.PubFromXPrv(xprv)
+		pubKey, err := service.PubFromXPrv(xprv)
 		if err != nil {
 			return nil, err
 		}
@@ -67,19 +67,19 @@ func (p *paymentService) CreatePaymentRequest(ctx context.Context, args gopayd.P
 		if err != nil {
 			return nil, err
 		}
-		outs = append(outs, &gopayd.Output{
+		outs = append(outs, &bip270.Output{
 			Amount: o.Satoshis,
 			Script: o.GetLockingScriptHexString(),
 		})
 	}
-	return &gopayd.PaymentRequest{
+	return &bip270.PaymentRequest{
 		Network:             "bitcoin-sv", // TODO: check if bitcoin or bitcoin-sv?
 		Outputs:             outs,
 		CreationTimestamp:   time.Now().UTC().Unix(),
 		ExpirationTimestamp: time.Now().Add(24 * time.Hour).UTC().Unix(),
-		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", args.Hostname, pID),
-		Memo:                fmt.Sprintf("Payment request for invoice %s", pID),
-		MerchantData: &gopayd.MerchantData{ // TODO: get from settings
+		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", args.Hostname, args.PaymentID),
+		Memo:                fmt.Sprintf("Payment request for invoice %s", args.PaymentID),
+		MerchantData: &bip270.MerchantData{ // TODO: get from settings
 			AvatarURL:    "https://bit.ly/3c4iaup",
 			MerchantName: "go-payd",
 		},
