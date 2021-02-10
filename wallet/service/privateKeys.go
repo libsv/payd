@@ -16,18 +16,19 @@ import (
 	"github.com/libsv/go-payd/wallet"
 )
 
-var (
-	numericPlusTick = regexp.MustCompile(`^[0-9]+'{0,1}$`)
-)
-
 type privateKey struct {
-	store      wallet.KeyStorer
-	useMainNet bool
+	store           wallet.KeyStorer
+	useMainNet      bool
+	numericPlusTick *regexp.Regexp
 }
 
 // NewPrivateKeys will setup and return a new PrivateKey service.
 func NewPrivateKeys(store wallet.KeyStorer, useMainNet bool) *privateKey {
-	return &privateKey{store: store, useMainNet: useMainNet}
+	return &privateKey{
+		store:           store,
+		useMainNet:      useMainNet,
+		numericPlusTick: regexp.MustCompile(`^[0-9]+'{0,1}$`),
+	}
 }
 
 // Create creates a extended private key for a keyName
@@ -77,25 +78,19 @@ func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeych
 	return xKey, nil
 }
 
-// DeriveChildFromKey derives a child extended private key from an extended private key
-func DeriveChildFromKey(startingKey hdkeychain.ExtendedKey, derivationPath string) (*hdkeychain.ExtendedKey, error) { // TODO: check startingKey not pointer
-
-	// This method does not appear to be thread safe so we pass the starting key by value and then point to that...
-	key := &startingKey
-
+// DeriveChildFromKey will create a private key derived from a parent extended private key at the given derivationPath.
+func (svc *privateKey) DeriveChildFromKey(startingKey *hdkeychain.ExtendedKey, derivationPath string) (*hdkeychain.ExtendedKey, error) { // TODO: check startingKey not pointer
+	key := startingKey
 	if derivationPath != "" {
 		children := strings.Split(derivationPath, "/")
-
 		for _, child := range children {
-			if !isValidSegment(child) {
+			if !svc.numericPlusTick.MatchString(child) {
 				return nil, errors.Wrap(errors.New("deriveChildFromKey failed"), fmt.Sprintf("invalid path: %q", derivationPath))
 			}
-
 			childInt, err := getChildInt(child)
 			if err != nil {
 				return nil, errors.Wrap(err, "deriveChildFromKey failed")
 			}
-
 			var childErr error
 			key, childErr = key.Child(childInt)
 			if childErr != nil {
@@ -103,27 +98,19 @@ func DeriveChildFromKey(startingKey hdkeychain.ExtendedKey, derivationPath strin
 			}
 		}
 	}
-
 	return key, nil
-}
-
-func isValidSegment(child string) bool {
-	return numericPlusTick.MatchString(child)
 }
 
 func getChildInt(child string) (uint32, error) {
 	var suffix uint32
-
 	if strings.HasSuffix(child, "'") {
 		child = strings.TrimRight(child, "'")
 		suffix = 2147483648 // 2^32
 	}
-
 	t, err := strconv.Atoi(child)
 	if err != nil {
 		return 0, errors.Wrap(err, "getChildInt: "+child)
 	}
-
 	return uint32(t) + suffix, nil
 }
 
@@ -133,7 +120,7 @@ func PrivFromXPrv(xprv *hdkeychain.ExtendedKey) (*bsvec.PrivateKey, error) {
 }
 
 // PubFromXPrv returns an ECDSA public key from an extended private key
-func PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error) {
+func (svc *privateKey) PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error) {
 	pub, err := xprv.ECPubKey()
 	if err != nil {
 		return nil, err

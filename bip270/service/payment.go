@@ -14,10 +14,10 @@ import (
 
 type paymentService struct {
 	payMail ipaymail.TransactionSubmitter
-	txStore bip270.TransactionStore
+	txStore bip270.ScriptKeyStorer
 }
 
-func NewPaymentService(payMail ipaymail.TransactionSubmitter, txStore bip270.TransactionStore) *paymentService {
+func NewPaymentService(payMail ipaymail.TransactionSubmitter, txStore bip270.ScriptKeyStorer) *paymentService {
 	return &paymentService{payMail: payMail, txStore: txStore}
 }
 
@@ -30,12 +30,19 @@ func (p *paymentService) Create(ctx context.Context, args bip270.CreatePaymentAr
 	pa := &bip270.PaymentACK{
 		Payment: &req,
 	}
+
 	// get and attempt to store transaction before processing payment.
 	// TODO - is this logic correct?
 	tx, err := bt.NewTxFromString(req.Transaction)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse transaction")
 	}
+	for i, o := range tx.GetOutputs(){
+		o.LockingScript.
+	}
+
+	// validate outputs - only submit those for us.
+	// get derivationPath somehow
 	if _, err := p.txStore.Create(ctx, tx); err != nil {
 		pa.Error = 1
 		pa.Memo = "failed to store transaction"

@@ -11,7 +11,7 @@ import (
 
 	"github.com/libsv/go-payd/api/paydHttp"
 	paydMiddleware "github.com/libsv/go-payd/api/paydHttp/middleware"
-	"github.com/libsv/go-payd/bip270/api/http"
+	"github.com/libsv/go-payd/bip270/http"
 	service2 "github.com/libsv/go-payd/bip270/service"
 	"github.com/libsv/go-payd/config"
 	"github.com/libsv/go-payd/db/sqlite"

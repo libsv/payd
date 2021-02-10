@@ -23,6 +23,7 @@ type CreatePayment struct {
 	MerchantData *string `json:"merchantData,omitempty"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
+	// TODO - we're not handling paymail in V1 so this will always be empty
 	RefundTo *string `json:"refundTo,omitempty"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo,omitempty"`

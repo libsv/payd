@@ -29,6 +29,10 @@ type PrivateKeyService interface {
 	Create(ctx context.Context, keyName string) error
 	// PrivateKey will return a private key.
 	PrivateKey(ctx context.Context, keyName string) (*hdkeychain.ExtendedKey, error)
+	// DeriveChildFromKey will create a private key derived from a parent key at the given derivationPath.
+	DeriveChildFromKey(startingKey *hdkeychain.ExtendedKey, derivationPath string) (*hdkeychain.ExtendedKey, error)
+	// PubFromXPrv will generate a public key from an extended private key.
+	PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error)
 }
 
 // KeyStorer describes a data store that can be implemented to get and store private keys.
