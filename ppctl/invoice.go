@@ -2,6 +2,7 @@ package ppctl
 
 import (
 	"context"
+	"time"
 
 	"gopkg.in/guregu/null.v3"
 )
@@ -22,7 +23,7 @@ type CreateInvoice struct {
 
 // UpdateInvoice can be used to update an invoice after it has been created.
 type UpdateInvoice struct {
-	PaymentReceivedAt null.Time `db:"paymentReceviedAt"`
+	PaymentReceivedAt time.Time `db:"paymentReceviedAt"`
 }
 
 // UpdateInvoiceArgs are used to identify the invoice to update.

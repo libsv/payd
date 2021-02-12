@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bitcoinsv/bsvd/bsvec"
 	"github.com/bitcoinsv/bsvd/chaincfg"
@@ -53,9 +52,8 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 		return errors.Wrap(err, "failed to create master node for given seed and chain")
 	}
 	if _, err := svc.store.Create(ctx, wallet.PrivateKey{
-		Name:      keyName,
-		Xpriv:     xprv.String(),
-		CreatedAt: time.Now().UTC(),
+		Name: keyName,
+		Xprv: xprv.String(),
 	}); err != nil {
 		return errors.Wrap(err, "failed to create private key")
 	}
@@ -71,7 +69,8 @@ func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeych
 	if key == nil {
 		return nil, errors.Wrap(err, "key not found")
 	}
-	xKey, err := hdkeychain.NewKeyFromString(key.Xpriv)
+
+	xKey, err := hdkeychain.NewKeyFromString(key.Xprv)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get extended key from xpriv")
 	}

@@ -11,8 +11,8 @@ import (
 type PrivateKey struct {
 	// Name of the private key.
 	Name string `db:"name"`
-	// Xpriv is the private key.
-	Xpriv string `db:"xpriv"`
+	// Xprv is the private key.
+	Xprv string `db:"xprv"`
 	// CreatedAt is the date/time when the key was stored.
 	CreatedAt time.Time `db:"createdAt"`
 }
@@ -20,7 +20,7 @@ type PrivateKey struct {
 // KeyArgs defines all arguments required to get a key.
 type KeyArgs struct {
 	// Name is the name of the key to return.
-	Name string
+	Name string `db:"name"`
 }
 
 // PrivateKeyService can be implemented to get and create PrivateKeys.

@@ -11,13 +11,13 @@ import (
 // * wallet payments, that are handled by the wallet and transmitted to the network
 // * paymail payments, that use the paymail protocol for making the payments.
 type paymentFacade struct {
-	cfg   config.Paymail
+	cfg   *config.Paymail
 	pwSvc ppctl.PaymentService
 	pmSvc ppctl.PaymentService
 }
 
 // NewPaymentFacade will create and return a new facade to determine between payments to use.
-func NewPaymentFacade(cfg config.Paymail, pwSvc ppctl.PaymentService, pmSvc ppctl.PaymentService) *paymentFacade {
+func NewPaymentFacade(cfg *config.Paymail, pwSvc ppctl.PaymentService, pmSvc ppctl.PaymentService) *paymentFacade {
 	return &paymentFacade{cfg: cfg, pwSvc: pwSvc, pmSvc: pmSvc}
 }
 

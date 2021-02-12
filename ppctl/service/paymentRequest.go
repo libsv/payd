@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
+	"github.com/libsv/go-payd/config"
 	"github.com/libsv/go-payd/ipaymail"
 	"github.com/libsv/go-payd/ppctl"
 	"github.com/libsv/go-payd/wallet"
@@ -21,21 +22,25 @@ const (
 )
 
 type paymentRequestService struct {
+	env        *config.Server
 	privKeySvc wallet.PrivateKeyService
 	scStore    ppctl.ScriptKeyStorer
 	invStore   ppctl.InvoiceStorer
 }
 
 // NewPaymentRequestService will create and return a new payment service.
-func NewPaymentRequestService(privKeySvc wallet.PrivateKeyService, scStore ppctl.ScriptKeyStorer, invStore ppctl.InvoiceStorer) *paymentRequestService {
-	return &paymentRequestService{privKeySvc: privKeySvc, scStore: scStore, invStore: invStore}
+func NewPaymentRequestService(env *config.Server, privKeySvc wallet.PrivateKeyService, scStore ppctl.ScriptKeyStorer, invStore ppctl.InvoiceStorer) *paymentRequestService {
+	if env == nil || env.Hostname == "" {
+		log.Fatal("env hostname should be set")
+	}
+	return &paymentRequestService{env: env, privKeySvc: privKeySvc, scStore: scStore, invStore: invStore}
 }
 
 // CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
 func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args ppctl.PaymentRequestArgs) (*ppctl.PaymentRequest, error) {
 	if err := validator.New().
 		Validate("paymentID", validator.NotEmpty(args.PaymentID)).
-		Validate("hostname", validator.NotEmpty(args.Hostname)); err.Err() != nil {
+		Validate("hostname", validator.NotEmpty(p.env)); err.Err() != nil {
 		return nil, err
 	}
 	inv, err := p.invStore.Invoice(ctx, ppctl.InvoiceArgs{PaymentID: args.PaymentID})
@@ -79,7 +84,7 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args p
 		Outputs:             outs,
 		CreationTimestamp:   time.Now().UTC().Unix(),
 		ExpirationTimestamp: time.Now().Add(24 * time.Hour).UTC().Unix(),
-		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", args.Hostname, args.PaymentID),
+		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", p.env.Hostname, args.PaymentID),
 		Memo:                fmt.Sprintf("Payment request for invoice %s", args.PaymentID),
 		MerchantData: &ppctl.MerchantData{ // TODO: get from settings
 			AvatarURL:    "https://bit.ly/3c4iaup",
@@ -113,7 +118,7 @@ func (p *paymentRequestService) createPaymailOutputs(paymentID string, outs []*p
 // to allow us to validate the outputs sent in the users payment.
 // If there is a failure all will be rolled back.
 func (p *paymentRequestService) storeKeys(ctx context.Context, keyName, derivPath string, outs []*ppctl.Output) error {
-	keys := make([]ppctl.CreateScriptKey, len(outs), len(outs))
+	keys := make([]ppctl.CreateScriptKey, 0)
 	for _, o := range outs {
 		keys = append(keys, ppctl.CreateScriptKey{
 			LockingScript:  o.Script,

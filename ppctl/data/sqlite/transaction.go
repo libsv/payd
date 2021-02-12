@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -12,27 +11,33 @@ import (
 )
 
 const (
-	InsertTransaction = `
-	INSERT INTO transaction(txid, txhex, createdAt)
-	VALUES(:txid, :txhex, :createdAt)
+	insertTransaction = `
+	INSERT INTO transaction(txid, paymentID, txhex, createdAt)
+	VALUES(:txid, :paymentID, :txhex, :createdAt)
 	`
 
-	InsertTxo = `
-	INSERT INTO txos(outpoint, instance, txid, vout, alias, derivationpath, scriptpubkey, satoshis, reservedat, spentat, spendingtxid, createdat, modifiedat)
-	VALUES(:outpoint, :instance, :txid, :vout, :alias, :derivationPath, :scriptPubKey, :satoshis, :reservedAt, :spentAt, :spendingTxID, :createdAt, :modifiedAt)
+	insertTxo = `
+	INSERT INTO txos(outpoint, txid, vout, keyname, derivationpath, lockingscript, satoshis,  createdat, modifiedat)
+	VALUES(:outpoint, :txid, :vout, :keyname, :derivationPath, :lockingscript, :satoshis, :createdAt, :modifiedAt)
 	`
 
-	TransactionByID = `
-	SELECT txid, txhex, createdAt
+	transactionByID = `
+	SELECT txid, paymentID, txhex, createdAt
 	FROM transactions
-	WHERE txid = :txID
+	WHERE txid = :txId
 	`
 
-	TxosByTxID = `
-	SELECT outpoint, instance, txid, vout, alias, derivationpath, scriptpubkey, satoshis, 
-				reservedat, spentat, spendingtxid, createdat, modifiedat 
+	txosByTxID = `
+	SELECT outpoint, txid, vout, alias, derivationpath, lockingscript, satoshis, 
+				spentat, spendingtxid, createdat, modifiedat 
 	FROM txos
-	WHERE txid = :txID
+	WHERE txid = :txId
+	`
+
+	updateInvoiceDate = `
+		UPDATE invoices 
+		SET paymentReceivedAt = :paymentReceivedAt
+		WHERE paymentID = :paymentId
 	`
 )
 
@@ -44,45 +49,35 @@ func NewTransaction(db *sqlx.DB) *transaction {
 	return &transaction{db: db}
 }
 
-// Create can be implemented to store a Transaction in a datastore.
-func (t *transaction) Create(ctx context.Context, args ppctl.CreateTxArgs, req *ppctl.Output) (*ppctl.Tx, error) {
+// Create can be implemented to store a Transaction and outputs in a datastore.
+func (t *transaction) Create(ctx context.Context, req ppctl.CreateTransaction) (*ppctl.Transaction, error) {
 	tx, err := t.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start transaction when inserting transaction to db")
 	}
 	defer tx.Rollback()
-	created := time.Now().UTC()
-	if err := handleExec(tx, InsertTransaction, map[string]interface{}{
-		"txid":      req.GetTxID(),
-		"txhex":     req.ToString(),
-		"createdAt": created,
-	}); err != nil {
+	if err := handleNamedExec(tx, insertTransaction, req); err != nil {
 		return nil, errors.Wrap(err, "failed to insert new transaction")
 	}
-	// TODO - do we store all outputs, even those sent as change back to the payee
-	// or do we just store those meant for us?
-	for i, txo := range req.GetOutputs() {
-		sqlArgs := map[string]interface{}{
-			"outpoint":       fmt.Sprintf("%s%d", req.GetTxID(), i),
-			"txid":           req.GetTxID(),
-			"instance":       1, // TODO - should be auto updated
-			"vout":           i,
-			"alias":          nil, // TODO - is this keyname?
-			"derivationPath": args.DerivationPath,
-			"scriptPubKey":   txo.LockingScript.GetPublicKeyHash(),
-			"satoshis":       txo.Satoshis,
-			"reservedAt":     created, // TODO - is this correct?
-			"spentAt":        nil,     // TODO - do we need this?
-			"spendingTxID":   nil,     // TODO - is this correct?
-			"createdAt":      created,
-			"modifiedAt":     created,
-		}
-		if err := handleExec(tx, queries.InsertTxo, sqlArgs); err != nil {
-			return nil, errors.Wrap(err, "failed to insert new transaction")
-		}
+	if err := handleNamedExec(tx, insertScriptKeys, req.Outputs); err != nil {
+		return nil, errors.Wrap(err, "failed to insert transaction outputs")
 	}
-	var outTx *ppctl.Tx
-	tx.Get(&outTx, que)
-
-	return nil, nil
+	// TODO - ideally I'd have this as a separate call but to keep in the same ATOMIC tx
+	// the simplest thing is to update the invoice here.
+	if err := handleNamedExec(tx, updateInvoice, map[string]interface{}{
+		"paymentReceivedAt": time.Now().UTC(),
+	}); err != nil {
+		return nil, errors.Wrap(err, "failed to update invoice date")
+	}
+	var outTx *ppctl.Transaction
+	if err := tx.Get(&outTx, transactionByID, req); err != nil {
+		return nil, errors.Wrapf(err, "failed to get transaction for paymentID %s", req.PaymentID)
+	}
+	var outTxos []ppctl.Txo
+	if err := tx.Get(&outTxos, txosByTxID, req); err != nil {
+		return nil, errors.Wrapf(err, "failed to get transaction for paymentID %s", req.PaymentID)
+	}
+	outTx.Outputs = outTxos
+	return outTx, errors.Wrapf(tx.Commit(),
+		"failed to commit transaction when adding tx and outpurs for paymentID %s", req.PaymentID)
 }

@@ -1,4 +1,4 @@
-package http
+package bip270
 
 import (
 	"net/http"
@@ -6,37 +6,30 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	"github.com/libsv/go-payd/api/paydHttp"
-	"github.com/libsv/go-payd/config"
+	phttp "github.com/libsv/go-payd/http"
 	"github.com/libsv/go-payd/ppctl"
 )
 
 // paymentRequestHandler is an http handler that supports BIP-270 requests.
 type paymentRequestHandler struct {
 	svc ppctl.PaymentRequestService
-	cfg *config.Paymail
-	env *config.Server
 }
 
 // NewPaymentRequestHandler will create and return a new PaymentRequestHandler.
-func NewPaymentRequestHandler(cfg *config.Paymail, env *config.Server, svc ppctl.PaymentRequestService) *paymentRequestHandler {
+func NewPaymentRequestHandler(svc ppctl.PaymentRequestService) *paymentRequestHandler {
 	return &paymentRequestHandler{
 		svc: svc,
-		cfg: cfg,
-		env: env,
 	}
 }
 
 // RegisterRoutes will setup all routes with an echo group.
 func (h *paymentRequestHandler) RegisterRoutes(g *echo.Group) {
-	g.GET(paydHttp.RoutePaymentRequest, h.createPaymentRequest)
+	g.GET(phttp.RoutePaymentRequest, h.createPaymentRequest)
 }
 
 func (h *paymentRequestHandler) createPaymentRequest(e echo.Context) error {
 	args := ppctl.PaymentRequestArgs{
-		UsePaymail: h.cfg.UsePaymail,
-		Hostname:   h.env.Hostname,
-		PaymentID:  e.QueryParam("paymentID"),
+		PaymentID: e.Param("paymentID"),
 	}
 	resp, err := h.svc.CreatePaymentRequest(e.Request().Context(), args)
 	if err != nil {

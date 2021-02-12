@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/labstack/gommon/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
 	"github.com/libsv/go-bt"
+
 	"github.com/libsv/go-payd/errs"
 	"github.com/libsv/go-payd/ppctl"
 )
@@ -15,10 +16,11 @@ import (
 type paymentWalletService struct {
 	skStorer  ppctl.ScriptKeyStorer
 	invStorer ppctl.InvoiceStorer
+	txStore   ppctl.TransactionStorer
 }
 
-func NewPaymentWalletService(skStore ppctl.ScriptKeyStorer, invStore ppctl.InvoiceStorer) *paymentWalletService {
-	return &paymentWalletService{skStorer: skStore, invStorer: invStore}
+func NewPaymentWalletService(skStore ppctl.ScriptKeyStorer, invStore ppctl.InvoiceStorer, txStore ppctl.TransactionStorer) *paymentWalletService {
+	return &paymentWalletService{skStorer: skStore, invStorer: invStore, txStore: txStore}
 }
 
 // Create will inform the merchant of a new payment being made,
@@ -32,30 +34,39 @@ func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaym
 		Success: "true",
 	}
 	// get and attempt to store transaction before processing payment.
-	// TODO - is this logic correct?
 	tx, err := bt.NewTxFromString(req.Transaction)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse transaction")
+		return nil, errors.Wrapf(err, "failed to parse transaction for paymentID %s", args.PaymentID)
 	}
-	// check outputs
-	// if we can sign it, then it's for us, pop into an array
-	// increment the total
-	// when done, check the value is at least invoice.satoshis
+	// TODO - validate the transaction inputs
 	outputTotal := uint64(0)
-	for _, o := range tx.GetOutputs() {
-		if _, err := p.skStorer.ScriptKey(ctx, ppctl.ScriptKeyArgs{LockingScript: o.LockingScript.ToString()}); err != nil {
+	txos := make([]ppctl.CreateTxo, tx.OutputCount(), tx.OutputCount())
+	// iterate outputs and gather the total satoshis for our known outputs
+	for i, o := range tx.GetOutputs() {
+		sk, err := p.skStorer.ScriptKey(ctx, ppctl.ScriptKeyArgs{LockingScript: o.LockingScript.ToString()})
+		if err != nil {
+			// script isn't known to us, could be a change utxo, skip and carry on
 			if errs.IsNotFound(err) {
 				continue
 			}
-			// TODO will need to handle not found errors, if actual error we'll return?
-			log.Error(err)
-			continue
+			return nil, errors.Wrapf(err, "failed to get store output for paymentID %s", args.PaymentID)
 		}
+		// push new txo onto list for persistence later
+		txos = append(txos, ppctl.CreateTxo{
+			Outpoint:       fmt.Sprintf("%s%d", tx.GetTxID(), i),
+			TxID:           tx.GetTxID(),
+			Vout:           i,
+			KeyName:        keyname,
+			DerivationPath: sk.DerivationPath,
+			LockingScript:  sk.LockingScript,
+			Satoshis:       o.Satoshis,
+		})
 		outputTotal += o.Satoshis
 	}
+	// get the invoice for the paymentID to check total satoshis required.
 	inv, err := p.invStorer.Invoice(ctx, ppctl.InvoiceArgs{PaymentID: args.PaymentID})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get invoice to validate output total.")
+		return nil, errors.Wrapf(err, "failed to get invoice to validate output total for paymentID %s.", args.PaymentID)
 	}
 	// if it doesn't fully pay the invoice, reject it
 	if outputTotal < inv.Satoshis {
@@ -64,9 +75,15 @@ func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaym
 		pa.Memo = "Outputs do not fully pay invoice for paymentID " + args.PaymentID
 		return pa, nil
 	}
-	// TODO - store outputs
-
 	// TODO - Transmit to network somehow
 
+	if _, err := p.txStore.Create(ctx, ppctl.CreateTransaction{
+		PaymentID: inv.PaymentID,
+		TxID:      tx.GetTxID(),
+		TxHex:     req.Transaction,
+		Outputs:   txos,
+	}); err != nil {
+		return nil, errors.Wrapf(err, "failed to persist transaction outputs for paymentID %s", args.PaymentID)
+	}
 	return pa, nil
 }

@@ -1,4 +1,4 @@
-package paydHttp
+package http
 
 import (
 	"encoding/json"

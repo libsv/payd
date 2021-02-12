@@ -57,10 +57,6 @@ type MerchantData struct {
 type PaymentRequestArgs struct {
 	// PaymentID is an identifier for an invoice.
 	PaymentID string
-	// UsePaymail if true then we will use paymail to transmit payments.
-	UsePaymail bool
-	// Hostname is the base href where we direct users to complete payments.
-	Hostname string
 }
 
 // PaymentRequestService can be implemented to enforce business rules

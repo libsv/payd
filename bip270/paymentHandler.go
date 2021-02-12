@@ -1,4 +1,4 @@
-package http
+package bip270
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	"github.com/libsv/go-payd/api/paydHttp"
+	phttp "github.com/libsv/go-payd/http"
 
 	"github.com/libsv/go-payd/ppctl"
 )
@@ -25,7 +25,7 @@ func NewPaymentHandler(svc ppctl.PaymentService) *paymentHandler {
 
 // RegisterRoutes will setup all routes with an echo group.
 func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
-	g.POST(paydHttp.RoutePayment, h.createPayment)
+	g.POST(phttp.RoutePayment, h.createPayment)
 }
 
 func (h *paymentHandler) createPayment(e echo.Context) error {
@@ -33,7 +33,7 @@ func (h *paymentHandler) createPayment(e echo.Context) error {
 		PaymentID: e.Param("paymentID"),
 	}
 	var req ppctl.CreatePayment
-	if err := paydHttp.Bind(e.Request().Body, &req); err != nil {
+	if err := phttp.Bind(e.Request().Body, &req); err != nil {
 		return errors.WithStack(err)
 	}
 	resp, err := h.svc.Create(e.Request().Context(), args, req)

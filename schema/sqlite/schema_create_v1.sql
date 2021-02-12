@@ -6,27 +6,36 @@ txos            - to store our outputs and note when they have been spent
 
  */
 CREATE TABLE keys (
-    name   VARCHAR NOT NULL PRIMARY KEY
-    ,xprv     VARCHAR NOT NULL
-    ,createdAt DATETIME(3) NOT NULL
+    name        VARCHAR NOT NULL PRIMARY KEY
+    ,xprv       VARCHAR NOT NULL
+    ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
-    paymentID VARCHAR PRIMARY KEY
-    ,satoshis INTEGER
+    paymentID           VARCHAR PRIMARY KEY
+    ,satoshis           INTEGER NOT NULL
     ,paymentReceivedAt  TIMESTAMP
 );
 
 CREATE TABLE script_keys(
-    ID INTEGER PRIMARY KEY AUTO INCREMENT -- TODO we may not need this?
-    ,lockingscript TEXT NOT NULL PRIMARY KEY
-    ,keyname TEXT NOT NULL
+    ID              INTEGER
+    ,lockingscript  TEXT NOT NULL PRIMARY KEY
+    ,keyname        TEXT NOT NULL
     ,derivationPath TEXT NOT NULL
-)
+    ,FOREIGN KEY (keyname) REFERENCES keys(keyname)
+);
 
-!-- store unspent transactions
+CREATE TABLE transactions (
+    txid            CHAR(64) NOT NULL PRIMARY KEY
+    ,paymentID      VARCHAR NOT NULL
+    ,txhex          TEXT NOT NULL
+    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
+);
+
+-- store unspent transactions
 CREATE TABLE txos (
-    outpoint       VARCHAR NOT NULL PRIMARY KEY
+    outpoint        VARCHAR NOT NULL PRIMARY KEY
     ,txid           CHAR(64) NOT NULL CHECK (LENGTH(txid) = 64)
     ,vout		    BIGINT NOT NULL CHECK (vout >= 0 AND vout < 4294967296)
     ,keyname		TEXT NOT NULL
@@ -35,18 +44,13 @@ CREATE TABLE txos (
     ,satoshis       BIGINT NOT NULL CHECK (satoshis >= 0)
     ,spentat        INTEGER(4) -- this is the date when YOU use the funds
     ,spendingtxid   CHAR(64) CHECK (LENGTH(txid) = 64) -- the txid where you'd spent this output
-    ,createdAt      DATETIME(3) NOT NULL
-    ,modifiedAt     DATETIME(3) NOT NULL
+    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,FOREIGN KEY (txid) REFERENCES transactions(txid)
  );
 
-CREATE TABLE transactions (
-    txid            CHAR(64) NOT NULL CHECK (LENGTH(txid) = 64) PRIMARY KEY
-    ,paymentID VARCHAR
-    ,txhex          TEXT NOT NULL
-    ,createdAt      DATETIME(3) NOT NULL
-)
 
-
-
+INSERT INTO keys(name, xprv)
+VALUES('keyname','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
 
 

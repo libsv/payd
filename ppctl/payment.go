@@ -75,3 +75,7 @@ type CreatePaymentArgs struct {
 type PaymentService interface {
 	Create(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
 }
+
+type SqlExecer interface {
+	Exec(fns ...func(ctx context.Context) error)
+}

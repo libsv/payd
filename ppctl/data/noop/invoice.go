@@ -3,6 +3,8 @@ package noop
 import (
 	"context"
 
+	"gopkg.in/guregu/null.v3"
+
 	"github.com/libsv/go-payd/ppctl"
 )
 
@@ -36,6 +38,6 @@ func (i *invoice) Update(ctx context.Context, args ppctl.UpdateInvoiceArgs, req 
 	return &ppctl.Invoice{
 		PaymentID:         args.PaymentID,
 		Satoshis:          10000,
-		PaymentReceivedAt: req.PaymentReceivedAt,
+		PaymentReceivedAt: null.TimeFrom(req.PaymentReceivedAt),
 	}, nil
 }

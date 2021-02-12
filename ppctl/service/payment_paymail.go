@@ -14,7 +14,7 @@ type paymentPaymailService struct {
 	pmSvc ipaymail.TransactionSubmitter
 }
 
-func NewPaymentPaymentService(pmSvc ipaymail.TransactionSubmitter) *paymentPaymailService {
+func NewPaymailPaymentService(pmSvc ipaymail.TransactionSubmitter) *paymentPaymailService {
 	return &paymentPaymailService{pmSvc: pmSvc}
 }
 

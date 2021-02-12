@@ -7,9 +7,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
+
 	"github.com/libsv/go-payd/ipaymail"
 	"github.com/libsv/go-payd/ppctl"
-	"github.com/spf13/viper"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const appname = "payd"

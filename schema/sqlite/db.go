@@ -32,7 +32,7 @@ func MustSetup(cfg *config.Db) {
 		log.Println("db already created, exiting setup")
 		return
 	}
-	f, err := os.Open("./db/sqlite/schema_create_v1.sql")
+	f, err := os.Open("./schema/sqlite/schema_create_v1.sql")
 	if err != nil {
 		log.Fatalf("failed to read create schema %s", err)
 	}
