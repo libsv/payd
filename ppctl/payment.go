@@ -1,4 +1,4 @@
-package bip270
+package ppctl
 
 import (
 	"context"
@@ -69,8 +69,7 @@ type PaymentACK struct {
 }
 
 type CreatePaymentArgs struct {
-	PaymentID  string
-	UsePaymail bool
+	PaymentID string
 }
 
 type PaymentService interface {

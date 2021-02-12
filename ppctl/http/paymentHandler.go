@@ -8,16 +8,16 @@ import (
 
 	"github.com/libsv/go-payd/api/paydHttp"
 
-	"github.com/libsv/go-payd/bip270"
+	"github.com/libsv/go-payd/ppctl"
 )
 
 // paymentHandler is an http handler that supports BIP-270 requests.
 type paymentHandler struct {
-	svc bip270.PaymentService
+	svc ppctl.PaymentService
 }
 
 // NewPaymentHandler will create and return a new PaymentHandler.
-func NewPaymentHandler(svc bip270.PaymentService) *paymentHandler {
+func NewPaymentHandler(svc ppctl.PaymentService) *paymentHandler {
 	return &paymentHandler{
 		svc: svc,
 	}
@@ -29,10 +29,10 @@ func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
 }
 
 func (h *paymentHandler) createPayment(e echo.Context) error {
-	args := bip270.CreatePaymentArgs{
+	args := ppctl.CreatePaymentArgs{
 		PaymentID: e.Param("paymentID"),
 	}
-	var req bip270.CreatePayment
+	var req ppctl.CreatePayment
 	if err := paydHttp.Bind(e.Request().Body, &req); err != nil {
 		return errors.WithStack(err)
 	}

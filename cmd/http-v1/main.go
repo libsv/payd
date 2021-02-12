@@ -11,10 +11,10 @@ import (
 
 	"github.com/libsv/go-payd/api/paydHttp"
 	paydMiddleware "github.com/libsv/go-payd/api/paydHttp/middleware"
-	"github.com/libsv/go-payd/bip270/http"
-	service2 "github.com/libsv/go-payd/bip270/service"
 	"github.com/libsv/go-payd/config"
-	"github.com/libsv/go-payd/db/sqlite"
+	"github.com/libsv/go-payd/ppctl/http"
+	service2 "github.com/libsv/go-payd/ppctl/service"
+	"github.com/libsv/go-payd/schema/sqlite"
 )
 
 const appname = "payd"
@@ -43,6 +43,7 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.RequestID())
 	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
 	g := e.Group("/v1")
 	http.NewPaymentHandler

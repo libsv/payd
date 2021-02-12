@@ -12,17 +12,16 @@ CREATE TABLE keys (
 );
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
-    ID INTEGER PRIMARY KEY AUTO INCREMENT
-    paymentID VARCHAR
-    satoshis INTEGER
-    paymentReceivedAt  TIMESTAMP
+    paymentID VARCHAR PRIMARY KEY
+    ,satoshis INTEGER
+    ,paymentReceivedAt  TIMESTAMP
 );
 
 CREATE TABLE script_keys(
     ID INTEGER PRIMARY KEY AUTO INCREMENT -- TODO we may not need this?
-    lockingscript TEXT NOT NULL PRIMARY KEY
-    keyname TEXT NOT NULL
-    derivationPath TEXT NOT NULL
+    ,lockingscript TEXT NOT NULL PRIMARY KEY
+    ,keyname TEXT NOT NULL
+    ,derivationPath TEXT NOT NULL
 )
 
 !-- store unspent transactions
@@ -42,6 +41,7 @@ CREATE TABLE txos (
 
 CREATE TABLE transactions (
     txid            CHAR(64) NOT NULL CHECK (LENGTH(txid) = 64) PRIMARY KEY
+    ,paymentID VARCHAR
     ,txhex          TEXT NOT NULL
     ,createdAt      DATETIME(3) NOT NULL
 )

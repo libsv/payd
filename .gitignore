@@ -4,6 +4,6 @@ debug
 .DS_Store
 build/
 dist/
-db/data.db
+schema/data.db
 cover.go
 cover.out

@@ -7,19 +7,19 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/libsv/go-payd/api/paydHttp"
-	"github.com/libsv/go-payd/bip270"
 	"github.com/libsv/go-payd/config"
+	"github.com/libsv/go-payd/ppctl"
 )
 
 // paymentRequestHandler is an http handler that supports BIP-270 requests.
 type paymentRequestHandler struct {
-	svc bip270.PaymentRequestService
+	svc ppctl.PaymentRequestService
 	cfg *config.Paymail
 	env *config.Server
 }
 
 // NewPaymentRequestHandler will create and return a new PaymentRequestHandler.
-func NewPaymentRequestHandler(cfg *config.Paymail, env *config.Server, svc bip270.PaymentRequestService) *paymentRequestHandler {
+func NewPaymentRequestHandler(cfg *config.Paymail, env *config.Server, svc ppctl.PaymentRequestService) *paymentRequestHandler {
 	return &paymentRequestHandler{
 		svc: svc,
 		cfg: cfg,
@@ -33,7 +33,7 @@ func (h *paymentRequestHandler) RegisterRoutes(g *echo.Group) {
 }
 
 func (h *paymentRequestHandler) createPaymentRequest(e echo.Context) error {
-	args := bip270.PaymentRequestArgs{
+	args := ppctl.PaymentRequestArgs{
 		UsePaymail: h.cfg.UsePaymail,
 		Hostname:   h.env.Hostname,
 		PaymentID:  e.QueryParam("paymentID"),

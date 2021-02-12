@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
-	"github.com/libsv/go-payd/bip270"
+	"github.com/libsv/go-payd/ppctl"
 )
 
 const (
@@ -45,7 +45,7 @@ func NewTransaction(db *sqlx.DB) *transaction {
 }
 
 // Create can be implemented to store a Transaction in a datastore.
-func (t *transaction) Create(ctx context.Context, args bip270.CreateTxArgs, req *bip270.Output) (*bip270.Tx, error) {
+func (t *transaction) Create(ctx context.Context, args ppctl.CreateTxArgs, req *ppctl.Output) (*ppctl.Tx, error) {
 	tx, err := t.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start transaction when inserting transaction to db")
@@ -81,7 +81,7 @@ func (t *transaction) Create(ctx context.Context, args bip270.CreateTxArgs, req 
 			return nil, errors.Wrap(err, "failed to insert new transaction")
 		}
 	}
-	var outTx *bip270.Tx
+	var outTx *ppctl.Tx
 	tx.Get(&outTx, que)
 
 	return nil, nil

@@ -7,8 +7,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/libsv/go-payd/bip270"
 	"github.com/libsv/go-payd/ipaymail"
+	"github.com/libsv/go-payd/ppctl"
 	"github.com/spf13/viper"
 )
 
@@ -26,8 +26,8 @@ func v1Routes(e *echo.Echo) {
 	v1.POST("/invoice", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!") // TODO: implement
 	})
-	v1.GET("/r/:paymentID", bip270.SolicitPaymentRequestHandler)
-	v1.POST("/payment/:paymentID", bip270.PaymentHandler)
+	v1.GET("/r/:paymentID", ppctl.SolicitPaymentRequestHandler)
+	v1.POST("/payment/:paymentID", ppctl.PaymentHandler)
 }
 
 func main() {

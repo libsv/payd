@@ -1,4 +1,4 @@
-package bip270
+package ppctl
 
 import (
 	"testing"
