@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
@@ -15,7 +16,7 @@ func handleExec(tx sqlx.Execer, sql string, args interface{}) error {
 	return handleExecRows(res)
 }
 
-func handleNamedExec(tx namedExecer, sql string, args interface{}) error {
+func handleNamedExec(tx db, sql string, args interface{}) error {
 	res, err := tx.NamedExec(sql, args)
 	if err != nil {
 		return errors.Wrap(err, "failed to run exec")
@@ -34,6 +35,8 @@ func handleExecRows(res sql.Result) error {
 	return nil
 }
 
-type namedExecer interface {
+type db interface {
 	NamedExec(query string, arg interface{}) (sql.Result, error)
+	Get(dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 }

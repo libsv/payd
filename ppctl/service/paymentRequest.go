@@ -48,7 +48,6 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args p
 		return nil, errors.Wrap(err, "failed to get invoice when creating payment request")
 	}
 
-	// TODO - check for paymail - we'll not do it this version though
 	// get the master key stored
 	// TODO - later we will allow users to provide their own key for now we've hardcoded to keyname
 	xprv, err := p.privKeySvc.PrivateKey(ctx, keyname)

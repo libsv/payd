@@ -37,6 +37,7 @@ func (s *scriptKey) Create(ctx context.Context, req []ppctl.CreateScriptKey) err
 	if err != nil {
 		return errors.Wrap(err, "failed to create transaction")
 	}
+	tx.Get()
 	defer tx.Rollback()
 	if err := handleNamedExec(tx, insertScriptKeys, req); err != nil {
 		return errors.Wrap(err, "failed to insert script keys.")
@@ -46,8 +47,12 @@ func (s *scriptKey) Create(ctx context.Context, req []ppctl.CreateScriptKey) err
 
 // ScriptKey will return a script key matching the supplied args.
 func (s *scriptKey) ScriptKey(ctx context.Context, args ppctl.ScriptKeyArgs) (*ppctl.ScriptKey, error) {
+	return scriptKeys(ctx, s.db, args)
+}
+
+func scriptKeys(ctx context.Context, db db, args ppctl.ScriptKeyArgs) (*ppctl.ScriptKey, error) {
 	var resp *ppctl.ScriptKey
-	if err := s.db.Get(&resp, scriptKeyByScript, args); err != nil {
+	if err := db.GetContext(ctx, &resp, scriptKeyByScript, args); err != nil {
 		return nil, errors.Wrap(err, "failed to get script key")
 	}
 	return resp, nil

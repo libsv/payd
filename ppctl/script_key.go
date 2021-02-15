@@ -28,7 +28,16 @@ type ScriptKeyArgs struct {
 }
 
 // ScriptKeyStorer can be implemented to store and return ScriptKeys.
-type ScriptKeyStorer interface {
+type ScriptKeyReaderWriter interface {
+	ScriptKeyWriter
+	ScriptKeyReader
+}
+
+// ScriptKeyStorer can be implemented to store and return ScriptKeys.
+type ScriptKeyWriter interface {
 	Create(ctx context.Context, req []CreateScriptKey) error
+}
+
+type ScriptKeyReader interface {
 	ScriptKey(ctx context.Context, args ScriptKeyArgs) (*ScriptKey, error)
 }

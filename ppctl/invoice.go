@@ -36,12 +36,20 @@ type InvoiceArgs struct {
 	PaymentID string
 }
 
-// InvoiceStorer can be implemented to support storing and retrieval of invoices.
-type InvoiceStorer interface {
+// InvoiceReaderWriter can be implemented to support storing and retrieval of invoices.
+type InvoiceReaderWriter interface {
+	InvoiceWriter
+	InvoiceReader
+}
+
+type InvoiceWriter interface {
 	// Create will persist a new Invoice in the data store.
 	Create(ctx context.Context, req CreateInvoice) (*Invoice, error)
 	// Update will update an invoice matching the provided args with the requested changes.
 	Update(ctx context.Context, args UpdateInvoiceArgs, req UpdateInvoice) (*Invoice, error)
+}
+
+type InvoiceReader interface {
 	// Invoice will return an invoice that matches the provided args.
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
 }

@@ -14,18 +14,16 @@ import (
 )
 
 type paymentWalletService struct {
-	skStorer  ppctl.ScriptKeyStorer
-	invStorer ppctl.InvoiceStorer
-	txStore   ppctl.TransactionStorer
+	store ppctl.PaymentReaderWriter
 }
 
-func NewPaymentWalletService(skStore ppctl.ScriptKeyStorer, invStore ppctl.InvoiceStorer, txStore ppctl.TransactionStorer) *paymentWalletService {
-	return &paymentWalletService{skStorer: skStore, invStorer: invStore, txStore: txStore}
+func NewPaymentWalletService(store ppctl.PaymentReaderWriter) *paymentWalletService {
+	return &paymentWalletService{store: store}
 }
 
 // Create will inform the merchant of a new payment being made,
 // this payment will then be transmitted to the network and and acknowledgement sent to the user.
-func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
+func (p *paymentWalletService) CreatePayment(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
 	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
 		return nil, err
 	}
@@ -43,7 +41,7 @@ func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaym
 	txos := make([]ppctl.CreateTxo, tx.OutputCount(), tx.OutputCount())
 	// iterate outputs and gather the total satoshis for our known outputs
 	for i, o := range tx.GetOutputs() {
-		sk, err := p.skStorer.ScriptKey(ctx, ppctl.ScriptKeyArgs{LockingScript: o.LockingScript.ToString()})
+		sk, err := p.store.ScriptKey(ctx, ppctl.ScriptKeyArgs{LockingScript: o.LockingScript.ToString()})
 		if err != nil {
 			// script isn't known to us, could be a change utxo, skip and carry on
 			if errs.IsNotFound(err) {
@@ -64,7 +62,7 @@ func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaym
 		outputTotal += o.Satoshis
 	}
 	// get the invoice for the paymentID to check total satoshis required.
-	inv, err := p.invStorer.Invoice(ctx, ppctl.InvoiceArgs{PaymentID: args.PaymentID})
+	inv, err := p.store.Invoice(ctx, ppctl.InvoiceArgs{PaymentID: args.PaymentID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get invoice to validate output total for paymentID %s.", args.PaymentID)
 	}
@@ -76,8 +74,8 @@ func (p *paymentWalletService) Create(ctx context.Context, args ppctl.CreatePaym
 		return pa, nil
 	}
 	// TODO - Transmit to network somehow
-
-	if _, err := p.txStore.Create(ctx, ppctl.CreateTransaction{
+	// Store utxos and set invoice to paid.
+	if _, err := p.store.StoreUtxos(ctx, ppctl.CreateTransaction{
 		PaymentID: inv.PaymentID,
 		TxID:      tx.GetTxID(),
 		TxHex:     req.Transaction,

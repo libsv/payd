@@ -19,7 +19,7 @@ func NewPaymailPaymentService(pmSvc ipaymail.TransactionSubmitter) *paymentPayma
 }
 
 // Create will setup a new payment and return the result.
-func (p *paymentPaymailService) Create(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
+func (p *paymentPaymailService) CreatePayment(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
 	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
 		return nil, err
 	}

@@ -22,9 +22,9 @@ func NewPaymentFacade(cfg *config.Paymail, pwSvc ppctl.PaymentService, pmSvc ppc
 }
 
 // Create will setup a new payment and return the result.
-func (p *paymentFacade) Create(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
+func (p *paymentFacade) CreatePayment(ctx context.Context, args ppctl.CreatePaymentArgs, req ppctl.CreatePayment) (*ppctl.PaymentACK, error) {
 	if p.cfg.UsePaymail {
-		return p.pmSvc.Create(ctx, args, req)
+		return p.pmSvc.CreatePayment(ctx, args, req)
 	}
-	return p.pwSvc.Create(ctx, args, req)
+	return p.pwSvc.CreatePayment(ctx, args, req)
 }

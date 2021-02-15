@@ -72,8 +72,26 @@ type CreatePaymentArgs struct {
 	PaymentID string
 }
 
+type DerivationPathArgs struct {
+	ParentPath string
+}
+
 type PaymentService interface {
-	Create(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
+	CreatePayment(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
+}
+
+type PaymentReaderWriter interface {
+	PaymentReader
+	PaymentWriter
+}
+
+type PaymentReader interface {
+	InvoiceReader
+	ScriptKeyReader
+}
+
+type PaymentWriter interface {
+	StoreUtxos(ctx context.Context, req CreateTransaction) (*Transaction, error)
 }
 
 type SqlExecer interface {
