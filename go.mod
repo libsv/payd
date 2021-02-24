@@ -10,7 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/labstack/gommon v0.3.0
-	github.com/libsv/go-bt v0.0.7
+	github.com/libsv/go-bt v0.0.8
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/miekg/dns v1.1.38 // indirect
@@ -22,8 +22,10 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8
 	github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f
+	github.com/tonicpow/go-minercraft v0.2.2 // indirect
 	github.com/tonicpow/go-paymail v0.1.2
 	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/text v0.3.5 // indirect
