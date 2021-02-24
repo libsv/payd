@@ -12,8 +12,8 @@ import (
 	"github.com/libsv/go-payd/service"
 	"github.com/libsv/go-payd/service/ppctl"
 	"github.com/libsv/go-payd/transports/http"
-
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/viper"
 
 	"github.com/libsv/go-payd/config"
 	"github.com/libsv/go-payd/ipaymail"
@@ -21,8 +21,24 @@ import (
 )
 
 const appname = "payd"
+const banner = `
+====================================================================
+         _               _           _        _          _         
+        /\ \            / /\        /\ \     /\_\       /\ \       
+       /  \ \          / /  \       \ \ \   / / /      /  \ \____  
+      / /\ \ \        / / /\ \       \ \ \_/ / /      / /\ \_____\ 
+     / / /\ \_\      / / /\ \ \       \ \___/ /      / / /\/___  / 
+    / / /_/ / /     / / /  \ \ \       \ \ \_/      / / /   / / /  
+   / / /__\/ /     / / /___/ /\ \       \ \ \      / / /   / / /   
+  / / /_____/     / / /_____/ /\ \       \ \ \    / / /   / / /    
+ / / /           / /_________/\ \ \       \ \ \   \ \ \__/ / /     
+/ / /           / / /_       __\ \_\       \ \_\   \ \___\/ /      
+\/_/            \_\___\     /____/_/        \/_/    \/_____/  
+====================================================================
+`
 
 func main() {
+	println("\033[32m" + banner + "\033[0m")
 	cfg := config.NewViperConfig(appname).
 		WithServer().
 		WithDb().
@@ -66,10 +82,23 @@ func main() {
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
-		fmt.Println("DEV mode, printing http routes:")
-		for _, r := range e.Routes() {
-			fmt.Printf("%+v\n", r)
-		}
+		printDev(e)
 	}
 	e.Logger.Fatal(e.Start(cfg.Server.Port))
+}
+
+// printDev outputs some useful dev information such as http routes
+// and current settings being used.
+func printDev(e *echo.Echo) {
+	fmt.Println("==================================")
+	fmt.Println("DEV mode, printing http routes:")
+	for _, r := range e.Routes() {
+		fmt.Printf("%s: %s\n", r.Method, r.Path)
+	}
+	fmt.Println("==================================")
+	fmt.Println("DEV mode, printing settings:")
+	for _, v := range viper.AllKeys() {
+		fmt.Printf("%s: %v\n", v, viper.Get(v))
+	}
+	fmt.Println("==================================")
 }

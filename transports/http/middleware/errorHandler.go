@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	validator "github.com/theflyingcodr/govalidator"
 	"github.com/theflyingcodr/lathos"
 )
 
@@ -14,6 +15,15 @@ func ErrorHandler(err error, c echo.Context) {
 	if err == nil {
 		return
 	}
+	var valErr validator.ErrValidation
+	if errors.As(err, &valErr) {
+		resp := map[string]interface{}{
+			"errors": valErr,
+		}
+		c.JSON(http.StatusBadRequest, resp)
+		return
+	}
+
 	// Internal error, log it to a system and return small detail
 	if !lathos.IsClientError(err) {
 		log.Error(lathos.NewErrInternal(err))

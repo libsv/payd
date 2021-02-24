@@ -59,12 +59,10 @@ func (s *sqliteStore) DerivationPathCreate(ctx context.Context, req gopayd.Deriv
 		tx.Rollback()
 		return nil, fmt.Errorf("failed to get derivation path with id %d when creating derivation path %w", id, err)
 	}
-	tx.Rollback()
-	return nil, errors.New("failed")
-	/*	if err := commit(ctx, tx); err != nil {
-			return nil, fmt.Errorf("failed to commit tx when creating derivation path %w", err)
-		}
-		return &dp, nil*/
+	if err := commit(ctx, tx); err != nil {
+		return nil, fmt.Errorf("failed to commit tx when creating derivation path %w", err)
+	}
+	return &dp, nil
 }
 
 // DerivationPath will return a derivationPath that matches the supplied args.

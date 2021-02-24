@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
 	gopayd "github.com/libsv/go-payd"
@@ -68,8 +69,7 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args g
 	outs := make([]*gopayd.Output, 0)
 	// generate a new child for each output
 	// TODO: figure out how many outputs we need?
-	// TODO: what should derivation path be, just hardcoded for now.
-	//  Users could create their own paths which we lookup or something
+	// TODO: what should derivation path be, prefix is just hardcoded for now, this could be a user setting.
 	dp, err := p.store.DerivationPathCreate(ctx, gopayd.DerivationPathCreate{
 		PaymentID: args.PaymentID,
 		Prefix:    derivationPathPrefix,
@@ -77,15 +77,8 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args g
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create derivationPath when creating payment request")
 	}
-	key, err := p.privKeySvc.DeriveChildFromKey(xprv, dp.Path)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	pubKey, err := p.privKeySvc.PubFromXPrv(key)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	o, err := bt.NewP2PKHOutputFromPubKeyBytes(pubKey, inv.Satoshis)
+	// create output from from key and derivation path
+	o, err := p.generateOutput(xprv, dp.Path, inv.Satoshis)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -112,6 +105,22 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args g
 			MerchantName: p.wallet.MerchantName,
 		},
 	}, nil
+}
+
+func (p *paymentRequestService) generateOutput(xprv *hdkeychain.ExtendedKey, derivPath string, satoshis uint64) (*bt.Output, error) {
+	key, err := p.privKeySvc.DeriveChildFromKey(xprv, derivPath)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	pubKey, err := p.privKeySvc.PubFromXPrv(key)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	o, err := bt.NewP2PKHOutputFromPubKeyBytes(pubKey, satoshis)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return o, nil
 }
 
 // createPaymailOutputs is not currently used but will be when we incorporate this feature.
