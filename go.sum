@@ -122,6 +122,8 @@ github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXi
 github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
 github.com/google/pprof v0.0.0-20190515194954-54271f7e092f/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
+github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=
@@ -308,6 +310,10 @@ github.com/theflyingcodr/govalidator v0.0.0-20210130122442-39af20c36f71 h1:74qYu
 github.com/theflyingcodr/govalidator v0.0.0-20210130122442-39af20c36f71/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
 github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8 h1:ZFKKjJBEQgvskch4967VXK6GXJzQfD4LWhoDRP/lcOQ=
 github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
+github.com/theflyingcodr/lathos v0.0.0-20210223120655-821eae6ceebb h1:XNa/xMsbMtryqWaSI6b+dEJpq7Dh1rPAmGYg394gnw4=
+github.com/theflyingcodr/lathos v0.0.0-20210223120655-821eae6ceebb/go.mod h1:7X8v2K379di+nLygPUS2+PruKV+8Rv0oXkRsw+24agE=
+github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f h1:unIyShuoTYMoirOAQTzg8yZOfVBFOcWjoeCdx9J/3ZM=
+github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f/go.mod h1:7X8v2K379di+nLygPUS2+PruKV+8Rv0oXkRsw+24agE=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tonicpow/go-paymail v0.1.2 h1:cKdbimdQV9i6tF5p+2iRqUDlR1nbL5rdyWM9R1dYZDQ=
 github.com/tonicpow/go-paymail v0.1.2/go.mod h1:016rQY0PrF4lOMHFSN13kppSyonNZuU20RJ48Qj07B0=

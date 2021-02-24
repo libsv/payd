@@ -6,18 +6,21 @@ import (
 )
 
 const (
-	EnvServerPort  = "server.port"
-	EnvServerHost  = "server.host"
-	EnvEnvironment = "env.environment"
-	EnvMainNet     = "env.mainnet"
-	EnvRegion      = "env.region"
-	EnvVersion     = "env.version"
-	EnvCommit      = "env.commit"
-	EnvBuildDate   = "env.builddate"
-	EnvLogLevel    = "log.level"
-	EnvDb          = "db.type"
-	EnvDbDsn       = "db.dsn"
-	EnvUsePaymail  = "paymail.enabled"
+	EnvServerPort   = "server.port"
+	EnvServerHost   = "server.host"
+	EnvEnvironment  = "env.environment"
+	EnvMainNet      = "env.mainnet"
+	EnvRegion       = "env.region"
+	EnvVersion      = "env.version"
+	EnvCommit       = "env.commit"
+	EnvBuildDate    = "env.builddate"
+	EnvLogLevel     = "log.level"
+	EnvDb           = "db.type"
+	EnvDbDsn        = "db.dsn"
+	EnvUsePaymail   = "paymail.enabled"
+	EnvNetwork      = "wallet.network"
+	EnvAvatarURL    = "wallet.avatarurl"
+	EnvMerchantName = "wallet.merchantname"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -32,6 +35,7 @@ type Config struct {
 	Deployment *Deployment
 	Db         *Db
 	Paymail    *Paymail
+	Wallet     *Wallet
 }
 
 // Deployment contains information relating to the current
@@ -77,6 +81,12 @@ type Paymail struct {
 	UsePaymail bool
 }
 
+type Wallet struct {
+	Network           string
+	MerchantAvatarURL string
+	MerchantName      string
+}
+
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
@@ -85,4 +95,5 @@ type ConfigurationLoader interface {
 	WithDeployment(app string) *Config
 	WithLog() *Config
 	WithPaymail() *Config
+	WithWallet() *Config
 }

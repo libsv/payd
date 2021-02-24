@@ -71,7 +71,7 @@ func (c *Config) WithLog() *Config {
 // WithDb sets up and returns database configuration.
 func (c *Config) WithDb() *Config {
 	viper.SetDefault(EnvDb, "sqlite")
-	viper.SetDefault("db.dsn", "file:schema/wallet.db?cache=shared")
+	viper.SetDefault("db.dsn", "file:data/wallet.db?cache=shared&_foreign_keys=true;")
 	c.Db = &Db{
 		Type: viper.GetString(EnvDb),
 		Dsn:  viper.GetString(EnvDbDsn),
@@ -83,5 +83,18 @@ func (c *Config) WithDb() *Config {
 func (c *Config) WithPaymail() *Config {
 	viper.SetDefault(EnvUsePaymail, false)
 	c.Paymail = &Paymail{UsePaymail: viper.GetBool(EnvUsePaymail)}
+	return c
+}
+
+// WithWallet sets up and returns merchant wallet configuration.
+func (c *Config) WithWallet() *Config {
+	viper.SetDefault(EnvNetwork, "bitcoin-sv")
+	viper.SetDefault(EnvMerchantName, "go-payd")
+	viper.SetDefault(EnvAvatarURL, "https://bit.ly/3c4iaup")
+	c.Wallet = &Wallet{
+		Network:           viper.GetString(EnvNetwork),
+		MerchantAvatarURL: viper.GetString(EnvAvatarURL),
+		MerchantName:      viper.GetString(EnvMerchantName),
+	}
 	return c
 }

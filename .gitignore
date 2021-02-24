@@ -4,6 +4,8 @@ debug
 .DS_Store
 build/
 dist/
-schema/data.db
+data/sqlite/schema/data.db
 cover.go
 cover.out
+
+*/wallet.db

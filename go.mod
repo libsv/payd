@@ -21,6 +21,7 @@ require (
 	github.com/ryanuber/columnize v2.1.2+incompatible
 	github.com/spf13/viper v1.7.1
 	github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8
+	github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f
 	github.com/tonicpow/go-paymail v0.1.2
 	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
