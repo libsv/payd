@@ -32,6 +32,9 @@ type PaymentRequest struct {
 	// or if they associate each PaymentRequest with a separate payment address.
 	// Maximum length is 10000 characters.
 	MerchantData *MerchantData `json:"merchantData,omitempty"`
+	// FeeRate defines the amount of fees a users wallet should add to the payment
+	// when submitting their final payments.
+	FeeRate *FeeRate `json:"feeRate"`
 }
 
 // Output message used in BIP270.
@@ -43,6 +46,14 @@ type Output struct {
 	Script string `json:"script"`
 	// Description, an optional description such as "tip" or "sales tax". Maximum length is 100 chars.
 	Description string `json:"description"`
+}
+
+// FeeRate as described in BIP-274.
+// See https://github.com/moneybutton/bips/blob/master/bip-0274.mediawiki
+type FeeRate struct {
+	// SatoshisPerByte is a number indicating how many satoshis per byte
+	// each transaction in the Payment ought to pay to miners.
+	SatoshisPerByte uint64 `json:"satoshisPerByte"`
 }
 
 // MerchantData to be displayed to the user.

@@ -6,21 +6,24 @@ import (
 )
 
 const (
-	EnvServerPort   = "server.port"
-	EnvServerHost   = "server.host"
-	EnvEnvironment  = "env.environment"
-	EnvMainNet      = "env.mainnet"
-	EnvRegion       = "env.region"
-	EnvVersion      = "env.version"
-	EnvCommit       = "env.commit"
-	EnvBuildDate    = "env.builddate"
-	EnvLogLevel     = "log.level"
-	EnvDb           = "db.type"
-	EnvDbDsn        = "db.dsn"
-	EnvUsePaymail   = "paymail.enabled"
-	EnvNetwork      = "wallet.network"
-	EnvAvatarURL    = "wallet.avatarurl"
-	EnvMerchantName = "wallet.merchantname"
+	EnvServerPort    = "server.port"
+	EnvServerHost    = "server.host"
+	EnvEnvironment   = "env.environment"
+	EnvMainNet       = "env.mainnet"
+	EnvRegion        = "env.region"
+	EnvVersion       = "env.version"
+	EnvCommit        = "env.commit"
+	EnvBuildDate     = "env.builddate"
+	EnvLogLevel      = "log.level"
+	EnvDb            = "db.type"
+	EnvDbDsn         = "db.dsn"
+	EnvUsePaymail    = "paymail.enabled"
+	EnvNetwork       = "wallet.network"
+	EnvAvatarURL     = "wallet.avatarurl"
+	EnvMerchantName  = "wallet.merchantname"
+	EnvMAPIMinerName = "mapi.minername"
+	EnvMAPIURL       = "mapi.minerurl"
+	EnvMAPIToken     = "mapi.token"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -36,6 +39,7 @@ type Config struct {
 	Db         *Db
 	Paymail    *Paymail
 	Wallet     *Wallet
+	Mapi       *MApi
 }
 
 // Deployment contains information relating to the current
@@ -85,6 +89,12 @@ type Wallet struct {
 	Network           string
 	MerchantAvatarURL string
 	MerchantName      string
+}
+
+type MApi struct {
+	MinerName string
+	URL       string
+	Token     string
 }
 
 // ConfigurationLoader will load configuration items

@@ -98,3 +98,16 @@ func (c *Config) WithWallet() *Config {
 	}
 	return c
 }
+
+// WithMapi will setup Mapi settings.
+func (c *Config) WithMapi() *Config {
+	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
+	viper.SetDefault(EnvMAPIURL, "mapi:9004")
+	viper.SetDefault(EnvMAPIToken, "")
+	c.Mapi = &MApi{
+		MinerName: viper.GetString(EnvMAPIMinerName),
+		URL:       viper.GetString(EnvMAPIURL),
+		Token:     viper.GetString(EnvMAPIToken),
+	}
+	return c
+}

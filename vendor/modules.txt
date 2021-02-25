@@ -1,6 +1,6 @@
 # github.com/DataDog/zstd v1.4.5
 github.com/DataDog/zstd
-# github.com/bitcoinschema/go-bitcoin v0.3.12
+# github.com/bitcoinschema/go-bitcoin v0.3.13
 github.com/bitcoinschema/go-bitcoin
 # github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
 ## explicit
@@ -18,6 +18,8 @@ github.com/bitcoinsv/bsvutil/base58
 github.com/bitcoinsv/bsvutil/hdkeychain
 # github.com/cespare/xxhash v1.1.0
 github.com/cespare/xxhash
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/dgraph-io/badger/v2 v2.2007.2
 github.com/dgraph-io/badger/v2
 github.com/dgraph-io/badger/v2/options
@@ -42,6 +44,11 @@ github.com/fsnotify/fsnotify
 # github.com/go-resty/resty/v2 v2.4.0
 ## explicit
 github.com/go-resty/resty/v2
+# github.com/gojektech/heimdall/v6 v6.1.0
+github.com/gojektech/heimdall/v6
+github.com/gojektech/heimdall/v6/httpclient
+# github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45
+github.com/gojektech/valkyrie
 # github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
 # github.com/golang/snappy v0.0.2
@@ -73,7 +80,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/libsv/go-bt v0.0.7
+# github.com/libsv/go-bt v0.0.8
 ## explicit
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
@@ -115,6 +122,8 @@ github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/ryanuber/columnize v2.1.2+incompatible
 ## explicit
 github.com/ryanuber/columnize
@@ -130,6 +139,11 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.7.1
 ## explicit
 github.com/spf13/viper
+# github.com/stretchr/objx v0.3.0
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.7.0
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8
@@ -138,6 +152,9 @@ github.com/theflyingcodr/govalidator
 # github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f
 ## explicit
 github.com/theflyingcodr/lathos
+# github.com/tonicpow/go-minercraft v0.2.2
+## explicit
+github.com/tonicpow/go-minercraft
 # github.com/tonicpow/go-paymail v0.1.2
 ## explicit
 github.com/tonicpow/go-paymail
@@ -148,7 +165,8 @@ github.com/ttacon/chalk
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
-# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+# golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+## explicit
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ed25519
@@ -214,3 +232,5 @@ gopkg.in/guregu/null.v3
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+gopkg.in/yaml.v3

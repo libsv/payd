@@ -13,11 +13,12 @@ import (
 )
 
 type paymentWalletService struct {
-	store gopayd.PaymentReaderWriter
+	store       gopayd.PaymentReaderWriter
+	broadcaster gopayd.TransactionBroadcaster
 }
 
-func NewPaymentWalletService(store gopayd.PaymentReaderWriter) *paymentWalletService {
-	return &paymentWalletService{store: store}
+func NewPaymentWalletService(store gopayd.PaymentReaderWriter, broadcaster gopayd.TransactionBroadcaster) *paymentWalletService {
+	return &paymentWalletService{store: store, broadcaster: broadcaster}
 }
 
 // CreatePayment will inform the merchant of a new payment being made,
@@ -70,6 +71,13 @@ func (p *paymentWalletService) CreatePayment(ctx context.Context, args gopayd.Cr
 		pa.Error = 1
 		pa.Success = "false"
 		pa.Memo = "Outputs do not fully pay invoice for paymentID " + args.PaymentID
+		return pa, nil
+	}
+	// Broadcast the transaction.
+	if err := p.broadcaster.Broadcast(ctx, gopayd.BroadcastTransaction{TXHex: req.Transaction}); err != nil {
+		pa.Error = 1
+		pa.Success = "false"
+		pa.Memo = err.Error()
 		return pa, nil
 	}
 	// TODO: Transmit to network somehow

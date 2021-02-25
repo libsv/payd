@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/libsv/go-payd/data/mapi"
 	paydSQL "github.com/libsv/go-payd/data/sqlite"
 	"github.com/libsv/go-payd/data/sqlite/schema"
 	"github.com/libsv/go-payd/service"
@@ -14,6 +15,7 @@ import (
 	"github.com/libsv/go-payd/transports/http"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/viper"
+	"github.com/tonicpow/go-minercraft"
 
 	"github.com/libsv/go-payd/config"
 	"github.com/libsv/go-payd/ipaymail"
@@ -45,7 +47,9 @@ func main() {
 		WithDeployment(appname).
 		WithLog().
 		WithPaymail().
-		WithWallet()
+		WithWallet().
+		WithMapi()
+
 	config.SetupLog(cfg.Logging)
 	log.Infof("\n------Environment: %s -----\n", cfg.Server)
 	if cfg.Deployment.IsDev() {
@@ -69,16 +73,27 @@ func main() {
 	// setup stores
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
 
+	// mapi store
+	client, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
+		{
+			Name:  cfg.Mapi.MinerName,
+			Token: cfg.Mapi.Token,
+			URL:   cfg.Mapi.URL,
+		},
+	})
+	if err != nil {
+		log.Fatalf("error occurred: %s", err)
+	}
 	// setup services
-	pwSvc := ppctl.NewPaymentWalletService(sqlLiteStore)
+	pwSvc := ppctl.NewPaymentWalletService(sqlLiteStore, mapi.NewBroadcast(cfg.Mapi, client))
 	pmSvc := ppctl.NewPaymailPaymentService(ipaymail.NewRransactionService())
 	pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
-	http.NewPaymentHandler(
-		ppctl.NewPaymentFacade(cfg.Paymail, pwSvc, pmSvc)).
-		RegisterRoutes(g)
 	http.NewPaymentRequestHandler(
 		ppctl.NewPaymentRequestService(cfg.Server, cfg.Wallet, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)).
+		RegisterRoutes(g)
+	http.NewPaymentHandler(
+		ppctl.NewPaymentFacade(cfg.Paymail, pwSvc, pmSvc)).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

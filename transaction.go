@@ -1,7 +1,6 @@
 package gopayd
 
 import (
-	"context"
 	"time"
 
 	"gopkg.in/guregu/null.v3"
@@ -60,16 +59,4 @@ type SpendTxoArgs struct {
 
 type TxoArgs struct {
 	Outpoint string
-}
-
-type TransactionStorer interface {
-	// Create can be implemented to store a Transaction in a datastore.
-	Create(ctx context.Context, req CreateTransaction) (*Transaction, error)
-}
-
-type TransactionOutStore interface {
-	// Txo will return a single Txo matching the args provided.
-	Txo(ctx context.Context, args TxoArgs) (*Txo, error)
-	// Spend can be used to mark a transaction output as spent.
-	Spend(ctx context.Context, args SpendTxoArgs, req SpendTxo) (*Transaction, error)
 }
