@@ -80,7 +80,6 @@ func (p *paymentWalletService) CreatePayment(ctx context.Context, args gopayd.Cr
 		pa.Memo = err.Error()
 		return pa, nil
 	}
-	// TODO: Transmit to network somehow
 	// Store utxos and set invoice to paid.
 	if _, err := p.store.CompletePayment(ctx, gopayd.CreateTransaction{
 		PaymentID: inv.PaymentID,
