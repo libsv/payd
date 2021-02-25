@@ -32,8 +32,8 @@ func NewViperConfig(appname string) *Config {
 
 // WithServer will setup the web server configuration if required.
 func (c *Config) WithServer() *Config {
-	viper.SetDefault(EnvServerPort, ":3001")
-	viper.SetDefault(EnvServerHost, "localhost:1323")
+	viper.SetDefault(EnvServerPort, ":8442")
+	viper.SetDefault(EnvServerHost, "localhost:8442")
 	c.Server = &Server{
 		Port:     viper.GetString(EnvServerPort),
 		Hostname: viper.GetString(EnvServerHost),
