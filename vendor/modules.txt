@@ -16,6 +16,11 @@ github.com/bitcoinsv/bsvlog
 github.com/bitcoinsv/bsvutil
 github.com/bitcoinsv/bsvutil/base58
 github.com/bitcoinsv/bsvutil/hdkeychain
+# github.com/boombuler/barcode v1.0.1
+## explicit
+github.com/boombuler/barcode
+github.com/boombuler/barcode/qr
+github.com/boombuler/barcode/utils
 # github.com/cespare/xxhash v1.1.0
 github.com/cespare/xxhash
 # github.com/davecgh/go-spew v1.1.1

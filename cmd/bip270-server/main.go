@@ -86,7 +86,7 @@ func main() {
 	}
 	// setup services
 	pwSvc := ppctl.NewPaymentWalletService(sqlLiteStore, mapi.NewBroadcast(cfg.Mapi, client))
-	pmSvc := ppctl.NewPaymailPaymentService(ipaymail.NewRransactionService())
+	pmSvc := ppctl.NewPaymailPaymentService(ipaymail.NewTransactionService())
 	pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
 	http.NewPaymentRequestHandler(

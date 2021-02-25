@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
 	github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9
+	github.com/boombuler/barcode v1.0.1
 	github.com/dgraph-io/ristretto v0.0.4-0.20210122082011-bb5d392ed82d // indirect
 	github.com/go-resty/resty/v2 v2.4.0
 	github.com/jmoiron/sqlx v1.3.1

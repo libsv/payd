@@ -40,6 +40,8 @@ github.com/bitcoinsv/bsvlog v0.0.0-20181216181007-cb81b076bf2e/go.mod h1:WPrWor6
 github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9 h1:hFI8rT84FCA0FFy3cFrkW5Nz4FyNKlIdCvEvvTNySKg=
 github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9/go.mod h1:p44KuNKUH5BC8uX4ONEODaHUR4+ibC8todEAOGQEJAM=
 github.com/bketelsen/crypt v0.0.3-0.20200106085610-5cbc8cc4026c/go.mod h1:MKsuJmJgSg28kpZDP6UIiPt0e0Oz0kqKNGyRaWEPv84=
+github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyXcs=
+github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/cactus/go-statsd-client/statsd v0.0.0-20200423205355-cb0885a1018c/go.mod h1:l/bIBLeOl9eX+wxJAzxS4TveKRtAqlyDpHjhkfO0MEI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=

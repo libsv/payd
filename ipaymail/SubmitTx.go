@@ -16,7 +16,7 @@ type TransactionSubmitter interface {
 type transactionService struct {
 }
 
-func NewRransactionService() *transactionService {
+func NewTransactionService() *transactionService {
 	return &transactionService{}
 }
 
