@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/libsv/go-payd/config"
+	"github.com/libsv/payd/config"
 )
 
 // MustSetup will setup the database and panic if it fails.

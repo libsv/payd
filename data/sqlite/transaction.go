@@ -3,7 +3,7 @@ package sqlite
 import (
 	"context"
 
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 

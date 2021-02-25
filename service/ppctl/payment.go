@@ -3,8 +3,8 @@ package ppctl
 import (
 	"context"
 
-	go_payd "github.com/libsv/go-payd"
-	"github.com/libsv/go-payd/config"
+	go_payd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 )
 
 // paymentFacade is a layer on top of the payment services of which we currently support:

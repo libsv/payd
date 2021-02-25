@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	go_payd "github.com/libsv/go-payd"
-	gopayd "github.com/libsv/go-payd"
+	go_payd "github.com/libsv/payd"
+	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 

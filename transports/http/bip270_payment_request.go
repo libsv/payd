@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	go_payd "github.com/libsv/go-payd"
+	go_payd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 

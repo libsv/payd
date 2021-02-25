@@ -1,4 +1,4 @@
-module github.com/libsv/go-payd
+module github.com/libsv/payd
 
 go 1.15
 

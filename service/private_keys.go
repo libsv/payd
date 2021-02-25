@@ -10,7 +10,7 @@ import (
 	"github.com/bitcoinsv/bsvd/bsvec"
 	"github.com/bitcoinsv/bsvd/chaincfg"
 	"github.com/bitcoinsv/bsvutil/hdkeychain"
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 

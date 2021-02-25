@@ -3,7 +3,7 @@ package noop
 import (
 	"context"
 
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 	"gopkg.in/guregu/null.v3"
 )
 

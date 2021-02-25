@@ -89,7 +89,7 @@ func (c *Config) WithPaymail() *Config {
 // WithWallet sets up and returns merchant wallet configuration.
 func (c *Config) WithWallet() *Config {
 	viper.SetDefault(EnvNetwork, "bitcoin-sv")
-	viper.SetDefault(EnvMerchantName, "go-payd")
+	viper.SetDefault(EnvMerchantName, "payd")
 	viper.SetDefault(EnvAvatarURL, "https://bit.ly/3c4iaup")
 	c.Wallet = &Wallet{
 		Network:           viper.GetString(EnvNetwork),

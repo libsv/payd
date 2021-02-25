@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 )
 
 const (

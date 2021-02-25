@@ -3,8 +3,8 @@ package mapi
 import (
 	"context"
 
-	gopayd "github.com/libsv/go-payd"
-	"github.com/libsv/go-payd/config"
+	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
 	"github.com/tonicpow/go-minercraft"
 )

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 	"github.com/theflyingcodr/lathos"
 )

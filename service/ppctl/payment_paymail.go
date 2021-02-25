@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/labstack/gommon/log"
-	go_payd "github.com/libsv/go-payd"
+	go_payd "github.com/libsv/payd"
 	validator "github.com/theflyingcodr/govalidator"
 
-	"github.com/libsv/go-payd/ipaymail"
+	"github.com/libsv/payd/ipaymail"
 )
 
 type paymentPaymailService struct {

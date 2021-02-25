@@ -8,12 +8,12 @@ import (
 	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
-	gopayd "github.com/libsv/go-payd"
+	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
-	"github.com/libsv/go-payd/config"
-	"github.com/libsv/go-payd/ipaymail"
+	"github.com/libsv/payd/config"
+	"github.com/libsv/payd/ipaymail"
 	"github.com/theflyingcodr/lathos"
 )
 
