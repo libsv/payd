@@ -26,7 +26,7 @@ func (b *broadcast) Broadcast(ctx context.Context, req gopayd.BroadcastTransacti
 	if err != nil {
 		return errors.Wrap(err, "failed to submit transaction to minerpool")
 	}
-	if resp.Results.ReturnResult != minercraft.QueryTransactionSuccess {
+	if resp.Results.ReturnResult == minercraft.QueryTransactionSuccess {
 		return nil
 	}
 	return errors.Errorf("failed to submit transaction %s", resp.Results.ResultDescription)

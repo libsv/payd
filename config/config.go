@@ -6,24 +6,24 @@ import (
 )
 
 const (
-	EnvServerPort    = "server.port"
-	EnvServerHost    = "server.host"
-	EnvEnvironment   = "env.environment"
-	EnvMainNet       = "env.mainnet"
-	EnvRegion        = "env.region"
-	EnvVersion       = "env.version"
-	EnvCommit        = "env.commit"
-	EnvBuildDate     = "env.builddate"
-	EnvLogLevel      = "log.level"
-	EnvDb            = "db.type"
-	EnvDbDsn         = "db.dsn"
-	EnvUsePaymail    = "paymail.enabled"
-	EnvNetwork       = "wallet.network"
-	EnvAvatarURL     = "wallet.avatarurl"
-	EnvMerchantName  = "wallet.merchantname"
-	EnvMAPIMinerName = "mapi.minername"
-	EnvMAPIURL       = "mapi.minerurl"
-	EnvMAPIToken     = "mapi.token"
+	EnvServerPort     = "server.port"
+	EnvServerHost     = "server.host"
+	EnvEnvironment    = "env.environment"
+	EnvMainNet        = "env.mainnet"
+	EnvRegion         = "env.region"
+	EnvVersion        = "env.version"
+	EnvCommit         = "env.commit"
+	EnvBuildDate      = "env.builddate"
+	EnvLogLevel       = "log.level"
+	EnvDb             = "db.type"
+	EnvDbDsn          = "db.dsn"
+	EnvPaymailEnabled = "paymail.enabled"
+	EnvNetwork        = "wallet.network"
+	EnvAvatarURL      = "wallet.avatarurl"
+	EnvMerchantName   = "wallet.merchantname"
+	EnvMAPIMinerName  = "mapi.minername"
+	EnvMAPIURL        = "mapi.minerurl"
+	EnvMAPIToken      = "mapi.token"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -83,6 +83,7 @@ type Db struct {
 // Paymail settings relating to paymail.
 type Paymail struct {
 	UsePaymail bool
+	Address    string
 }
 
 type Wallet struct {
