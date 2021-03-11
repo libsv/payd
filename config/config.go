@@ -18,6 +18,8 @@ const (
 	EnvDb             = "db.type"
 	EnvDbDsn          = "db.dsn"
 	EnvPaymailEnabled = "paymail.enabled"
+	EnvPaymailIsBeta  = "paymail.isbeta"
+	EnvPaymailAddress = "paymail.address"
 	EnvNetwork        = "wallet.network"
 	EnvAvatarURL      = "wallet.avatarurl"
 	EnvMerchantName   = "wallet.merchantname"
@@ -83,6 +85,7 @@ type Db struct {
 // Paymail settings relating to paymail.
 type Paymail struct {
 	UsePaymail bool
+	IsBeta     bool
 	Address    string
 }
 

@@ -81,8 +81,14 @@ func (c *Config) WithDb() *Config {
 
 // WithPaymail sets up and returns paymail configuration.
 func (c *Config) WithPaymail() *Config {
-	viper.SetDefault(EnvUsePaymail, false)
-	c.Paymail = &Paymail{UsePaymail: viper.GetBool(EnvUsePaymail)}
+	viper.SetDefault(EnvPaymailEnabled, false)
+	viper.SetDefault(EnvPaymailAddress, "test@test.com")
+	viper.SetDefault(EnvPaymailIsBeta, false)
+	c.Paymail = &Paymail{
+		UsePaymail: viper.GetBool(EnvPaymailEnabled),
+		IsBeta:     viper.GetBool(EnvPaymailIsBeta),
+		Address:    viper.GetString(EnvPaymailAddress),
+	}
 	return c
 }
 

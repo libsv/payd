@@ -130,6 +130,17 @@ func NewTxFromStream(b []byte) (*Tx, int, error) {
 
 // AddInput adds a new input to the transaction.
 func (tx *Tx) AddInput(input *Input) {
+
+	// TODO: v2 make input (and other internal) elements private and not exposed
+	// so that we only store previoustxid in bytes and then do the conversion
+	// with getters and setters
+	if input.PreviousTxIDBytes == nil {
+		ptidb, err := hex.DecodeString(input.PreviousTxID)
+		if err == nil {
+			input.PreviousTxIDBytes = ptidb
+		}
+	}
+
 	tx.Inputs = append(tx.Inputs, input)
 }
 
@@ -146,6 +157,7 @@ func (tx *Tx) AddInputFromTx(pvsTx *Tx, matchPK []byte) error {
 			continue
 		}
 		tx.AddInput(&Input{
+			PreviousTxIDBytes:  pvsTx.GetTxIDAsBytes(),
 			PreviousTxID:       pvsTx.GetTxID(),
 			PreviousTxOutIndex: uint32(i),
 			PreviousTxSatoshis: utxo.Satoshis,
@@ -163,7 +175,13 @@ func (tx *Tx) From(txID string, vout uint32, prevTxLockingScript string, satoshi
 		return err
 	}
 
+	ptid, err := hex.DecodeString(txID)
+	if err != nil {
+		return err
+	}
+
 	tx.AddInput(&Input{
+		PreviousTxIDBytes:  ptid,
 		PreviousTxID:       txID,
 		PreviousTxOutIndex: vout,
 		PreviousTxSatoshis: satoshis,
@@ -440,6 +458,10 @@ func (tx *Tx) toBytesHelper(index int, lockingScript []byte) []byte {
 // signing implementations can be used to sign the transaction -
 // for example internal/local or external signing.
 func (tx *Tx) Sign(index uint32, s Signer) error {
+	// TODO: v2 put tx serialisation here so that the Signer.Sign
+	// func only does signing and not also serialisation which
+	// should be done here.
+
 	signedTx, err := s.Sign(index, tx)
 	if err != nil {
 		return err

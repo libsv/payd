@@ -4,6 +4,7 @@ import (
 	"image/png"
 	"net/http"
 	"text/template"
+	"log"
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
@@ -17,7 +18,7 @@ type Page struct {
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/generator/", viewCodeHandler)
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8111", nil))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {

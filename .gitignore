@@ -8,4 +8,5 @@ data/sqlite/schema/data.db
 cover.go
 cover.out
 
-*/wallet.db
+wallet.db
+main

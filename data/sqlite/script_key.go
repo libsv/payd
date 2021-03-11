@@ -2,9 +2,11 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
+	"github.com/theflyingcodr/lathos"
 )
 
 const (
@@ -22,11 +24,14 @@ const (
 
 // ScriptKey will return a script key matching the supplied args.
 func (s *sqliteStore) ScriptKey(ctx context.Context, args gopayd.ScriptKeyArgs) (*gopayd.ScriptKey, error) {
-	var resp *gopayd.ScriptKey
-	if err := s.db.GetContext(ctx, &resp, sqlScriptKeyByScript, args); err != nil {
-		return nil, errors.Wrap(err, "failed to get script key")
+	var resp gopayd.ScriptKey
+	if err := s.db.GetContext(ctx, &resp, sqlScriptKeyByScript, args.LockingScript); err != nil {
+		if err == sql.ErrNoRows{
+			return nil, lathos.NewErrNotFound("N002", "could not find locking script")
+		}
+		return nil, errors.Wrapf(err, "failed to get script key using locking script %s", args.LockingScript)
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // CreateScriptKeys will add one or many script keys to the data store.

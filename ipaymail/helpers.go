@@ -725,14 +725,12 @@ func verifyPubKey(verifyURL, alias, domain, pubKey string) (response *paymail.Ve
 
 // validatePaymailAndDomain will do a basic validation on the paymail format
 func validatePaymailAndDomain(paymailAddress, domain string) error {
-
 	// Validate the format for the paymail address (paymail addresses follow conventional email requirements)
 	if ok, err := validate.IsValidEmail(paymailAddress, false); err != nil {
 		return fmt.Errorf("paymail address failed format validation: %s", err.Error())
 	} else if !ok {
 		return fmt.Errorf("paymail address failed format validation: unknown reason")
 	}
-
 	// Check for a real domain (require at least one period)
 	if !strings.Contains(domain, ".") {
 		return fmt.Errorf("domain name is invalid: %s", domain)

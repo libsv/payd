@@ -37,5 +37,8 @@ func (h *paymentHandler) createPayment(e echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	if resp.Error > 0{
+		return e.JSON(http.StatusUnprocessableEntity, resp)
+	}
 	return e.JSON(http.StatusCreated, resp)
 }

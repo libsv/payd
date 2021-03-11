@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/labstack/gommon/log"
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/libsv/go-bt"
 )
+
+type paymentSender interface {
+}
 
 type paymentWalletService struct {
 	store       gopayd.PaymentReaderWriter
@@ -75,6 +79,7 @@ func (p *paymentWalletService) CreatePayment(ctx context.Context, args gopayd.Cr
 	}
 	// Broadcast the transaction.
 	if err := p.broadcaster.Broadcast(ctx, gopayd.BroadcastTransaction{TXHex: req.Transaction}); err != nil {
+		log.Error(err)
 		pa.Error = 1
 		pa.Success = "false"
 		pa.Memo = err.Error()

@@ -33,5 +33,5 @@ func (h *paymentRequestHandler) createPaymentRequest(e echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	return e.JSON(http.StatusOK, resp)
+	return e.JSON(http.StatusCreated, resp)
 }

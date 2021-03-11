@@ -3,17 +3,14 @@ package ppctl
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
-	validator "github.com/theflyingcodr/govalidator"
 
 	"github.com/libsv/payd/config"
-	"github.com/libsv/payd/ipaymail"
 	"github.com/theflyingcodr/lathos"
 )
 
@@ -23,33 +20,22 @@ const (
 	duplicatePayment     = "D0001"
 )
 
-type paymentRequestService struct {
-	env        *config.Server
-	wallet     *config.Wallet
+type mapiOutputs struct {
 	privKeySvc gopayd.PrivateKeyService
 	store      gopayd.PaymentRequestReaderWriter
 	txrunner   gopayd.Transacter
 }
 
-// NewPaymentRequestService will create and return a new payment service.
-func NewPaymentRequestService(env *config.Server, wallet *config.Wallet, privKeySvc gopayd.PrivateKeyService, txrunner gopayd.Transacter, store gopayd.PaymentRequestReaderWriter) *paymentRequestService {
+// NewMapiOutputs will create and return a new payment service.
+func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txrunner gopayd.Transacter, store gopayd.PaymentRequestReaderWriter) *mapiOutputs {
 	if env == nil || env.Hostname == "" {
 		log.Fatal("env hostname should be set")
 	}
-	return &paymentRequestService{env: env, wallet: wallet, privKeySvc: privKeySvc, store: store, txrunner: txrunner}
+	return &mapiOutputs{privKeySvc: privKeySvc, store: store, txrunner: txrunner}
 }
 
 // CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
-func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
-	if err := validator.New().
-		Validate("paymentID", validator.NotEmpty(args.PaymentID)).
-		Validate("hostname", validator.NotEmpty(p.env)); err.Err() != nil {
-		return nil, err
-	}
-	inv, err := p.store.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get invoice when creating payment request")
-	}
+func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args gopayd.PaymentRequestArgs) ([]*gopayd.Output, error) {
 	// TODO: I hate this here
 	ctx = p.txrunner.WithTx(ctx)
 	exists, err := p.store.DerivationPathExists(ctx, gopayd.DerivationPathExistsArgs{PaymentID: args.PaymentID})
@@ -78,7 +64,7 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args g
 		return nil, errors.Wrap(err, "failed to create derivationPath when creating payment request")
 	}
 	// create output from from key and derivation path
-	o, err := p.generateOutput(xprv, dp.Path, inv.Satoshis)
+	o, err := p.generateOutput(xprv, dp.Path, satoshis)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -93,21 +79,10 @@ func (p *paymentRequestService) CreatePaymentRequest(ctx context.Context, args g
 	if err := p.txrunner.Commit(ctx); err != nil {
 		return nil, errors.Wrap(err, "failed to created payment")
 	}
-	return &gopayd.PaymentRequest{
-		Network:             p.wallet.Network,
-		Outputs:             outs,
-		CreationTimestamp:   time.Now().UTC().Unix(),
-		ExpirationTimestamp: time.Now().Add(24 * time.Hour).UTC().Unix(),
-		PaymentURL:          fmt.Sprintf("http://%s/v1/payment/%s", p.env.Hostname, args.PaymentID),
-		Memo:                fmt.Sprintf("Payment request for invoice %s", args.PaymentID),
-		MerchantData: &gopayd.MerchantData{
-			AvatarURL:    p.wallet.MerchantAvatarURL,
-			MerchantName: p.wallet.MerchantName,
-		},
-	}, nil
+	return outs, nil
 }
 
-func (p *paymentRequestService) generateOutput(xprv *hdkeychain.ExtendedKey, derivPath string, satoshis uint64) (*bt.Output, error) {
+func (p *mapiOutputs) generateOutput(xprv *hdkeychain.ExtendedKey, derivPath string, satoshis uint64) (*bt.Output, error) {
 	key, err := p.privKeySvc.DeriveChildFromKey(xprv, derivPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -123,31 +98,10 @@ func (p *paymentRequestService) generateOutput(xprv *hdkeychain.ExtendedKey, der
 	return o, nil
 }
 
-// createPaymailOutputs is not currently used but will be when we incorporate this feature.
-func (p *paymentRequestService) createPaymailOutputs(paymentID string, outs []*gopayd.Output) ([]*gopayd.Output, error) {
-	ref, os, err := ipaymail.GetP2POutputs("jad@moneybutton.com", 10000)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get paymail outputs")
-	}
-	log.Debugf("reference: %s", ref)
-
-	ipaymail.ReferencesMap[paymentID] = ref
-
-	// change returned hexString output script into bytes TODO: understand what i wrote
-	for _, o := range os {
-		out := &gopayd.Output{
-			Amount: o.Satoshis,
-			Script: o.Script,
-		}
-		outs = append(outs, out)
-	}
-	return outs, nil
-}
-
 // storeKeys will store each key along with keyname and derivation path
 // to allow us to validate the outputs sent in the users payment.
 // If there is a failure all will be rolled back.
-func (p *paymentRequestService) storeKeys(ctx context.Context, keyName string, derivID int, outs []*gopayd.Output) error {
+func (p *mapiOutputs) storeKeys(ctx context.Context, keyName string, derivID int, outs []*gopayd.Output) error {
 	keys := make([]gopayd.CreateScriptKey, 0)
 	for _, o := range outs {
 		keys = append(keys, gopayd.CreateScriptKey{
