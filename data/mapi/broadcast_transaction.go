@@ -20,9 +20,11 @@ func NewBroadcast(cfg *config.MApi, client *minercraft.Client) *broadcast {
 
 // Broadcast will submit a transaction to mapi for inclusion in a block.
 // Any errors will be returned, no error denotes success.
-func (b *broadcast) Broadcast(ctx context.Context, req gopayd.BroadcastTransaction) error {
+func (b *broadcast) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
 	// TODO: Support callback url for notifications.
-	resp, err := b.client.SubmitTransaction(b.client.MinerByName(b.cfg.MinerName), &minercraft.Transaction{RawTx: req.TXHex})
+	resp, err := b.client.SubmitTransaction(
+		b.client.MinerByName(b.cfg.MinerName),
+		&minercraft.Transaction{RawTx: req.Transaction})
 	if err != nil {
 		return errors.Wrap(err, "failed to submit transaction to minerpool")
 	}

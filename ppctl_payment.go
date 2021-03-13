@@ -6,6 +6,7 @@ import (
 
 	"github.com/libsv/go-bt"
 	validator "github.com/theflyingcodr/govalidator"
+	"gopkg.in/guregu/null.v3"
 )
 
 // CreatePayment is a Payment message used in BIP270.
@@ -20,11 +21,11 @@ type CreatePayment struct {
 	// Note that malicious clients may modify the merchantData, so should be authenticated
 	// in some way (for example, signed with a payment host-only key).
 	// Maximum length is 10000 characters.
-	MerchantData *string `json:"merchantData,omitempty"`
+	MerchantData null.String `json:"merchantData,omitempty"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
 	// TODO - we're not handling paymail in V1 so this will always be empty
-	RefundTo *string `json:"refundTo,omitempty"`
+	RefundTo null.String `json:"refundTo,omitempty"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo,omitempty"`
 }
@@ -42,11 +43,11 @@ func (c CreatePayment) Validate() validator.ErrValidation {
 				return nil
 			},
 		)
-	if c.MerchantData != nil {
-		v = v.Validate("merchantData", validator.Length(*c.MerchantData, 0, 10000))
+	if c.MerchantData.Valid {
+		v = v.Validate("merchantData", validator.Length(c.MerchantData.String, 0, 10000))
 	}
-	if c.RefundTo != nil {
-		v = v.Validate("refundTo", validator.Length(*c.RefundTo, 0, 100))
+	if c.RefundTo.Valid {
+		v = v.Validate("refundTo", validator.Length(c.RefundTo.String, 0, 100))
 	}
 	return v
 }
@@ -72,18 +73,20 @@ type CreatePaymentArgs struct {
 	PaymentID string
 }
 
+type InvoiceUpdateArgs struct {
+	PaymentID string
+}
+
 type PaymentService interface {
 	CreatePayment(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
 }
 
 type PaymentWriter interface {
 	// CompletePayment when implemented can store the tx and utxos as well as update the invoice as paid.
-	CompletePayment(ctx context.Context, req CreateTransaction) (*Transaction, error)
+	StoreUtxos(ctx context.Context, req CreateTransaction) (*Transaction, error)
 }
 
-// PaymentReaderWriter is a repository that can be implemented to handle data required for a payment service.
-type PaymentReaderWriter interface {
-	InvoiceReader
-	ScriptKeyReader
-	PaymentWriter
+// PaymentSender will broadcast a payment to a network.
+type PaymentSender interface {
+	Send(ctx context.Context, args CreatePaymentArgs, req CreatePayment) error
 }

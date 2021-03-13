@@ -3,38 +3,42 @@ package ppctl
 import (
 	"context"
 
-	"github.com/labstack/gommon/log"
-	go_payd "github.com/libsv/payd"
+	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
+	gopaymail "github.com/tonicpow/go-paymail"
 
-	"github.com/libsv/payd/ipaymail"
+	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 )
 
 type paymentPaymailService struct {
-	pmSvc ipaymail.TransactionSubmitter
+	cfg   *config.Paymail
+	pmSvc gopayd.PaymailWriter
 }
 
-func NewPaymailPaymentService(pmSvc ipaymail.TransactionSubmitter) *paymentPaymailService {
-	return &paymentPaymailService{pmSvc: pmSvc}
+// NewPaymailPaymentService will setup and return a new payment service that uses paymail.
+func NewPaymailPaymentService(pmSvc gopayd.PaymailWriter, cfg *config.Paymail) *paymentPaymailService {
+	return &paymentPaymailService{
+		pmSvc: pmSvc,
+		cfg:   cfg,
+	}
 }
 
-// Create will setup a new payment and return the result.
-func (p *paymentPaymailService) CreatePayment(ctx context.Context, args go_payd.CreatePaymentArgs, req go_payd.CreatePayment) (*go_payd.PaymentACK, error) {
-	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
-		return nil, err
-	}
-	pa := &go_payd.PaymentACK{
-		Payment: &req,
-	}
-	ref := ipaymail.ReferencesMap[args.PaymentID]                                    // TODO - change to a redis call
-	txID, note, err := p.pmSvc.SubmitTx("jad@moneybutton.com", req.Transaction, ref) // TODO - dont pay jad, he has enough!
-	log.Debug(txID)
+// Send will submit a transaction via the paymail network.
+func (p *paymentPaymailService) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
+	addr, err := gopaymail.ValidateAndSanitisePaymail(p.cfg.Address, p.cfg.IsBeta)
 	if err != nil {
-		pa.Error = 1
-		pa.Memo = err.Error()
-		return nil, err
+		// convert to known type for the global error handler.
+		return validator.ErrValidation{
+			"paymailAddress": []string{err.Error()},
+		}
 	}
-	pa.Error = 0
-	pa.Memo = note
-	return pa, nil
+	return errors.WithStack(p.pmSvc.Broadcast(ctx, gopayd.P2PTransactionArgs{
+		Alias:     addr.Alias,
+		Domain:    addr.Domain,
+		PaymentID: args.PaymentID,
+	}, gopayd.P2PTransaction{
+		TxHex:    req.Transaction,
+		Metadata: gopayd.P2PTransactionMetadata{},
+	}))
 }

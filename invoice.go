@@ -23,7 +23,8 @@ type CreateInvoice struct {
 
 // UpdateInvoice can be used to update an invoice after it has been created.
 type UpdateInvoice struct {
-	PaymentReceivedAt time.Time `db:"paymentReceviedAt"`
+	PaymentReceivedAt time.Time   `db:"paymentReceviedAt"`
+	RefundTo          null.String `db:"refundTo"`
 }
 
 // UpdateInvoiceArgs are used to identify the invoice to update.

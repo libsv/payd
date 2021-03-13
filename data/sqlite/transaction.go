@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *sqliteStore) CreateTransaction(ctx context.Context, req gopayd.CreateTransaction) (*gopayd.Transaction, error) {
-	tx, err := s.db.BeginTxx(ctx, nil)
+func (s *sqliteStore) StoreUtxos(ctx context.Context, req gopayd.CreateTransaction) (*gopayd.Transaction, error) {
+	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start transaction when inserting transaction to db")
 	}
@@ -17,7 +17,7 @@ func (s *sqliteStore) CreateTransaction(ctx context.Context, req gopayd.CreateTr
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create transaction and utxos")
 	}
-	return resp, errors.Wrapf(tx.Commit(),
+	return resp, errors.Wrapf(commit(ctx, tx),
 		"failed to commit transaction when adding tx and outputs for paymentID %s", req.PaymentID)
 }
 

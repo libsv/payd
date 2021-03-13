@@ -15,6 +15,7 @@ CREATE TABLE invoices (
     paymentID           VARCHAR PRIMARY KEY
     ,satoshis           INTEGER NOT NULL
     ,paymentReceivedAt  TIMESTAMP
+    ,refundTo           VARCHAR
 );
 
 CREATE TABLE script_keys(

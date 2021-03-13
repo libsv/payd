@@ -3,13 +3,16 @@ package paymail
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/theflyingcodr/lathos"
 	gopaymail "github.com/tonicpow/go-paymail"
 
 	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/data/paymail/models"
 )
 
@@ -25,14 +28,22 @@ type powmailClient interface {
 }
 
 type paymail struct {
+	mu     sync.Mutex
 	cli    powmailClient
+	addr   *gopaymail.SanitisedPaymail
 	cstore map[string]*gopaymail.Capabilities
 }
 
 // NewPaymail will setup and return a new paymail data store used
 // to create and send paymail transactions.
-func NewPaymail(cli powmailClient) *paymail {
+// Currently we support one paymail address per server.
+func NewPaymail(cfg *config.Paymail, cli powmailClient) *paymail {
+	addr, err := gopaymail.ValidateAndSanitisePaymail(cfg.Address, cfg.IsBeta)
+	if err != nil {
+		log.Fatalf("failed to validate wallet payment address %s", cfg.Address)
+	}
 	return &paymail{
+		addr:   addr,
 		cli:    cli,
 		cstore: map[string]*gopaymail.Capabilities{},
 	}
@@ -40,6 +51,8 @@ func NewPaymail(cli powmailClient) *paymail {
 
 // Capability will return a capability or a notfound error if it could not be found.
 func (p *paymail) Capability(ctx context.Context, args gopayd.P2PCapabilityArgs) (string, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	c, ok := p.cstore[args.Domain]
 	if ok && c.Has(args.BrfcID, "") {
 		return c.GetString(args.BrfcID, ""), nil
@@ -83,27 +96,19 @@ func (p *paymail) OutputsCreate(ctx context.Context, args gopayd.P2POutputCreate
 // Broadcast will transmit a transaction via paymail to a destination address.
 // A lathos.NotFound error will be returned if the paymail destination doesn't exist or
 // the paymail service doesn't have BRFCP2PTransactions capability.
-func (p *paymail) Broadcast(ctx context.Context, args gopayd.P2PTransactionArgs, req gopayd.P2PTransaction) error {
+func (p *paymail) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
 	url, err := p.Capability(ctx, gopayd.P2PCapabilityArgs{
-		Domain: args.Domain,
+		Domain: p.addr.Domain,
 		BrfcID: gopaymail.BRFCP2PTransactions,
 	})
 	if err != nil {
 		return errors.Wrapf(err, "failed to send transaction for paymentID %s", args.PaymentID)
 	}
-	if req.Metadata.PubKey != "" {
-		if err := p.verifyPubKey(ctx, args.Alias, args.Domain, req.Metadata.PubKey); err != nil {
-			return errors.WithStack(err)
-		}
-	}
-	if _, err := p.cli.SendP2PTransaction(url, args.Alias, args.Domain, &gopaymail.P2PTransaction{
-		Hex:       req.TxHex,
+	if _, err := p.cli.SendP2PTransaction(url, p.addr.Alias, p.addr.Domain, &gopaymail.P2PTransaction{
+		Hex:       req.Transaction,
 		Reference: args.PaymentID,
 		MetaData: &gopaymail.P2PMetaData{
-			Note:      req.Metadata.Note,
-			PubKey:    req.Metadata.PubKey,
-			Sender:    req.Metadata.Sender,
-			Signature: req.Metadata.Signature,
+			Note: fmt.Sprintf("paymentID: %s, refundTo: %s", args.PaymentID, req.RefundTo.ValueOrZero()),
 		},
 	}); err != nil {
 		if err.Error() == "paymail address not found" {
@@ -112,22 +117,4 @@ func (p *paymail) Broadcast(ctx context.Context, args gopayd.P2PTransactionArgs,
 		return errors.Wrapf(err, "failed to send transaction for paymentID %s", args.PaymentID)
 	}
 	return nil
-}
-
-func (p *paymail) verifyPubKey(ctx context.Context, alias, domain, pubKey string) error {
-	url, err := p.Capability(ctx, gopayd.P2PCapabilityArgs{
-		Domain: domain,
-		BrfcID: gopaymail.BRFCVerifyPublicKeyOwner,
-	})
-	if err != nil {
-		return errors.Wrapf(err, "failed to send transaction for paymentID %s", args.PaymentID)
-	}
-	v, err := p.cli.VerifyPubKey(url, alias, domain, pubKey)
-	if err != nil {
-		return errors.Wrap(err, "failed to validate public key")
-	}
-	if v.Match {
-		return nil
-	}
-	return errors.New("public key did not match handle")
 }

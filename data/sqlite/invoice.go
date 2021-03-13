@@ -22,9 +22,9 @@ const (
 	WHERE paymentId = :paymentId
 	`
 
-	sqlInvoiceUpdateDate = `
+	sqlInvoiceUpdate = `
 		UPDATE invoices 
-		SET paymentReceivedAt = :paymentReceivedAt
+		SET paymentReceivedAt = :paymentReceivedAt, refundTo = :refundTo
 		WHERE paymentID = :paymentID
 	`
 )
@@ -41,9 +41,9 @@ func (s *sqliteStore) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*go
 	return &resp, nil
 }
 
-// CreateInvoice will persist a new Invoice in the data store.
-func (s *sqliteStore) CreateInvoice(ctx context.Context, req gopayd.CreateInvoice) (*gopayd.Invoice, error) {
-	tx, err := s.db.BeginTxx(ctx, nil)
+// Create will persist a new Invoice in the data store.
+func (s *sqliteStore) Create(ctx context.Context, req gopayd.CreateInvoice) (*gopayd.Invoice, error) {
+	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new invoice with paymentID %s", req.PaymentID)
 	}
@@ -55,15 +55,15 @@ func (s *sqliteStore) CreateInvoice(ctx context.Context, req gopayd.CreateInvoic
 	if err := tx.Get(&resp, sqlInvoiceByPayID, req); err != nil {
 		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentID)
 	}
-	if err := tx.Commit(); err != nil {
+	if err := commit(ctx, tx); err != nil {
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentID)
 	}
 	return resp, nil
 }
 
-// UpdateInvoicePaid will update an invoice to mark it paid and return the result.
-func (s *sqliteStore) UpdateInvoicePaid(ctx context.Context, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
-	tx, err := s.db.BeginTxx(ctx, nil)
+// Update will update an invoice to mark it paid and return the result.
+func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
+	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with paymentID %s", args.PaymentID)
 	}
@@ -72,7 +72,7 @@ func (s *sqliteStore) UpdateInvoicePaid(ctx context.Context, args gopayd.UpdateI
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update invoice")
 	}
-	if err := tx.Commit(); err != nil {
+	if err := commit(ctx, tx); err != nil {
 		return nil, errors.Wrapf(err, "failed to commit transaction when updating invoice with paymentID %s", args.PaymentID)
 	}
 	return resp, nil
@@ -83,7 +83,7 @@ func (s *sqliteStore) UpdateInvoicePaid(ctx context.Context, args gopayd.UpdateI
 // This method can be used with other methods in the store allowing
 // multiple methods to be ran in the same db transaction.
 func (s *sqliteStore) txUpdateInvoicePaid(tx db, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
-	if err := handleNamedExec(tx, sqlInvoiceUpdateDate, req); err != nil {
+	if err := handleNamedExec(tx, sqlInvoiceUpdate, req); err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice for paymentID %s", args.PaymentID)
 	}
 	var resp *gopayd.Invoice

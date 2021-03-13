@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
+	"gopkg.in/guregu/null.v3"
 )
 
 func TestCreatePayment_Validate(t *testing.T) {
@@ -15,7 +16,7 @@ func TestCreatePayment_Validate(t *testing.T) {
 		"valid request should return no errors": {
 			req: CreatePayment{
 				Transaction:  "74657374696e672074657374696e67",
-				MerchantData: func() *string { s := "some data"; return &s }(),
+				MerchantData: null.StringFrom("some data"),
 				RefundTo:     nil,
 				Memo:         "test this please",
 			},
@@ -23,7 +24,7 @@ func TestCreatePayment_Validate(t *testing.T) {
 		}, "transaction with invalid prefix should error": {
 			req: CreatePayment{
 				Transaction:  "0x74657374696e672074657374696e67",
-				MerchantData: func() *string { s := "some data"; return &s }(),
+				MerchantData: null.StringFrom("some data"),
 				RefundTo:     nil,
 				Memo:         "test this please",
 			},
@@ -39,14 +40,13 @@ func TestCreatePayment_Validate(t *testing.T) {
 		}, "merchant data too long should error": {
 			req: CreatePayment{
 				Transaction: "74657374696e672074657374696e67",
-				MerchantData: func() *string {
+				MerchantData: func() null.String {
 					bb := make([]byte, 0)
 					// generate string 1 more byte than 10000
 					for i := 0; i <= 10000; i++ {
 						bb = append(bb, 42)
 					}
-					o := string(bb)
-					return &o
+					return null.StringFrom(string(bb))
 				}(),
 				RefundTo: nil,
 				Memo:     "test this please",
@@ -56,14 +56,13 @@ func TestCreatePayment_Validate(t *testing.T) {
 			req: CreatePayment{
 				Transaction:  "74657374696e672074657374696e67",
 				MerchantData: nil,
-				RefundTo: func() *string {
+				RefundTo: func() null.String {
 					bb := make([]byte, 0)
 					// generate string 1 more byte than 10000
 					for i := 0; i <= 100; i++ {
 						bb = append(bb, 42)
 					}
-					o := string(bb)
-					return &o
+					return null.StringFrom(string(bb))
 				}(),
 				Memo: "test this please",
 			},
