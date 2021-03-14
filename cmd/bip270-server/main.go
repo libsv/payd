@@ -83,8 +83,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("unable to create paymail client %s: ", err)
 		}
-		paymentSender = paymail.NewPaymail(cfg.Paymail, pCli)
-		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, pCli)
+		paymailStore := paymail.NewPaymail(cfg.Paymail, pCli)
+		paymentSender = ppctl.NewPaymailPaymentService(paymailStore, cfg.Paymail)
+		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore)
 	} else {
 		mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
 			{
@@ -96,16 +97,14 @@ func main() {
 		if err != nil {
 			log.Fatalf("error occurred: %s", err)
 		}
-		paymentSender = ppctl.NewPaymentMapiSender(mapi.NewBroadcast(cfg.Mapi, mapiCli))
+		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
+		mapiStore := mapi.NewBroadcast(cfg.Mapi, mapiCli)
+		paymentSender = ppctl.NewPaymentMapiSender(mapiStore)
+		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)
 	}
-
-	if cfg.Paymail.UsePaymail {
-
-	}
-	pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
 	http.NewPaymentRequestHandler(
-		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)).
+		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore)).
 		RegisterRoutes(g)
 	http.NewPaymentHandler(
 		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.SQLiteTransacter{})).
