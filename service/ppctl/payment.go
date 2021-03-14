@@ -25,9 +25,10 @@ type payment struct {
 }
 
 // NewPaymentFacade will create and return a new facade to determine between payments to use.
-func NewPayment(store gopayd.PaymentWriter, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
+func NewPayment(store gopayd.PaymentWriter, script gopayd.ScriptKeyReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
 	return &payment{
 		store:    store,
+		script:   script,
 		invStore: invStore,
 		sender:   sender,
 		txrunner: txrunner,
@@ -106,10 +107,11 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		pa.Memo = err.Error()
 		return nil, errors.Wrapf(err, "failed to complete payment for paymentID %s", args.PaymentID)
 	}
-	if err := p.invStore.Update(ctx, gopayd.UpdateInvoiceArgs{PaymentID: args.PaymentID}, gopayd.UpdateInvoice{
+	inv, err = p.invStore.Update(ctx, gopayd.UpdateInvoiceArgs{PaymentID: args.PaymentID}, gopayd.UpdateInvoice{
 		RefundTo: req.RefundTo,
-	}); err != nil {
-		return nil, err
+	})
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
-	return pa, nil
+	return pa, errors.WithStack(p.txrunner.Commit(ctx))
 }

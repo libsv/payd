@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
@@ -53,9 +54,11 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.CreateInvoice) (*go
 	}
 	var resp *gopayd.Invoice
 	if err := tx.Get(&resp, sqlInvoiceByPayID, req); err != nil {
+		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentID)
 	}
 	if err := commit(ctx, tx); err != nil {
+		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentID)
 	}
 	return resp, nil
@@ -67,12 +70,13 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs,
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with paymentID %s", args.PaymentID)
 	}
-	defer tx.Rollback()
 	resp, err := s.txUpdateInvoicePaid(tx, args, req)
 	if err != nil {
+		tx.Rollback()
 		return nil, errors.Wrap(err, "failed to update invoice")
 	}
 	if err := commit(ctx, tx); err != nil {
+		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to commit transaction when updating invoice with paymentID %s", args.PaymentID)
 	}
 	return resp, nil
@@ -83,6 +87,7 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs,
 // This method can be used with other methods in the store allowing
 // multiple methods to be ran in the same db transaction.
 func (s *sqliteStore) txUpdateInvoicePaid(tx db, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
+	req.PaymentReceivedAt = time.Now().UTC()
 	if err := handleNamedExec(tx, sqlInvoiceUpdate, req); err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice for paymentID %s", args.PaymentID)
 	}

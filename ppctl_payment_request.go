@@ -83,3 +83,7 @@ type PaymentRequestReaderWriter interface {
 	InvoiceReader
 	DerivationPathReaderWriter
 }
+
+type PaymentRequestOutputer interface {
+	CreateOutputs(ctx context.Context, satoshis uint64, args PaymentRequestArgs) ([]*Output, error)
+}

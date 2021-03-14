@@ -7,7 +7,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/data/mapi"
+	"github.com/libsv/payd/data/paymail"
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/data/sqlite/schema"
 	"github.com/libsv/payd/service"
@@ -16,9 +18,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/viper"
 	"github.com/tonicpow/go-minercraft"
+	gopaymail "github.com/tonicpow/go-paymail"
 
 	"github.com/libsv/payd/config"
-	"github.com/libsv/payd/ipaymail"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 )
 
@@ -73,27 +75,40 @@ func main() {
 	// setup stores
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
 
-	// mapi store
-	client, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
-		{
-			Name:  cfg.Mapi.MinerName,
-			Token: cfg.Mapi.Token,
-			URL:   cfg.Mapi.URL,
-		},
-	})
-	if err != nil {
-		log.Fatalf("error occurred: %s", err)
-	}
 	// setup services
-	pwSvc := ppctl.NewPaymentWalletService(sqlLiteStore, mapi.NewBroadcast(cfg.Mapi, client))
-	pmSvc := ppctl.NewPaymailPaymentService(ipaymail.NewTransactionService())
+	var paymentSender gopayd.PaymentSender
+	var paymentOutputter gopayd.PaymentRequestOutputer
+	if cfg.Paymail.UsePaymail {
+		pCli, err := gopaymail.NewClient(nil, nil, nil)
+		if err != nil {
+			log.Fatalf("unable to create paymail client %s: ", err)
+		}
+		paymentSender = paymail.NewPaymail(cfg.Paymail, pCli)
+		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, pCli)
+	} else {
+		mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
+			{
+				Name:  cfg.Mapi.MinerName,
+				Token: cfg.Mapi.Token,
+				URL:   cfg.Mapi.URL,
+			},
+		})
+		if err != nil {
+			log.Fatalf("error occurred: %s", err)
+		}
+		paymentSender = ppctl.NewPaymentMapiSender(mapi.NewBroadcast(cfg.Mapi, mapiCli))
+	}
+
+	if cfg.Paymail.UsePaymail {
+
+	}
 	pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
 	http.NewPaymentRequestHandler(
-		ppctl.NewPaymentRequestService(cfg.Server, cfg.Wallet, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)).
+		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)).
 		RegisterRoutes(g)
 	http.NewPaymentHandler(
-		ppctl.NewPaymentFacade(cfg.Paymail, pwSvc, pmSvc)).
+		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.SQLiteTransacter{})).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

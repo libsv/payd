@@ -2,13 +2,13 @@ package sqlite
 
 const (
 	sqlTransactionCreate = `
-		INSERT INTO transaction(txid, paymentID, txhex, createdAt)
-		VALUES(:txid, :paymentID, :txhex, :createdAt)
+		INSERT INTO transaction(txid, paymentID, txhex)
+		VALUES(:txid, :paymentID, :txhex)
 	`
 
 	sqlTxoCreate = `
-		INSERT INTO txos(outpoint, txid, vout, keyname, derivationpath, lockingscript, satoshis,  createdat, modifiedat)
-		VALUES(:outpoint, :txid, :vout, :keyname, :derivationPath, :lockingscript, :satoshis, :createdAt, :modifiedAt)
+		INSERT INTO txos(outpoint, txid, vout, keyname, derivationpath, lockingscript, satoshis)
+		VALUES(:outpoint, :txid, :vout, :keyname, :derivationPath, :lockingscript, :satoshis)
 	`
 
 	sqlTransactionByID = `

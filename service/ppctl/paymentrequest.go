@@ -12,21 +12,10 @@ import (
 	"github.com/libsv/payd/config"
 )
 
-const (
-	outputSourceWallet  = "wallet"
-	outputSourcePaymail = "paymail"
-)
-
-type outputCreatorFunc func(ctx context.Context, satoshis uint64, args gopayd.PaymentRequestArgs) ([]*gopayd.Output, error)
-
-type paymentRequestOutputer interface {
-	CreateOutputs(ctx context.Context, satoshis uint64, args gopayd.PaymentRequestArgs) ([]*gopayd.Output, error)
-}
-
 type paymentRequest struct {
 	walletCfg *config.Wallet
 	envCfg    *config.Server
-	outputter paymentRequestOutputer
+	outputter gopayd.PaymentRequestOutputer
 	store     gopayd.PaymentRequestReaderWriter
 }
 
@@ -34,7 +23,7 @@ type paymentRequest struct {
 // using the provided outputter which is defined in server config.
 func NewPaymentRequest(walletCfg *config.Wallet,
 	envCfg *config.Server,
-	outputter paymentRequestOutputer,
+	outputter gopayd.PaymentRequestOutputer,
 	store gopayd.PaymentRequestReaderWriter) *paymentRequest {
 	return &paymentRequest{
 		walletCfg: walletCfg,

@@ -26,7 +26,7 @@ const (
 func (s *sqliteStore) ScriptKey(ctx context.Context, args gopayd.ScriptKeyArgs) (*gopayd.ScriptKey, error) {
 	var resp gopayd.ScriptKey
 	if err := s.db.GetContext(ctx, &resp, sqlScriptKeyByScript, args.LockingScript); err != nil {
-		if err == sql.ErrNoRows{
+		if err == sql.ErrNoRows {
 			return nil, lathos.NewErrNotFound("N002", "could not find locking script")
 		}
 		return nil, errors.Wrapf(err, "failed to get script key using locking script %s", args.LockingScript)
@@ -45,6 +45,5 @@ func (s *sqliteStore) CreateScriptKeys(ctx context.Context, req []gopayd.CreateS
 		tx.Rollback()
 		return errors.Wrap(err, "failed to insert script keys.")
 	}
-	//return errors.New("aggg")
 	return errors.Wrap(commit(ctx, tx), "failed to commit transaction when creating script keys.")
 }

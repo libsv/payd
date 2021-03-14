@@ -8,16 +8,16 @@ import (
 )
 
 type paymentMapiService struct {
-	broadcaster gopayd.TransactionBroadcaster
+	sender gopayd.PaymentSender
 }
 
-func NewPaymentWalletService(store gopayd.PaymentReaderWriter, broadcaster gopayd.TransactionBroadcaster) *paymentMapiService {
-	return &paymentMapiService{broadcaster: broadcaster}
+func NewPaymentMapiSender(sender gopayd.PaymentSender) *paymentMapiService {
+	return &paymentMapiService{sender: sender}
 }
 
 // CreatePayment will inform the merchant of a new payment being made,
 // this payment will then be transmitted to the network and and acknowledgement sent to the user.
 func (p *paymentMapiService) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
 	// Broadcast the transaction.
-	return errors.WithStack(p.broadcaster.Broadcast(ctx, gopayd.BroadcastTransaction{TXHex: req.Transaction}))
+	return errors.WithStack(p.sender.Send(ctx, args, req))
 }

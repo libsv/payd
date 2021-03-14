@@ -15,6 +15,7 @@ func (s *sqliteStore) StoreUtxos(ctx context.Context, req gopayd.CreateTransacti
 	defer tx.Rollback()
 	resp, err := s.txCreateTransaction(tx, req)
 	if err != nil {
+		tx.Rollback()
 		return nil, errors.Wrap(err, "failed to create transaction and utxos")
 	}
 	return resp, errors.Wrapf(commit(ctx, tx),
