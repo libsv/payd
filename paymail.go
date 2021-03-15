@@ -43,7 +43,7 @@ type PaymailReader interface {
 
 type PaymailWriter interface {
 	OutputsCreate(ctx context.Context, args P2POutputCreateArgs, req P2PPayment) ([]*Output, error)
-	Broadcast(ctx context.Context, args P2PTransactionArgs, req P2PTransaction) error
+	Send(ctx context.Context, args CreatePaymentArgs, req CreatePayment) error
 }
 
 type PaymailReaderWriter interface {

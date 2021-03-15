@@ -86,9 +86,9 @@ func dbErrf(err error, errCode, format string, args ...interface{}) error {
 		return err
 	}
 	if err == sql.ErrNoRows {
-		return lathos.NewErrNotFound(errCode, fmt.Sprintf(format, args))
+		return lathos.NewErrNotFound(errCode, fmt.Sprintf(format, args...))
 	}
-	return errors.WithMessage(err, fmt.Sprintf(format, args))
+	return errors.WithMessage(err, fmt.Sprintf(format, args...))
 }
 
 type db interface {

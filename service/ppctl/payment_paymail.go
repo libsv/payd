@@ -26,19 +26,11 @@ func NewPaymailPaymentService(pmSvc gopayd.PaymailWriter, cfg *config.Paymail) *
 
 // Send will submit a transaction via the paymail network.
 func (p *paymentPaymailService) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
-	addr, err := gopaymail.ValidateAndSanitisePaymail(p.cfg.Address, p.cfg.IsBeta)
-	if err != nil {
+	if _, err := gopaymail.ValidateAndSanitisePaymail(p.cfg.Address, p.cfg.IsBeta); err != nil {
 		// convert to known type for the global error handler.
 		return validator.ErrValidation{
 			"paymailAddress": []string{err.Error()},
 		}
 	}
-	return errors.WithStack(p.pmSvc.Broadcast(ctx, gopayd.P2PTransactionArgs{
-		Alias:     addr.Alias,
-		Domain:    addr.Domain,
-		PaymentID: args.PaymentID,
-	}, gopayd.P2PTransaction{
-		TxHex:    req.Transaction,
-		Metadata: gopayd.P2PTransactionMetadata{},
-	}))
+	return errors.WithStack(p.pmSvc.Send(ctx, args, req))
 }

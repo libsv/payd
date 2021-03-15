@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  payd:
+    container_name: payd
+    image: local.payd
+    build:
+      context: .
+    environment:
+      - PAYMAIL_ADDRESS=maark@moneybutton.com
+    ports:
+      - "8442:8442"

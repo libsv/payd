@@ -17,7 +17,7 @@ func TestCreatePayment_Validate(t *testing.T) {
 			req: CreatePayment{
 				Transaction:  "74657374696e672074657374696e67",
 				MerchantData: null.StringFrom("some data"),
-				RefundTo:     nil,
+				RefundTo:     null.String{},
 				Memo:         "test this please",
 			},
 			exp: "no validation errors",
