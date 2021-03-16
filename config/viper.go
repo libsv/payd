@@ -71,10 +71,12 @@ func (c *Config) WithLog() *Config {
 // WithDb sets up and returns database configuration.
 func (c *Config) WithDb() *Config {
 	viper.SetDefault(EnvDb, "sqlite")
-	viper.SetDefault("db.dsn", "file:data/wallet.db?cache=shared&_foreign_keys=true;")
+	viper.SetDefault(EnvDbDsn, "file:data/wallet.db?cache=shared&_foreign_keys=true;")
+	viper.SetDefault(EnvDbSchema, "./data/sqlite/schema")
 	c.Db = &Db{
-		Type: viper.GetString(EnvDb),
-		Dsn:  viper.GetString(EnvDbDsn),
+		Type:       viper.GetString(EnvDb),
+		Dsn:        viper.GetString(EnvDbDsn),
+		SchemaPath: viper.GetString(EnvDbSchema),
 	}
 	return c
 }

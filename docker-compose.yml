@@ -7,6 +7,9 @@ services:
     build:
       context: .
     environment:
-      - PAYMAIL_ADDRESS=maark@moneybutton.com
+      - DB_DSN=file:/data/wallet.db?cache=shared&_foreign_keys=true;
+      - DB_SCHEMA_PATH=/schema
+    volumes:
+      - ~/data/payd:/data
     ports:
       - "8442:8442"

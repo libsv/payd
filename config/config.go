@@ -16,6 +16,7 @@ const (
 	EnvBuildDate      = "env.builddate"
 	EnvLogLevel       = "log.level"
 	EnvDb             = "db.type"
+	EnvDbSchema       = "db.schema.path"
 	EnvDbDsn          = "db.dsn"
 	EnvPaymailEnabled = "paymail.enabled"
 	EnvPaymailIsBeta  = "paymail.isbeta"
@@ -78,8 +79,9 @@ type Server struct {
 
 // Db contains database information.
 type Db struct {
-	Type string
-	Dsn  string
+	Type       string
+	SchemaPath string
+	Dsn        string
 }
 
 // Paymail settings relating to paymail.

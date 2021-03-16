@@ -7,6 +7,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/viper"
+	"github.com/tonicpow/go-minercraft"
+	gopaymail "github.com/tonicpow/go-paymail"
+
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/data/mapi"
 	"github.com/libsv/payd/data/paymail"
@@ -15,10 +20,6 @@ import (
 	"github.com/libsv/payd/service"
 	"github.com/libsv/payd/service/ppctl"
 	"github.com/libsv/payd/transports/http"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spf13/viper"
-	"github.com/tonicpow/go-minercraft"
-	gopaymail "github.com/tonicpow/go-paymail"
 
 	"github.com/libsv/payd/config"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"

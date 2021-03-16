@@ -22,8 +22,8 @@ FROM bitnami/minideb:buster
 COPY --from=builder /app/bip270-server /bin/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-
 USER appuser:appuser
+COPY --from=builder /app/data/sqlite/schema/ /schema
 
 EXPOSE 8442
 

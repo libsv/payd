@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -32,7 +33,7 @@ func MustSetup(cfg *config.Db) {
 		log.Println("db already created, exiting setup")
 		return
 	}
-	f, err := os.Open("./data/sqlite/schema/schema_create_v1.sql")
+	f, err := os.Open(path.Join(cfg.SchemaPath, "schema_create_v1.sql"))
 	if err != nil {
 		log.Fatalf("failed to read create schema %s", err)
 	}
