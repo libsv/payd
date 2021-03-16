@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"image/png"
-	"net/http"
-	"text/template"
 	"log"
+	"net/http"
+	"os"
+	"text/template"
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
@@ -23,8 +25,9 @@ func main() {
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	p := Page{Title: "QR Code Generator"}
-
-	t, _ := template.ParseFiles("generator.html")
+	wd, _ := os.Getwd()
+	fmt.Println(wd)
+	t, _ := template.ParseFiles("./cmd/qrcode/generator.html")
 	t.Execute(w, p)
 }
 

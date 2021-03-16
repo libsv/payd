@@ -8,11 +8,11 @@ import (
 )
 
 func (s *sqliteStore) StoreUtxos(ctx context.Context, req gopayd.CreateTransaction) (*gopayd.Transaction, error) {
+
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start transaction when inserting transaction to db")
 	}
-	defer tx.Rollback()
 	resp, err := s.txCreateTransaction(tx, req)
 	if err != nil {
 		tx.Rollback()
@@ -34,14 +34,14 @@ func (s *sqliteStore) txCreateTransaction(tx db, req gopayd.CreateTransaction) (
 	if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
 		return nil, errors.Wrap(err, "failed to insert transaction outputs")
 	}
-	var outTx *gopayd.Transaction
-	if err := tx.Get(&outTx, sqlTransactionByID, req); err != nil {
+	var outTx gopayd.Transaction
+	if err := tx.Get(&outTx, sqlTransactionByID, req.TxID); err != nil {
 		return nil, errors.Wrapf(err, "failed to get stored transaction for paymentID %s", req.PaymentID)
 	}
 	var outTxos []gopayd.Txo
-	if err := tx.Get(&outTxos, sqlTxosByTxID, req); err != nil {
+	if err := tx.Select(&outTxos, sqlTxosByTxID, req.TxID); err != nil {
 		return nil, errors.Wrapf(err, "failed to get stored transaction outputs for paymentID %s", req.PaymentID)
 	}
 	outTx.Outputs = outTxos
-	return outTx, nil
+	return &outTx, nil
 }

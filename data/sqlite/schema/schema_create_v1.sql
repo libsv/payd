@@ -47,14 +47,14 @@ CREATE TABLE transactions (
 -- store unspent transactions
 CREATE TABLE txos (
     outpoint        VARCHAR NOT NULL PRIMARY KEY
-    ,txid           CHAR(64) NOT NULL CHECK (LENGTH(txid) = 64)
+    ,txid           CHAR(64) NOT NULL
     ,vout		    BIGINT NOT NULL CHECK (vout >= 0 AND vout < 4294967296)
     ,keyname		TEXT NOT NULL
     ,derivationpath TEXT NOT NULL
     ,lockingscript  TEXT NOT NULL
     ,satoshis       BIGINT NOT NULL CHECK (satoshis >= 0)
     ,spentat        INTEGER(4) -- this is the date when YOU use the funds
-    ,spendingtxid   CHAR(64) CHECK (LENGTH(txid) = 64) -- the txid where you'd spent this output
+    ,spendingtxid   CHAR(64) -- the txid where you'd spent this output
     ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (txid) REFERENCES transactions(txid)

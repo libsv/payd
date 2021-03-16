@@ -70,6 +70,7 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs,
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with paymentID %s", args.PaymentID)
 	}
+	req.PaymentReceivedAt = time.Now().UTC()
 	resp, err := s.txUpdateInvoicePaid(tx, args, req)
 	if err != nil {
 		tx.Rollback()
@@ -88,12 +89,16 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs,
 // multiple methods to be ran in the same db transaction.
 func (s *sqliteStore) txUpdateInvoicePaid(tx db, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
 	req.PaymentReceivedAt = time.Now().UTC()
-	if err := handleNamedExec(tx, sqlInvoiceUpdate, req); err != nil {
+	if err := handleNamedExec(tx, sqlInvoiceUpdate, map[string]interface{}{
+		"paymentReceivedAt": req.PaymentReceivedAt,
+		"refundTo":          req.RefundTo,
+		"paymentID":         args.PaymentID,
+	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice for paymentID %s", args.PaymentID)
 	}
-	var resp *gopayd.Invoice
-	if err := tx.Get(&resp, sqlInvoiceByPayID, req); err != nil {
+	var resp gopayd.Invoice
+	if err := tx.Get(&resp, sqlInvoiceByPayID, args.PaymentID); err != nil {
 		return nil, errors.Wrapf(err, "failed to get invoice with paymentID %s after update", args.PaymentID)
 	}
-	return resp, nil
+	return &resp, nil
 }
