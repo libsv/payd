@@ -18,8 +18,8 @@ type Txo struct {
 	Outpoint       string      `db:"outpoint"`
 	TxID           string      `db:"txid"`
 	Vout           int         `db:"vout"`
-	KeyName        string      `db:"keyname"`
-	DerivationPath string      `db:"derivationpath"`
+	KeyName        null.String `db:"keyname"`
+	DerivationPath null.String `db:"derivationpath"`
 	LockingScript  string      `db:"lockingscript"`
 	Satoshis       uint64      `db:"satoshis"`
 	SpentAt        null.Time   `db:"spentat"`
@@ -36,13 +36,13 @@ type CreateTransaction struct {
 }
 
 type CreateTxo struct {
-	Outpoint       string `db:"outpoint"`
-	TxID           string `db:"txid"`
-	Vout           int    `db:"vout"`
-	KeyName        string `db:"keyname"`
-	DerivationPath string `db:"derivationpath"`
-	LockingScript  string `db:"lockingscript"`
-	Satoshis       uint64 `db:"satoshis"`
+	Outpoint       string      `db:"outpoint"`
+	TxID           string      `db:"txid"`
+	Vout           int         `db:"vout"`
+	KeyName        null.String `db:"keyname"`
+	DerivationPath null.String `db:"derivationpath"`
+	LockingScript  string      `db:"lockingscript"`
+	Satoshis       uint64      `db:"satoshis"`
 }
 
 // SpendTxo can be used to update a transaction out with information

@@ -19,11 +19,15 @@ CREATE TABLE invoices (
 );
 
 CREATE TABLE script_keys(
-    derivationID INTEGER NOT NULL
+    derivationID INTEGER
+    ,keyname        TEXT
     ,lockingscript  TEXT NOT NULL PRIMARY KEY
-    ,keyname        TEXT NOT NULL
     ,FOREIGN KEY (keyname) REFERENCES keys(name)
     ,FOREIGN KEY (derivationID) REFERENCES derivation_paths(ID)
+);
+
+CREATE TABLE script_keys_paymail(
+    lockingscript  TEXT NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE derivation_paths(
@@ -49,8 +53,8 @@ CREATE TABLE txos (
     outpoint        VARCHAR NOT NULL PRIMARY KEY
     ,txid           CHAR(64) NOT NULL
     ,vout		    BIGINT NOT NULL CHECK (vout >= 0 AND vout < 4294967296)
-    ,keyname		TEXT NOT NULL
-    ,derivationpath TEXT NOT NULL
+    ,keyname		TEXT -- can be null on paymail payments
+    ,derivationpath TEXT  -- can be null on paymail payments
     ,lockingscript  TEXT NOT NULL
     ,satoshis       BIGINT NOT NULL CHECK (satoshis >= 0)
     ,spentat        INTEGER(4) -- this is the date when YOU use the funds

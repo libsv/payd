@@ -2,23 +2,25 @@ package gopayd
 
 import (
 	"context"
+
+	"gopkg.in/guregu/null.v3"
 )
 
 // ScriptKey contains data required to sign a
 // received transaction output.
 // This is an internal data structure.
 type ScriptKey struct {
-	ID             int    `json:"-" db:"id"`
-	LockingScript  string `json:"-" db:"lockingscript"`
-	KeyName        string `json:"-" db:"keyname"`
-	DerivationPath string `json:"-" db:"path"`
+	ID             int         `json:"-" db:"id"`
+	LockingScript  string      `json:"-" db:"lockingscript"`
+	KeyName        null.String `json:"-" db:"keyname"`
+	DerivationPath null.String `json:"-" db:"path"`
 }
 
 // CreateScriptKey can be used to create a new ScriptKey.
 type CreateScriptKey struct {
-	LockingScript string `db:"lockingscript"`
-	KeyName       string `db:"keyname"`
-	DerivationID  int    `db:"derivationID"`
+	LockingScript string      `db:"lockingscript"`
+	KeyName       null.String `db:"keyname"`
+	DerivationID  null.Int    `db:"derivationID"`
 }
 
 // ScriptKeyArgs contain arguments used to get a script key

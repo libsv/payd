@@ -86,7 +86,7 @@ func main() {
 		}
 		paymailStore := paymail.NewPaymail(cfg.Paymail, pCli)
 		paymentSender = ppctl.NewPaymailPaymentService(paymailStore, cfg.Paymail)
-		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore)
+		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore, sqlLiteStore)
 	} else {
 		mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
 			{

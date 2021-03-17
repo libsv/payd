@@ -9,6 +9,7 @@ import (
 	"github.com/libsv/go-bt"
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
+	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd/config"
 	"github.com/theflyingcodr/lathos"
@@ -106,8 +107,8 @@ func (p *mapiOutputs) storeKeys(ctx context.Context, keyName string, derivID int
 	for _, o := range outs {
 		keys = append(keys, gopayd.CreateScriptKey{
 			LockingScript: o.Script,
-			KeyName:       keyName,
-			DerivationID:  derivID,
+			KeyName:       null.StringFrom(keyName),
+			DerivationID:  null.IntFrom(int64(derivID)),
 		})
 	}
 	return errors.Wrap(p.store.CreateScriptKeys(ctx, keys), "failed to create payment request when storing key map")

@@ -14,13 +14,15 @@ import (
 type paymailOutputs struct {
 	cfg    *config.Paymail
 	rdrwtr gopayd.PaymailReaderWriter
+	skWtr  gopayd.ScriptKeyWriter
 }
 
 // NewPaymailOutputs will setup and return a new paymailOutputs service that implements a paymentRequestOutputer.
-func NewPaymailOutputs(cfg *config.Paymail, rdrwtr gopayd.PaymailReaderWriter) *paymailOutputs {
+func NewPaymailOutputs(cfg *config.Paymail, rdrwtr gopayd.PaymailReaderWriter, skWtr gopayd.ScriptKeyWriter) *paymailOutputs {
 	return &paymailOutputs{
 		cfg:    cfg,
 		rdrwtr: rdrwtr,
+		skWtr:  skWtr,
 	}
 }
 
@@ -37,5 +39,12 @@ func (p *paymailOutputs) CreateOutputs(ctx context.Context, satoshis uint64, _ g
 		Domain: addr.Domain,
 		Alias:  addr.Alias,
 	}, gopayd.P2PPayment{Satoshis: satoshis})
-	return oo, errors.WithStack(err)
+
+	sk := make([]gopayd.CreateScriptKey, 0, len(oo))
+	for _, o := range oo {
+		sk = append(sk, gopayd.CreateScriptKey{
+			LockingScript: o.Script,
+		})
+	}
+	return oo, errors.Wrap(p.skWtr.CreateScriptKeys(ctx, sk), "failed to store paymail outputs")
 }

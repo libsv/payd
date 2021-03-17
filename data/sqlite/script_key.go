@@ -12,7 +12,7 @@ import (
 const (
 	sqlScriptKeyByScript = `
 		SELECT lockingscript, keyname, path
-		FROM script_keys as sk INNER JOIN derivation_paths dp on dp.ID = sk.derivationID
+		FROM script_keys as sk LEFT JOIN derivation_paths dp on dp.ID = sk.derivationID
 		WHERE lockingscript = :lockingscript
 	`
 
