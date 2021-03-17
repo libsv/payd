@@ -25,16 +25,13 @@ func TestCreatePayment_Validate(t *testing.T) {
 			req: CreatePayment{
 				Transaction:  "0x74657374696e672074657374696e67",
 				MerchantData: null.StringFrom("some data"),
-				RefundTo:     nil,
 				Memo:         "test this please",
 			},
 			exp: "[transaction: value provided does not have a valid prefix, value supplied is not valid hex]",
 		}, "transaction with invalid hex should error": {
 			req: CreatePayment{
-				Transaction:  "74657374696e672074657374696ezz67",
-				MerchantData: nil,
-				RefundTo:     nil,
-				Memo:         "test this please",
+				Transaction: "74657374696e672074657374696ezz67",
+				Memo:        "test this please",
 			},
 			exp: "[transaction: value supplied is not valid hex]",
 		}, "merchant data too long should error": {
@@ -48,14 +45,12 @@ func TestCreatePayment_Validate(t *testing.T) {
 					}
 					return null.StringFrom(string(bb))
 				}(),
-				RefundTo: nil,
-				Memo:     "test this please",
+				Memo: "test this please",
 			},
 			exp: "[merchantData: value must be between 0 and 10000 characters]",
 		}, "refundTo too long should error": {
 			req: CreatePayment{
-				Transaction:  "74657374696e672074657374696e67",
-				MerchantData: nil,
+				Transaction: "74657374696e672074657374696e67",
 				RefundTo: func() null.String {
 					bb := make([]byte, 0)
 					// generate string 1 more byte than 10000

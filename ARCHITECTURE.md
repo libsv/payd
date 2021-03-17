@@ -6,7 +6,7 @@ payd uses a standard 3 tier architecture with clear separation between these lay
 
 All domain objects are stored in the top level of the application enforcing Hexagonal structuring of the dependencies.
 
-## API
+## Transports
 
 This can contain one or more transport and is responsible for parsing requests and delivering responses via those specific transports.
 
@@ -20,7 +20,7 @@ This is where business logic lives and is agnostic entirely to the Transport lay
 
 It is responsible for validating data and enforcing the protocol rules.
 
-## Data Stores
+## Data
 
 Data stores each have their own top level package, named to match the store.
 
