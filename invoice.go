@@ -23,6 +23,7 @@ type InvoiceCreate struct {
 	Satoshis  uint64 `json:"satoshis" db:"satoshis"`
 }
 
+// Validate will check that InvoiceCreate params match expectations.
 func (i InvoiceCreate) Validate() validator.ErrValidation {
 	return validator.New().
 		Validate("satoshis", validator.MinUInt64(i.Satoshis, 546))
@@ -44,10 +45,12 @@ type InvoiceArgs struct {
 	PaymentID string `param:"paymentID" db:"paymentID"`
 }
 
+// Validate will check that invoice arguments match expectations.
 func (i *InvoiceArgs) Validate() validator.ErrValidation {
 	return validator.New().Validate("paymentID", validator.Length(i.PaymentID, 1, 30))
 }
 
+// InvoiceService defines a service for managing invoices.
 type InvoiceService interface {
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
 	Invoices(ctx context.Context) ([]Invoice, error)
@@ -61,6 +64,7 @@ type InvoiceReaderWriter interface {
 	InvoiceReader
 }
 
+// InvoiceWriter defines a data store used to write invoice data.
 type InvoiceWriter interface {
 	// Create will persist a new Invoice in the data store.
 	Create(ctx context.Context, req InvoiceCreate) (*Invoice, error)
@@ -69,6 +73,7 @@ type InvoiceWriter interface {
 	Delete(ctx context.Context, args InvoiceArgs) error
 }
 
+// InvoiceReader defines a data store used to read invoice data.
 type InvoiceReader interface {
 	// Invoice will return an invoice that matches the provided args.
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
