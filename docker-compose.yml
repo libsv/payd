@@ -4,8 +4,6 @@ services:
   payd:
     container_name: payd
     image: local.payd
-    build:
-      context: .
     environment:
       - DB_DSN=file:/data/wallet.db?cache=shared&_foreign_keys=true;
       - DB_SCHEMA_PATH=/schema

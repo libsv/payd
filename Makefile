@@ -45,6 +45,9 @@ run-compose-d:
 run-compose-dev:
 	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
+build-image-dev:
+	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+
 run-compose-dev-d:
 	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
