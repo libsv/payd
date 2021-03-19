@@ -110,6 +110,10 @@ func main() {
 	http.NewPaymentHandler(
 		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.SQLiteTransacter{})).
 		RegisterRoutes(g)
+	http.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
+		RegisterRoutes(g)
+	http.NewBalance(service.NewBalance(sqlLiteStore)).
+		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

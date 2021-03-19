@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos"
+	lathos "github.com/theflyingcodr/lathos/errs"
 	gopaymail "github.com/tonicpow/go-paymail"
 
 	gopayd "github.com/libsv/payd"

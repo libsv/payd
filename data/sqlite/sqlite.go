@@ -7,7 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos"
+	lathos "github.com/theflyingcodr/lathos/errs"
 )
 
 type sqliteStore struct {

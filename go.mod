@@ -17,13 +17,14 @@ require (
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8
-	github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f
+	github.com/theflyingcodr/govalidator v0.0.1
+	github.com/theflyingcodr/lathos v0.0.1
 	github.com/tonicpow/go-minercraft v0.2.2
 	github.com/tonicpow/go-paymail v0.1.6
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect

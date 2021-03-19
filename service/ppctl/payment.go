@@ -102,7 +102,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		pa.Memo = err.Error()
 		return nil, errors.Wrapf(err, "failed to complete payment for paymentID %s", args.PaymentID)
 	}
-	inv, err = p.invStore.Update(ctx, gopayd.UpdateInvoiceArgs{PaymentID: args.PaymentID}, gopayd.UpdateInvoice{
+	inv, err = p.invStore.Update(ctx, gopayd.InvoiceUpdateArgs{PaymentID: args.PaymentID}, gopayd.InvoiceUpdate{
 		RefundTo: req.RefundTo,
 	})
 	if err != nil {

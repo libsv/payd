@@ -73,10 +73,6 @@ type CreatePaymentArgs struct {
 	PaymentID string
 }
 
-type InvoiceUpdateArgs struct {
-	PaymentID string
-}
-
 type PaymentService interface {
 	CreatePayment(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
 }

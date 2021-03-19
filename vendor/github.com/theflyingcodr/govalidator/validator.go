@@ -69,7 +69,7 @@ func New() ErrValidation {
 }
 
 // Validate will log any errors found when evaluating the list of validation functions
-// supplied to it
+// supplied to it.
 func (e ErrValidation) Validate(field string, fns ...ValidationFunc) ErrValidation {
 	out := make([]string, 0)
 	for _, fn := range fns {
@@ -111,4 +111,10 @@ func (e ErrValidation) String() string {
 // can be passed as an error as well and being printable.
 func (e ErrValidation) Error() string {
 	return e.String()
+}
+
+// BadRequest implements the err BadRequest behaviour
+// from the https://github.com/theflyingcodr/lathos package.
+func (e ErrValidation) BadRequest() bool {
+	return true
 }

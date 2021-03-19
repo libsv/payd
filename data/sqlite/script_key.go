@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos"
+	lathos "github.com/theflyingcodr/lathos/errs"
+
+	gopayd "github.com/libsv/payd"
 )
 
 const (

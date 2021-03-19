@@ -12,7 +12,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd/config"
-	"github.com/theflyingcodr/lathos"
+	"github.com/theflyingcodr/lathos/errs"
 )
 
 const (
@@ -44,7 +44,7 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args g
 		return nil, errors.Wrap(err, "failed to check payment request is a duplicate")
 	}
 	if exists {
-		return nil, lathos.NewErrDuplicate(
+		return nil, errs.NewErrDuplicate(
 			duplicatePayment, fmt.Sprintf("payment request for paymentID %s already exists", args.PaymentID))
 	}
 	// get the master key stored

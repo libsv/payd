@@ -8,25 +8,35 @@ import (
 
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos"
+	lathos "github.com/theflyingcodr/lathos/errs"
 )
 
 const (
 	sqlCreateInvoice = `
 	INSERT INTO invoices(paymentID, satoshis)
-	VALUES(:paymentId, :satoshis)
+	VALUES(:paymentID, :satoshis)
 	`
 
 	sqlInvoiceByPayID = `
 	SELECT paymentId,satoshis,paymentReceivedAt
 	FROM invoices
-	WHERE paymentId = :paymentId
+	WHERE paymentId = :paymentID
+	`
+
+	sqlInvoices = `
+	SELECT paymentId,satoshis,paymentReceivedAt
+	FROM invoices
 	`
 
 	sqlInvoiceUpdate = `
 		UPDATE invoices 
 		SET paymentReceivedAt = :paymentReceivedAt, refundTo = :refundTo
 		WHERE paymentID = :paymentID
+	`
+
+	sqlInvoiceDelete = `
+	DELETE FROM invoices 
+	WHERE paymentID = :paymentID
 	`
 )
 
@@ -37,13 +47,25 @@ func (s *sqliteStore) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*go
 		if err == sql.ErrNoRows {
 			return nil, lathos.NewErrNotFound("N0001", fmt.Sprintf("invoice with paymentID %s not found", args.PaymentID))
 		}
-		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", args.PaymentID)
+		return nil, errors.Wrapf(err, "failed to get invoice with paymentID %s", args.PaymentID)
 	}
 	return &resp, nil
 }
 
+// Invoice will return an invoice that matches the provided args.
+func (s *sqliteStore) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
+	var resp []gopayd.Invoice
+	if err := s.db.SelectContext(ctx, &resp, sqlInvoices); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, lathos.NewErrNotFound("N0002", "no invoices found")
+		}
+		return nil, errors.Wrapf(err, "failed to get invoices")
+	}
+	return resp, nil
+}
+
 // Create will persist a new Invoice in the data store.
-func (s *sqliteStore) Create(ctx context.Context, req gopayd.CreateInvoice) (*gopayd.Invoice, error) {
+func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new invoice with paymentID %s", req.PaymentID)
@@ -52,8 +74,8 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.CreateInvoice) (*go
 	if err := handleNamedExec(tx, sqlCreateInvoice, req); err != nil {
 		return nil, errors.Wrap(err, "failed to insert invoice for ")
 	}
-	var resp *gopayd.Invoice
-	if err := tx.Get(&resp, sqlInvoiceByPayID, req); err != nil {
+	var resp gopayd.Invoice
+	if err := tx.Get(&resp, sqlInvoiceByPayID, req.PaymentID); err != nil {
 		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentID)
 	}
@@ -61,11 +83,11 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.CreateInvoice) (*go
 		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentID)
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // Update will update an invoice to mark it paid and return the result.
-func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
+func (s *sqliteStore) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdate) (*gopayd.Invoice, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with paymentID %s", args.PaymentID)
@@ -83,11 +105,33 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.UpdateInvoiceArgs,
 	return resp, nil
 }
 
+func (s *sqliteStore) Delete(ctx context.Context, args gopayd.InvoiceArgs) error {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete invoice with paymentID %s", args.PaymentID)
+	}
+	if _, err := s.Invoice(ctx, args); err != nil {
+		return errors.WithMessagef(err, "failed to find key with id %s to delete", args.PaymentID)
+	}
+	if err := handleNamedExec(tx, sqlInvoiceDelete, args); err != nil {
+		tx.Rollback()
+		if err == sql.ErrNoRows {
+			return lathos.NewErrNotFound("N0003", fmt.Sprintf("invoice with ID %s not found", args.PaymentID))
+		}
+		return errors.Wrapf(err, "failed to delete invoice for paymentID %s", args.PaymentID)
+	}
+	if err := commit(ctx, tx); err != nil {
+		tx.Rollback()
+		return errors.Wrapf(err, "failed to commit transaction when deleting invoice with paymentID %s", args.PaymentID)
+	}
+	return nil
+}
+
 // txUpdateInvoicePaid takes a db object / transaction and adds a transaction to the data store
 // along with utxos, returning the updated invoice.
 // This method can be used with other methods in the store allowing
 // multiple methods to be ran in the same db transaction.
-func (s *sqliteStore) txUpdateInvoicePaid(tx db, args gopayd.UpdateInvoiceArgs, req gopayd.UpdateInvoice) (*gopayd.Invoice, error) {
+func (s *sqliteStore) txUpdateInvoicePaid(tx db, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdate) (*gopayd.Invoice, error) {
 	req.PaymentReceivedAt = time.Now().UTC()
 	if err := handleNamedExec(tx, sqlInvoiceUpdate, map[string]interface{}{
 		"paymentReceivedAt": req.PaymentReceivedAt,

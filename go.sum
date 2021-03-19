@@ -234,6 +234,8 @@ github.com/smartystreets/goconvey v1.6.4 h1:fv0U8FUIMPNf1L9lnHLvLhgicrIVChEkdzIK
 github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9QV7WQ/tjFTllLA=
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
+github.com/speps/go-hashids v2.0.0+incompatible h1:kSfxGfESueJKTx0mpER9Y/1XHl+FVQjtCqRyYcviFbw=
+github.com/speps/go-hashids v2.0.0+incompatible/go.mod h1:P7hqPzMdnZOfyIk+xrlG1QaSMw+gCBdHKsBDnhpaZvc=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
 github.com/spf13/afero v1.5.1 h1:VHu76Lk0LSP1x254maIu2bplkWpfBWI+B+6fdoZprcg=
 github.com/spf13/afero v1.5.1/go.mod h1:Ai8FlHk4v/PARR026UzYexafAt9roJ7LcLMAmO6Z93I=
@@ -262,10 +264,10 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0 h1:Slr1R9HxAlEKefgq5jn9U+DnETlIUa6HfgEzj0g5d7s=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
-github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8 h1:ZFKKjJBEQgvskch4967VXK6GXJzQfD4LWhoDRP/lcOQ=
-github.com/theflyingcodr/govalidator v0.0.0-20210208161647-5c417b3f98e8/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
-github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f h1:unIyShuoTYMoirOAQTzg8yZOfVBFOcWjoeCdx9J/3ZM=
-github.com/theflyingcodr/lathos v0.0.0-20210223164735-16064c8bb41f/go.mod h1:7X8v2K379di+nLygPUS2+PruKV+8Rv0oXkRsw+24agE=
+github.com/theflyingcodr/govalidator v0.0.1 h1:OK05ffGU8T29OhzkU8JitSb4Kx7GZqxrrjhp15kstfA=
+github.com/theflyingcodr/govalidator v0.0.1/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
+github.com/theflyingcodr/lathos v0.0.1 h1:njT8mIxE9TyGnlprBXw9IVMHf42QGH3bc6J2GDhTdWk=
+github.com/theflyingcodr/lathos v0.0.1/go.mod h1:F1eTwqX1gWC85yNJO0KR5OITkTTjhKMH6P2ozCAgRNc=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tonicpow/go-minercraft v0.2.2 h1:fJTlqICjdyUwcjcEEEB+5pPkzewBRBWZIyKQnKMLRgw=
 github.com/tonicpow/go-minercraft v0.2.2/go.mod h1:nF1bA7cigoC8T9Et3PS4mLJdZjgTvtVLqPl54ZhP8qM=
