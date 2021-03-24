@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 
 run-service:
-	@go run -race main.go server
+	@go run -race cmd/bip270-server/main.go server
 
 run-all-tests: run-linter run-unit-tests
 
