@@ -1,0 +1,54 @@
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+body{
+    font-size:3rem;
+    background:#373737;
+}
+
+#satoshis{
+    text-align: center;
+    display: inline-block;
+    color:#e2e2e2;
+}
+
+.buttons{
+    text-align: center;
+    position: relative;
+}
+
+
+.buttons button{
+    border-radius: 50%;
+    width: 150px;
+    display: inline-block;
+    text-align: center;
+    line-height: 150px;
+    font-size: 5rem;
+    color:#e2e2e2;
+    background: none;
+    border:none;
+    transform: translateX(25%);
+}
+
+.buttons button:hover{
+    background: rgba(0,0,0,.2);
+    cursor:pointer;
+}
+
+.generate {
+    height: 80px;
+    background: darkseagreen;
+    border-radius: 40px;
+    border: none;
+    font-size: 2rem;
+}

@@ -1,6 +1,6 @@
 module github.com/libsv/payd
 
-go 1.15
+go 1.16
 
 require (
 	github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
