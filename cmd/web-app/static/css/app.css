@@ -22,13 +22,13 @@ body{
     height:80px;
 }
 
-.buttons{
+#buttons{
     text-align: center;
     position: relative;
 }
 
 
-.buttons button{
+#buttons button{
     border-radius: 50%;
     width: 150px;
     display: inline-block;
@@ -41,7 +41,7 @@ body{
     transform: translateX(25%);
 }
 
-.buttons button:hover{
+#buttons button:hover{
     background: rgba(0,0,0,.2);
     cursor:pointer;
 }
@@ -54,7 +54,7 @@ body{
     font-size: 2rem;
 }
 
-.done{
+#done{
     padding-top: 35px;
     color:green;
     font-size: 5rem !important;
@@ -76,4 +76,16 @@ body{
     font-size: 5rem !important;
     text-align: center;
     cursor:pointer;
+}
+
+*:focus {
+    outline: none;
+}
+
+#qrcode{
+    margin:50px;
+}
+
+#qrcode img{
+    width:80%;
 }

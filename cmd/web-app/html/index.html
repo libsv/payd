@@ -5,7 +5,7 @@
   <div class="row">
    <span id="satoshis" class="col-12"></span>
   </div>
-  <section class="buttons">
+  <section id="buttons">
    <div class="row button-row">
     <div class="col-3"> <button class="keypad">1</button></div>
     <div class="col-3"> <button class="keypad">2</button></div>
@@ -22,7 +22,7 @@
     <div class="col-3"> <button class="keypad">7</button></div>
     <div class="col-3"> <button class="keypad">8</button></div>
     <div class="col-3"> <button class="keypad">9</button></div>
-    <div class="col-3" title="confirm"><span class="material-icons done">done</span></div>
+    <div class="col-3" title="confirm"><span id="done" class="material-icons">done</span></div>
    </div>
    <div class="row">
     <div class="col-3"> </div>
@@ -33,7 +33,9 @@
   </section>
  </div>
  <div class="col-6">
-  other side
+  <div class="row">
+   <aside class="col-12" id="qrcode"></aside>
+  </div>
  </div>
 </div>
 </body>

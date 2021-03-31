@@ -43,13 +43,13 @@ run-compose-d:
 	@docker-compose up -d
 
 run-compose-dev:
-	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml up
 
 build-image-dev:
-	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
 
 run-compose-dev-d:
-	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d
 
 stop-compose:
 	@docker-compose down
