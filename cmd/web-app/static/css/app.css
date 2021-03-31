@@ -19,6 +19,7 @@ body{
     text-align: center;
     display: inline-block;
     color:#e2e2e2;
+    height:80px;
 }
 
 .buttons{
@@ -51,4 +52,28 @@ body{
     border-radius: 40px;
     border: none;
     font-size: 2rem;
+}
+
+.done{
+    padding-top: 35px;
+    color:green;
+    font-size: 5rem !important;
+    text-align: center;
+    cursor:pointer;
+}
+
+#back{
+    padding-top: 35px;
+    color:darkorange;
+    font-size: 5rem !important;
+    text-align: center;
+    cursor:pointer;
+}
+
+#cancel{
+    padding-top: 35px;
+    color:red;
+    font-size: 5rem !important;
+    text-align: center;
+    cursor:pointer;
 }

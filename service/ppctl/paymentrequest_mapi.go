@@ -7,12 +7,14 @@ import (
 	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt"
-	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
-	"github.com/libsv/payd/config"
+	gopayd "github.com/libsv/payd"
+
 	"github.com/theflyingcodr/lathos/errs"
+
+	"github.com/libsv/payd/config"
 )
 
 const (
@@ -73,6 +75,7 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args g
 		Amount: o.Satoshis,
 		Script: o.GetLockingScriptHexString(),
 	})
+
 	// store outputs so we can get them later for validation
 	if err := p.storeKeys(ctx, keyname, dp.ID, outs); err != nil {
 		return nil, errors.WithStack(err)

@@ -1,3 +1,5 @@
+// +build go1.16
+
 package main
 
 import (
@@ -29,7 +31,6 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		pp := strings.Split(req.URL.Path, "/")
 		path := pp[len(pp)-1]
-		log.Println("Serving request for path", path)
 		w.Header().Add("Content-Type", "text/html")
 		// respond with the output of template execution
 		if path == "" {
@@ -40,7 +41,7 @@ func main() {
 		}
 
 	})
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8888", nil); err != nil {
 		log.Fatal(err)
 	}
 }
