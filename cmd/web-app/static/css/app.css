@@ -16,6 +16,7 @@ body{
 }
 
 #satoshis{
+    background: rgba(0,0,0,.2);
     text-align: center;
     display: inline-block;
     color:#e2e2e2;

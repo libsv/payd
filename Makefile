@@ -37,19 +37,19 @@ go-doc-linux:
 	godoc -http=:6060
 
 run-compose:
-	@docker-compose up
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up
 
 run-compose-d:
-	@docker-compose up -d
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up -d
 
 run-compose-dev:
-	@docker-compose -f docker-compose.yml -f docker-compose.build.yml up
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up
 
-build-image-dev:
+build-image:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
 
 run-compose-dev-d:
-	@docker-compose -f docker-compose.yml -f docker-compose.build.yml up -d
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up -d
 
 stop-compose:
 	@docker-compose down
