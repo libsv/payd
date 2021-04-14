@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-// SetupLog will setup the logger
+// SetupLog will setup the logger.
 func SetupLog(cfg *Logging) {
 	switch cfg.Level {
 	case LogDebug:

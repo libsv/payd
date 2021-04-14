@@ -62,6 +62,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to setup database: %s", err)
 	}
+	// nolint:errcheck // dont care about error.
 	defer db.Close()
 
 	e := echo.New()
@@ -105,14 +106,14 @@ func main() {
 		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 		mapiStore := mapi.NewBroadcast(cfg.Mapi, mapiCli)
 		paymentSender = ppctl.NewPaymentMapiSender(mapiStore)
-		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, &paydSQL.SQLiteTransacter{}, sqlLiteStore)
+		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, &paydSQL.Transacter{}, sqlLiteStore)
 	}
 
 	http.NewPaymentRequestHandler(
 		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore)).
 		RegisterRoutes(g)
 	http.NewPaymentHandler(
-		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.SQLiteTransacter{})).
+		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{})).
 		RegisterRoutes(g)
 	http.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
 		RegisterRoutes(g)

@@ -60,7 +60,7 @@ type PaymentACK struct {
 	// A number indicating why the transaction was not accepted. 0 or undefined indicates no error.
 	// A 1 or any other positive integer indicates an error. The errors are left undefined for now;
 	// it is recommended only to use “1” and to fill the memo with a textual explanation about why
-	// the transaction was not accepted until further numbers are defined and standardized.
+	// the transaction was not accepted until further numbers are defined and standardised.
 	Error int `json:"error,omitempty"`
 	// TODO: check anypay https://docs.anypayinc.com/pay-protocol/overview
 	// and consider deleting success field because seems they don't actually

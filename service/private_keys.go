@@ -29,7 +29,7 @@ func NewPrivateKeys(store gopayd.PrivateKeyReaderWriter, useMainNet bool) *priva
 	}
 }
 
-// Create creates a extended private key for a keyName
+// Create creates a extended private key for a keyName.
 func (svc *privateKey) Create(ctx context.Context, keyName string) error { // get keyname from settings in caller
 	key, err := svc.store.PrivateKey(ctx, gopayd.KeyArgs{Name: keyName})
 	if err != nil {
@@ -59,7 +59,7 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 	return nil
 }
 
-// PrivateKey returns the extended private key for a keyname
+// PrivateKey returns the extended private key for a keyname.
 func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeychain.ExtendedKey, error) {
 	key, err := svc.store.PrivateKey(ctx, gopayd.KeyArgs{Name: keyName})
 	if err != nil {
@@ -112,12 +112,12 @@ func getChildInt(child string) (uint32, error) {
 	return uint32(t) + suffix, nil
 }
 
-// PrivFromXPrv returns an ECDSA private key from an extended private key
+// PrivFromXPrv returns an ECDSA private key from an extended private key.
 func PrivFromXPrv(xprv *hdkeychain.ExtendedKey) (*bsvec.PrivateKey, error) {
 	return xprv.ECPrivKey()
 }
 
-// PubFromXPrv returns an ECDSA public key from an extended private key
+// PubFromXPrv returns an ECDSA public key from an extended private key.
 func (svc *privateKey) PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error) {
 	pub, err := xprv.ECPubKey()
 	if err != nil {

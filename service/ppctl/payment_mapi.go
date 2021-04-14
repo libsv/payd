@@ -11,6 +11,7 @@ type paymentMapiService struct {
 	sender gopayd.PaymentSender
 }
 
+// NewPaymentMapiSender will setup and return a new mapi payment service.
 func NewPaymentMapiSender(sender gopayd.PaymentSender) *paymentMapiService {
 	return &paymentMapiService{sender: sender}
 }

@@ -17,6 +17,7 @@ type invoice struct {
 	cfg   *config.Server
 }
 
+// NewInvoice will setup and return a new invoice service.
 func NewInvoice(cfg *config.Server, store gopayd.InvoiceReaderWriter) *invoice {
 	return &invoice{
 		cfg:   cfg,

@@ -13,6 +13,7 @@ type balance struct {
 	svc gopayd.BalanceService
 }
 
+// NewBalance will setup and return a balance handler.
 func NewBalance(svc gopayd.BalanceService) *balance {
 	return &balance{svc: svc}
 }

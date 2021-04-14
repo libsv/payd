@@ -21,7 +21,7 @@ const (
 func (s *sqliteStore) Balance(ctx context.Context) (*gopayd.Balance, error) {
 	var resp gopayd.Balance
 	if err := s.db.GetContext(ctx, &resp, sqlBalance); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return &gopayd.Balance{Satoshis: 0}, nil
 		}
 		return nil, errors.Wrap(err, "failed to get balance")

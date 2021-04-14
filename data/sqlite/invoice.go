@@ -44,7 +44,7 @@ const (
 func (s *sqliteStore) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*gopayd.Invoice, error) {
 	var resp gopayd.Invoice
 	if err := s.db.GetContext(ctx, &resp, sqlInvoiceByPayID, args.PaymentID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound("N0001", fmt.Sprintf("invoice with paymentID %s not found", args.PaymentID))
 		}
 		return nil, errors.Wrapf(err, "failed to get invoice with paymentID %s", args.PaymentID)
@@ -56,7 +56,7 @@ func (s *sqliteStore) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*go
 func (s *sqliteStore) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 	var resp []gopayd.Invoice
 	if err := s.db.SelectContext(ctx, &resp, sqlInvoices); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound("N0002", "no invoices found")
 		}
 		return nil, errors.Wrapf(err, "failed to get invoices")
@@ -115,7 +115,7 @@ func (s *sqliteStore) Delete(ctx context.Context, args gopayd.InvoiceArgs) error
 	}
 	if err := handleNamedExec(tx, sqlInvoiceDelete, args); err != nil {
 		tx.Rollback()
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return lathos.NewErrNotFound("N0003", fmt.Sprintf("invoice with ID %s not found", args.PaymentID))
 		}
 		return errors.Wrapf(err, "failed to delete invoice for paymentID %s", args.PaymentID)

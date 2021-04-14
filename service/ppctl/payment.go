@@ -25,7 +25,7 @@ type payment struct {
 	txrunner gopayd.Transacter
 }
 
-// NewPaymentFacade will create and return a new facade to determine between payments to use.
+// NewPayment will create and return a new payment service.
 func NewPayment(store gopayd.PaymentWriter, script gopayd.ScriptKeyReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
 	return &payment{
 		store:    store,
@@ -90,7 +90,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}
 	ctx = p.txrunner.WithTx(ctx)
 	// Store utxos and set invoice to paid.
-	if _, err := p.store.StoreUtxos(ctx, gopayd.CreateTransaction{
+	if _, err = p.store.StoreUtxos(ctx, gopayd.CreateTransaction{
 		PaymentID: inv.PaymentID,
 		TxID:      tx.GetTxID(),
 		TxHex:     req.Transaction,

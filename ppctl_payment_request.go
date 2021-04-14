@@ -71,7 +71,7 @@ type PaymentRequestArgs struct {
 }
 
 // PaymentRequestService can be implemented to enforce business rules
-// and process in order to fulfill a PaymentRequest.
+// and process in order to fulfil a PaymentRequest.
 type PaymentRequestService interface {
 	CreatePaymentRequest(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
 }

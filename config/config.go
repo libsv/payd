@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Environment variable constants.
 const (
 	EnvServerPort     = "server.port"
 	EnvServerHost     = "server.host"
@@ -67,6 +68,7 @@ func (d *Deployment) String() string {
 		d.Environment, d.AppName, d.Region, d.Version, d.Commit, d.BuildDate)
 }
 
+// Logging contains log configuration.
 type Logging struct {
 	Level string
 }
@@ -91,12 +93,14 @@ type Paymail struct {
 	Address    string
 }
 
+// Wallet contains information relating to a payd installation.
 type Wallet struct {
 	Network           string
 	MerchantAvatarURL string
 	MerchantName      string
 }
 
+// MApi contains MAPI connection settings.
 type MApi struct {
 	MinerName string
 	URL       string

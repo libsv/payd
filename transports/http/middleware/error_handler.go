@@ -21,14 +21,14 @@ func ErrorHandler(err error, c echo.Context) {
 		resp := map[string]interface{}{
 			"errors": valErr,
 		}
-		c.JSON(http.StatusBadRequest, resp)
+		_ = c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	// Internal error, log it to a system and return small detail
 	if !lathos.IsClientError(err) {
 		log.Error(errs.NewErrInternal(err, nil))
-		c.String(http.StatusInternalServerError, err.Error())
+		_ = c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	var clientErr lathos.ClientError
@@ -45,19 +45,19 @@ func ErrorHandler(err error, c echo.Context) {
 		Message: clientErr.Detail(),
 	}
 	if lathos.IsNotFound(err) {
-		c.JSON(http.StatusNotFound, resp)
+		_ = c.JSON(http.StatusNotFound, resp)
 		return
 	}
 	if lathos.IsDuplicate(err) {
-		c.JSON(http.StatusConflict, resp)
+		_ = c.JSON(http.StatusConflict, resp)
 		return
 	}
 	if lathos.IsNotAuthenticated(err) {
-		c.JSON(http.StatusUnauthorized, resp)
+		_ = c.JSON(http.StatusUnauthorized, resp)
 		return
 	}
 	if lathos.IsNotAuthorised(err) {
-		c.JSON(http.StatusForbidden, resp)
+		_ = c.JSON(http.StatusForbidden, resp)
 		return
 	}
 }

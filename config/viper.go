@@ -1,30 +1,14 @@
 package config
 
 import (
-	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
+// NewViperConfig will setup and return a new viper based configuration handler.
 func NewViperConfig(appname string) *Config {
-	viper.SetConfigName("config")
-	viper.SetConfigType("ini")
-	viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appname))
-	viper.AddConfigPath(fmt.Sprintf("$HOME/.%s", appname))
-	viper.AddConfigPath(".")
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found
-			viper.Set("debug", false)
-			viper.Set("port", 1323)
-		} else {
-			log.Fatalf("Fatal error config file: %s", err)
-		}
-	}
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	return &Config{}
@@ -62,6 +46,7 @@ func (c *Config) WithDeployment(appName string) *Config {
 	return c
 }
 
+// WithLog sets up and returns log config.
 func (c *Config) WithLog() *Config {
 	viper.SetDefault(EnvLogLevel, "info")
 	c.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}

@@ -12,7 +12,7 @@ import (
 	"github.com/boombuler/barcode/qr"
 )
 
-// Page comment
+// Page comment.
 type Page struct {
 	Title string
 }
@@ -28,7 +28,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	wd, _ := os.Getwd()
 	fmt.Println(wd)
 	t, _ := template.ParseFiles("./cmd/qrcode/generator.html")
-	t.Execute(w, p)
+	_ = t.Execute(w, p)
 }
 
 func viewCodeHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,5 +37,5 @@ func viewCodeHandler(w http.ResponseWriter, r *http.Request) {
 	qrCode, _ := qr.Encode(dataString, qr.L, qr.Auto)
 	qrCode, _ = barcode.Scale(qrCode, 512, 512)
 
-	png.Encode(w, qrCode)
+	_ = png.Encode(w, qrCode)
 }

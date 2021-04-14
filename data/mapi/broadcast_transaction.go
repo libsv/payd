@@ -14,6 +14,7 @@ type broadcast struct {
 	cfg    *config.MApi
 }
 
+// NewBroadcast will setup and return a new MAPI broadcast data store.
 func NewBroadcast(cfg *config.MApi, client *minercraft.Client) *broadcast {
 	return &broadcast{client: client, cfg: cfg}
 }

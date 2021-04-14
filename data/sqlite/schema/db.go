@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/jmoiron/sqlx"
+	// sqlite gets wired up automatically.
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/libsv/payd/config"
@@ -22,6 +23,7 @@ func MustSetup(cfg *config.Db) {
 	if err != nil {
 		log.Fatalf("failed to setup database: %s", err)
 	}
+	// nolint:errcheck // dont care about this error
 	defer db.Close()
 
 	var schemaCount int

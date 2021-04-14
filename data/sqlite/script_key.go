@@ -27,7 +27,7 @@ const (
 func (s *sqliteStore) ScriptKey(ctx context.Context, args gopayd.ScriptKeyArgs) (*gopayd.ScriptKey, error) {
 	var resp gopayd.ScriptKey
 	if err := s.db.GetContext(ctx, &resp, sqlScriptKeyByScript, args.LockingScript); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound("N002", "could not find locking script")
 		}
 		return nil, errors.Wrapf(err, "failed to get script key using locking script %s", args.LockingScript)

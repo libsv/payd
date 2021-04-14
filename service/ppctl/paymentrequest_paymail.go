@@ -39,7 +39,9 @@ func (p *paymailOutputs) CreateOutputs(ctx context.Context, satoshis uint64, _ g
 		Domain: addr.Domain,
 		Alias:  addr.Alias,
 	}, gopayd.P2PPayment{Satoshis: satoshis})
-
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create outputs for Alias %s", addr.Alias)
+	}
 	sk := make([]gopayd.CreateScriptKey, 0, len(oo))
 	for _, o := range oo {
 		sk = append(sk, gopayd.CreateScriptKey{

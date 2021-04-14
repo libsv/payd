@@ -12,9 +12,11 @@ import (
 	"strings"
 )
 
+// nolint:gochecknoglobals // embed needs these variables
 //go:embed html/*.html
 var htmlFs embed.FS
 
+// nolint:gochecknoglobals // embed needs these variables
 //go:embed static/*
 var static embed.FS
 

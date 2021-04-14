@@ -6,6 +6,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
+// Transaction defines a single transaction.
 type Transaction struct {
 	PaymentID string    `db:"paymentID"`
 	TxID      string    `db:"txid"`
@@ -14,6 +15,7 @@ type Transaction struct {
 	Outputs   []Txo     `db:"-"`
 }
 
+// Txo defines a single txo and can be returned from the data store.
 type Txo struct {
 	Outpoint       string      `db:"outpoint"`
 	TxID           string      `db:"txid"`
@@ -28,6 +30,7 @@ type Txo struct {
 	ModifiedAt     time.Time   `db:"modifiedAt"`
 }
 
+// CreateTransaction is used to insert a tx into the data store.
 type CreateTransaction struct {
 	PaymentID string      `db:"paymentID"`
 	TxID      string      `db:"txid"`
@@ -35,6 +38,7 @@ type CreateTransaction struct {
 	Outputs   []CreateTxo `db:"-"`
 }
 
+// CreateTxo is used to create a single txo in the data store.
 type CreateTxo struct {
 	Outpoint       string      `db:"outpoint"`
 	TxID           string      `db:"txid"`
@@ -57,6 +61,7 @@ type SpendTxoArgs struct {
 	Outpoint string
 }
 
+// TxoArgs is used to get a single txo.
 type TxoArgs struct {
 	Outpoint string
 }

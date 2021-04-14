@@ -39,7 +39,6 @@ func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txr
 
 // CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
 func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args gopayd.PaymentRequestArgs) ([]*gopayd.Output, error) {
-	// TODO: I hate this here
 	ctx = p.txrunner.WithTx(ctx)
 	exists, err := p.store.DerivationPathExists(ctx, gopayd.DerivationPathExistsArgs{PaymentID: args.PaymentID})
 	if err != nil {
