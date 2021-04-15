@@ -35,28 +35,26 @@ func (s *sqliteStore) DerivationPathCreate(ctx context.Context, req gopayd.Deriv
 	if err != nil {
 		return nil, fmt.Errorf("failed to start tx for creating derivPath %w", err)
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	res, err := tx.NamedExec(sqlReserveDerivPath, req)
 	if err != nil {
-		tx.Rollback()
 		return nil, fmt.Errorf("failed to create derivation path %w", err)
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		tx.Rollback()
 		return nil, fmt.Errorf("failed to get rows affected when creating derivation path %w", err)
 	}
 	if rows <= 0 {
-		tx.Rollback()
 		return nil, errors.New("no rows affected when creating derivation path")
 	}
 	id, err := res.LastInsertId()
 	if err != nil {
-		tx.Rollback()
 		return nil, fmt.Errorf("failed to get lastInsertedID when creating derivation path %w", err)
 	}
 	var dp gopayd.DerivationPath
 	if err := tx.Get(&dp, sqlDerivationPathByID, id); err != nil {
-		tx.Rollback()
 		return nil, fmt.Errorf("failed to get derivation path with id %d when creating derivation path %w", id, err)
 	}
 	if err := commit(ctx, tx); err != nil {

@@ -42,8 +42,10 @@ func (s *sqliteStore) CreateScriptKeys(ctx context.Context, req []gopayd.CreateS
 	if err != nil {
 		return errors.Wrap(err, "failed to create transaction")
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	if err := handleNamedExec(tx, sqlScriptKeysInsert, req); err != nil {
-		tx.Rollback()
 		return errors.Wrap(err, "failed to insert script keys.")
 	}
 	return errors.Wrap(commit(ctx, tx), "failed to commit transaction when creating script keys.")

@@ -29,17 +29,18 @@ type ScriptKeyArgs struct {
 	LockingScript string `db:"lockingscript"`
 }
 
-// ScriptKeyStorer can be implemented to store and return ScriptKeys.
+// ScriptKeyReaderWriter can be implemented to store and return ScriptKeys.
 type ScriptKeyReaderWriter interface {
 	ScriptKeyWriter
 	ScriptKeyReader
 }
 
-// ScriptKeyStorer can be implemented to store and return ScriptKeys.
+// ScriptKeyWriter can be implemented to store and return ScriptKeys.
 type ScriptKeyWriter interface {
 	CreateScriptKeys(ctx context.Context, req []CreateScriptKey) error
 }
 
+// ScriptKeyReader reads script key info from a data store.
 type ScriptKeyReader interface {
 	// ScriptKey will return a scriptKey matching the args field.
 	ScriptKey(ctx context.Context, args ScriptKeyArgs) (*ScriptKey, error)

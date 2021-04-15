@@ -70,17 +70,17 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*go
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new invoice with paymentID %s", req.PaymentID)
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	if err := handleNamedExec(tx, sqlCreateInvoice, req); err != nil {
 		return nil, errors.Wrap(err, "failed to insert invoice for ")
 	}
 	var resp gopayd.Invoice
 	if err := tx.Get(&resp, sqlInvoiceByPayID, req.PaymentID); err != nil {
-		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentID)
 	}
 	if err := commit(ctx, tx); err != nil {
-		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentID)
 	}
 	return &resp, nil
@@ -92,14 +92,15 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs,
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with paymentID %s", args.PaymentID)
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	req.PaymentReceivedAt = time.Now().UTC()
 	resp, err := s.txUpdateInvoicePaid(tx, args, req)
 	if err != nil {
-		tx.Rollback()
 		return nil, errors.Wrap(err, "failed to update invoice")
 	}
 	if err := commit(ctx, tx); err != nil {
-		tx.Rollback()
 		return nil, errors.Wrapf(err, "failed to commit transaction when updating invoice with paymentID %s", args.PaymentID)
 	}
 	return resp, nil
@@ -110,18 +111,19 @@ func (s *sqliteStore) Delete(ctx context.Context, args gopayd.InvoiceArgs) error
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete invoice with paymentID %s", args.PaymentID)
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	if _, err := s.Invoice(ctx, args); err != nil {
 		return errors.WithMessagef(err, "failed to find key with id %s to delete", args.PaymentID)
 	}
 	if err := handleNamedExec(tx, sqlInvoiceDelete, args); err != nil {
-		tx.Rollback()
 		if errors.Is(err, sql.ErrNoRows) {
 			return lathos.NewErrNotFound("N0003", fmt.Sprintf("invoice with ID %s not found", args.PaymentID))
 		}
 		return errors.Wrapf(err, "failed to delete invoice for paymentID %s", args.PaymentID)
 	}
 	if err := commit(ctx, tx); err != nil {
-		tx.Rollback()
 		return errors.Wrapf(err, "failed to commit transaction when deleting invoice with paymentID %s", args.PaymentID)
 	}
 	return nil

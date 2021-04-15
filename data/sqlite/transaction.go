@@ -8,14 +8,15 @@ import (
 )
 
 func (s *sqliteStore) StoreUtxos(ctx context.Context, req gopayd.CreateTransaction) (*gopayd.Transaction, error) {
-
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start transaction when inserting transaction to db")
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	resp, err := s.txCreateTransaction(tx, req)
 	if err != nil {
-		tx.Rollback()
 		return nil, errors.Wrap(err, "failed to create transaction and utxos")
 	}
 	return resp, errors.Wrapf(commit(ctx, tx),

@@ -84,6 +84,7 @@ type PaymentRequestReaderWriter interface {
 	DerivationPathReaderWriter
 }
 
+// PaymentRequestOutputer will create outputs that equal the amount of request satoshis.
 type PaymentRequestOutputer interface {
 	CreateOutputs(ctx context.Context, satoshis uint64, args PaymentRequestArgs) ([]*Output, error)
 }

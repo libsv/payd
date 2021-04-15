@@ -46,6 +46,18 @@ func commit(ctx context.Context, tx *sqlx.Tx) error {
 	return tx.Commit()
 }
 
+// rollback a transaction, if there is a context based tx
+// this will not rollback - we wait on the context to close it.
+func rollback(ctx context.Context, tx *sqlx.Tx) error {
+	ctxx := TxFromContext(ctx)
+	if ctxx != nil {
+		if ctxx.Tx != nil {
+			return nil
+		}
+	}
+	return tx.Rollback()
+}
+
 func handleNamedExec(tx db, sql string, args interface{}) error {
 	res, err := tx.NamedExec(sql, args)
 	if err != nil {
@@ -65,6 +77,7 @@ func handleExecRows(res sql.Result) error {
 	return nil
 }
 
+// nolint:deadcode,unused // wip
 func dbErr(err error, errCode, message string) error {
 	if err == nil {
 		return err
@@ -75,6 +88,7 @@ func dbErr(err error, errCode, message string) error {
 	return errors.WithMessage(err, message)
 }
 
+// nolint:deadcode,unused // wip
 func dbErrf(err error, errCode, format string, args ...interface{}) error {
 	if err == nil {
 		return err
@@ -94,6 +108,7 @@ type db interface {
 
 type execKey int
 
+// nolint:gochecknoglobals // this variable is fine as it's used for context & is private
 var exec execKey
 
 // Tx wraps the transaction used in context.
@@ -129,6 +144,15 @@ func (t *Transacter) Commit(ctx context.Context) error {
 	tx := TxFromContext(ctx)
 	if tx.Tx != nil {
 		return tx.Tx.Commit()
+	}
+	return nil
+}
+
+// Rollback will revert the tx and rollback any changes.
+func (t *Transacter) Rollback(ctx context.Context) error {
+	tx := TxFromContext(ctx)
+	if tx.Tx != nil {
+		return tx.Tx.Rollback()
 	}
 	return nil
 }

@@ -34,8 +34,6 @@ type CreatePayment struct {
 func (c CreatePayment) Validate() validator.ErrValidation {
 	v := validator.New().
 		Validate("transaction",
-			validator.NoPrefix(c.Transaction, "0x"),
-			validator.IsHex(c.Transaction),
 			func() error {
 				if _, err := bt.NewTxFromString(c.Transaction); err != nil {
 					return errors.New("not a valid bitcoin transaction")
@@ -69,14 +67,17 @@ type PaymentACK struct {
 	Success string `json:"success,omitempty"` // 'true' or 'false' string
 }
 
+// CreatePaymentArgs identifies the paymentID used for the payment.
 type CreatePaymentArgs struct {
 	PaymentID string
 }
 
+// PaymentService enforces business rules when creating payments.
 type PaymentService interface {
 	CreatePayment(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
 }
 
+// PaymentWriter reads payment info from a data store.
 type PaymentWriter interface {
 	// CompletePayment when implemented can store the tx and utxos as well as update the invoice as paid.
 	StoreUtxos(ctx context.Context, req CreateTransaction) (*Transaction, error)

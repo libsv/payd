@@ -27,6 +27,7 @@ type DerivationPathArgs struct {
 	ID int `db:"id"`
 }
 
+// DerivationPathExistsArgs are used to identify a derivPath by the paymentID .
 type DerivationPathExistsArgs struct {
 	PaymentID string `db:"paymentID"`
 }

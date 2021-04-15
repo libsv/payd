@@ -41,11 +41,13 @@ type PrivateKeyReaderWriter interface {
 	PrivateKeyWriter
 }
 
+// PrivateKeyReader reads private info from a data store.
 type PrivateKeyReader interface {
 	// PrivateKey can be used to return an existing private key.
 	PrivateKey(ctx context.Context, args KeyArgs) (*PrivateKey, error)
 }
 
+// PrivateKeyWriter will add private key to the datastore.
 type PrivateKeyWriter interface {
 	// CreatePrivateKey will add a new private key to the data store.
 	CreatePrivateKey(ctx context.Context, req PrivateKey) (*PrivateKey, error)
