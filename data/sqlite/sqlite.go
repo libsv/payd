@@ -80,7 +80,7 @@ func handleExecRows(res sql.Result) error {
 // nolint:deadcode,unused // wip
 func dbErr(err error, errCode, message string) error {
 	if err == nil {
-		return err
+		return nil
 	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return lathos.NewErrNotFound(errCode, message)
@@ -91,7 +91,7 @@ func dbErr(err error, errCode, message string) error {
 // nolint:deadcode,unused // wip
 func dbErrf(err error, errCode, format string, args ...interface{}) error {
 	if err == nil {
-		return err
+		return nil
 	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return lathos.NewErrNotFound(errCode, fmt.Sprintf(format, args...))
