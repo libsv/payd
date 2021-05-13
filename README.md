@@ -1,1 +1,1 @@
-# go-payd
+# payd 
