@@ -1,5 +1,8 @@
 SHELL=/bin/bash
 
+help:
+	@egrep -h '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
+
 run-service:
 	@go run -race cmd/bip270-server/main.go server
 
