@@ -23,7 +23,6 @@ type powmailClient interface {
 	GetSRVRecord(service, protocol, domainName string) (srv *net.SRV, err error)
 	GetCapabilities(target string, port int) (response *gopaymail.Capabilities, err error)
 	GetP2PPaymentDestination(p2pURL, alias, domain string, paymentRequest *gopaymail.PaymentRequest) (response *gopaymail.PaymentDestination, err error)
-	SendP2PTransaction(p2pURL, alias, domain string, transaction *gopaymail.P2PTransaction) (response *gopaymail.P2PTransactionResponse, err error)
 	VerifyPubKey(verifyURL, alias, domain, pubKey string) (response *gopaymail.Verification, err error)
 }
 
@@ -91,30 +90,4 @@ func (p *paymail) OutputsCreate(ctx context.Context, args gopayd.P2POutputCreate
 		return nil, errors.Wrapf(err, "failed to generate paymail outputs for alias %s", args.Alias)
 	}
 	return models.OutputsToPayd(resp.Outputs), nil
-}
-
-// Broadcast will transmit a transaction via paymail to a destination address.
-// A lathos.NotFound error will be returned if the paymail destination doesn't exist or
-// the paymail service doesn't have BRFCP2PTransactions capability.
-func (p *paymail) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
-	url, err := p.Capability(ctx, gopayd.P2PCapabilityArgs{
-		Domain: p.addr.Domain,
-		BrfcID: gopaymail.BRFCP2PTransactions,
-	})
-	if err != nil {
-		return errors.Wrapf(err, "failed to send transaction for paymentID %s", args.PaymentID)
-	}
-	if _, err := p.cli.SendP2PTransaction(url, p.addr.Alias, p.addr.Domain, &gopaymail.P2PTransaction{
-		Hex:       req.Transaction,
-		Reference: args.PaymentID,
-		MetaData: &gopaymail.P2PMetaData{
-			Note: fmt.Sprintf("paymentID: %s, refundTo: %s", args.PaymentID, req.RefundTo.ValueOrZero()),
-		},
-	}); err != nil {
-		if err.Error() == "paymail address not found" {
-			return lathos.NewErrNotFound("N002", err.Error())
-		}
-		return errors.Wrapf(err, "failed to send transaction for paymentID %s", args.PaymentID)
-	}
-	return nil
 }

@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bitcoinsv/bsvd/bsvec"
-	"github.com/bitcoinsv/bsvd/chaincfg"
-	"github.com/bitcoinsv/bsvutil/hdkeychain"
+	"github.com/libsv/go-bk/bec"
+	"github.com/libsv/go-bk/bip32"
+	"github.com/libsv/go-bk/chaincfg"
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
@@ -38,15 +38,15 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 	if key != nil {
 		return nil
 	}
-	seed, err := hdkeychain.GenerateSeed(hdkeychain.RecommendedSeedLen)
+	seed, err := bip32.GenerateSeed(bip32.RecommendedSeedLen)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate seed")
 	}
-	chain := &chaincfg.TestNet3Params
+	chain := &chaincfg.TestNet
 	if svc.useMainNet {
-		chain = &chaincfg.MainNetParams
+		chain = &chaincfg.MainNet
 	}
-	xprv, err := hdkeychain.NewMaster(seed, chain)
+	xprv, err := bip32.NewMaster(seed, chain)
 	if err != nil {
 		return errors.Wrap(err, "failed to create master node for given seed and chain")
 	}
@@ -60,7 +60,7 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 }
 
 // PrivateKey returns the extended private key for a keyname.
-func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeychain.ExtendedKey, error) {
+func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error) {
 	key, err := svc.store.PrivateKey(ctx, gopayd.KeyArgs{Name: keyName})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get key %s by name", keyName)
@@ -69,7 +69,7 @@ func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeych
 		return nil, errors.Wrap(err, "key not found")
 	}
 
-	xKey, err := hdkeychain.NewKeyFromString(key.Xprv)
+	xKey, err := bip32.NewKeyFromString(key.Xprv)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get extended key from xpriv")
 	}
@@ -77,7 +77,7 @@ func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*hdkeych
 }
 
 // DeriveChildFromKey will create a private key derived from a parent extended private key at the given derivationPath.
-func (svc *privateKey) DeriveChildFromKey(startingKey *hdkeychain.ExtendedKey, derivationPath string) (*hdkeychain.ExtendedKey, error) { // TODO: check startingKey not pointer
+func (svc *privateKey) DeriveChildFromKey(startingKey *bip32.ExtendedKey, derivationPath string) (*bip32.ExtendedKey, error) { // TODO: check startingKey not pointer
 	key := startingKey
 	if derivationPath != "" {
 		children := strings.Split(derivationPath, "/")
@@ -112,17 +112,11 @@ func getChildInt(child string) (uint32, error) {
 	return uint32(t) + suffix, nil
 }
 
-// PrivFromXPrv returns an ECDSA private key from an extended private key.
-func PrivFromXPrv(xprv *hdkeychain.ExtendedKey) (*bsvec.PrivateKey, error) {
-	return xprv.ECPrivKey()
-}
-
 // PubFromXPrv returns an ECDSA public key from an extended private key.
-func (svc *privateKey) PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error) {
+func (svc *privateKey) PubFromXPrv(xprv *bip32.ExtendedKey) (*bec.PublicKey, error) {
 	pub, err := xprv.ECPubKey()
 	if err != nil {
 		return nil, err
 	}
-
-	return pub.SerializeCompressed(), nil
+	return pub, nil
 }

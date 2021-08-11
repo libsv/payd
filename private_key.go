@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/bitcoinsv/bsvutil/hdkeychain"
+	"github.com/libsv/go-bk/bec"
+	"github.com/libsv/go-bk/bip32"
 )
 
 // PrivateKey describes a named private key.
@@ -28,11 +29,11 @@ type PrivateKeyService interface {
 	// Create will create a new private key if it doesn't exist already.
 	Create(ctx context.Context, keyName string) error
 	// PrivateKey will return a private key.
-	PrivateKey(ctx context.Context, keyName string) (*hdkeychain.ExtendedKey, error)
+	PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error)
 	// DeriveChildFromKey will create a private key derived from a parent key at the given derivationPath.
-	DeriveChildFromKey(startingKey *hdkeychain.ExtendedKey, derivationPath string) (*hdkeychain.ExtendedKey, error)
+	DeriveChildFromKey(startingKey *bip32.ExtendedKey, derivationPath string) (*bip32.ExtendedKey, error)
 	// PubFromXPrv will generate a public key from an extended private key.
-	PubFromXPrv(xprv *hdkeychain.ExtendedKey) ([]byte, error)
+	PubFromXPrv(xprv *bip32.ExtendedKey) (*bec.PublicKey, error)
 }
 
 // PrivateKeyReaderWriter describes a data store that can be implemented to get and store private keys.

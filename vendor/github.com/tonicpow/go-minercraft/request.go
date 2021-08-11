@@ -3,6 +3,7 @@ package minercraft
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -85,17 +86,34 @@ func httpRequest(ctx context.Context, client *Client,
 	// Set the status
 	response.StatusCode = resp.StatusCode
 
+	if resp.Body != nil {
+		// Read the body
+		response.BodyContents, response.Error = ioutil.ReadAll(resp.Body)
+	}
 	// Check status code
-	if http.StatusOK != resp.StatusCode {
+	if http.StatusOK == resp.StatusCode {
+		return
+	}
+	// unexpected status, write an error.
+	if response.BodyContents == nil {
+		// There's no "body" present, so just echo status code.
 		response.Error = fmt.Errorf(
 			"status code: %d does not match %d",
 			resp.StatusCode, http.StatusOK,
 		)
 		return
 	}
-
-	// Read the body
-	response.BodyContents, response.Error = ioutil.ReadAll(resp.Body)
-
+	// Have a "body" so map to an error type and add to the error message.
+	errBody := struct {
+		Error string `json:"error"`
+	}{}
+	if err := json.Unmarshal(response.BodyContents, &errBody); err != nil {
+		response.Error = fmt.Errorf("failed to unmarshal mapi error response: %w", err)
+		return
+	}
+	response.Error = fmt.Errorf(
+		"status code: %d does not match %d, error: %s",
+		resp.StatusCode, http.StatusOK, errBody.Error,
+	)
 	return
 }

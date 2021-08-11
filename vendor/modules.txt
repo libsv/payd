@@ -1,7 +1,6 @@
-# github.com/bitcoinschema/go-bitcoin v0.3.15
+# github.com/bitcoinschema/go-bitcoin v0.3.17
 github.com/bitcoinschema/go-bitcoin
 # github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
-## explicit
 github.com/bitcoinsv/bsvd/bsvec
 github.com/bitcoinsv/bsvd/chaincfg
 github.com/bitcoinsv/bsvd/chaincfg/chainhash
@@ -10,7 +9,6 @@ github.com/bitcoinsv/bsvd/wire
 # github.com/bitcoinsv/bsvlog v0.0.0-20181216181007-cb81b076bf2e
 github.com/bitcoinsv/bsvlog
 # github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9
-## explicit
 github.com/bitcoinsv/bsvutil
 github.com/bitcoinsv/bsvutil/base58
 github.com/bitcoinsv/bsvutil/hdkeychain
@@ -64,12 +62,27 @@ github.com/labstack/gommon/log
 github.com/labstack/gommon/random
 # github.com/lib/pq v1.9.0
 ## explicit
-# github.com/libsv/go-bt v0.0.10
+# github.com/libsv/go-bc v0.1.1
 ## explicit
+github.com/libsv/go-bc
+# github.com/libsv/go-bk v0.1.3
+## explicit
+github.com/libsv/go-bk/base58
+github.com/libsv/go-bk/bec
+github.com/libsv/go-bk/bip32
+github.com/libsv/go-bk/chaincfg
+github.com/libsv/go-bk/crypto
+github.com/libsv/go-bk/envelope
+# github.com/libsv/go-bt v1.0.0-beta
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
+# github.com/libsv/go-bt/v2 v2.0.0-beta
+## explicit
+github.com/libsv/go-bt/v2
+github.com/libsv/go-bt/v2/bscript
+github.com/libsv/go-bt/v2/sighash
 # github.com/magiconair/properties v1.8.4
 ## explicit
 github.com/magiconair/properties
@@ -136,7 +149,7 @@ github.com/theflyingcodr/govalidator
 ## explicit
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/tonicpow/go-minercraft v0.2.2
+# github.com/tonicpow/go-minercraft v0.2.11
 ## explicit
 github.com/tonicpow/go-minercraft
 # github.com/tonicpow/go-paymail v0.1.6
@@ -146,13 +159,13 @@ github.com/tonicpow/go-paymail
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
-# golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/ripemd160
-# golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
+# golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
 golang.org/x/net/bpf
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -164,10 +177,7 @@ golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/publicsuffix
-# golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-## explicit
-# golang.org/x/sys v0.0.0-20210309074719-68d13333faf2
-## explicit
+# golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows

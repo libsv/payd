@@ -8,4 +8,6 @@ const (
 	RouteInvoice  = "v1/invoices/:paymentID"
 	RouteInvoices = "v1/invoices"
 	RouteBalance  = "v1/balance"
+
+	RouteProofs = "v1/proofs/:txid"
 )

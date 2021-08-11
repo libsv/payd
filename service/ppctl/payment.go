@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	"github.com/theflyingcodr/lathos"
@@ -59,8 +59,8 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	outputTotal := uint64(0)
 	txos := make([]gopayd.CreateTxo, 0)
 	// iterate outputs and gather the total satoshis for our known outputs
-	for i, o := range tx.GetOutputs() {
-		sk, err := p.script.ScriptKey(ctx, gopayd.ScriptKeyArgs{LockingScript: o.LockingScript.ToString()})
+	for i, o := range tx.Outputs {
+		sk, err := p.script.ScriptKey(ctx, gopayd.ScriptKeyArgs{LockingScript: o.LockingScript.String()})
 		if err != nil {
 			// script isn't known to us, could be a change utxo, skip and carry on
 			if lathos.IsNotFound(err) {
@@ -70,8 +70,8 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		}
 		// push new txo onto list for persistence later
 		txos = append(txos, gopayd.CreateTxo{
-			Outpoint:       fmt.Sprintf("%s%d", tx.GetTxID(), i),
-			TxID:           tx.GetTxID(),
+			Outpoint:       fmt.Sprintf("%s%d", tx.TxID(), i),
+			TxID:           tx.TxID(),
 			Vout:           i,
 			KeyName:        null.StringFrom(keyname),
 			DerivationPath: sk.DerivationPath,
@@ -97,7 +97,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	// Store utxos and set invoice to paid.
 	if _, err = p.store.StoreUtxos(ctx, gopayd.CreateTransaction{
 		PaymentID: inv.PaymentID,
-		TxID:      tx.GetTxID(),
+		TxID:      tx.TxID(),
 		TxHex:     req.Transaction,
 		Outputs:   txos,
 	}); err != nil {
@@ -117,7 +117,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		return nil, errors.Wrapf(err, "failed to update invoice payment for paymentID %s", args.PaymentID)
 	}
 	// Broadcast the transaction.
-	if err := p.sender.Send(ctx, args, req); err != nil {
+	if err := p.sender.Send(ctx, gopayd.SendTransactionArgs{TxID: tx.TxID()}, req); err != nil {
 		log.Error(err)
 		pa.Error = 1
 		pa.Success = paymentFailed

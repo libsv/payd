@@ -33,6 +33,11 @@ lock_time        if non-zero and sequence numbers are < 0xFFFFFFFF: block height
 --------------------------------------------------------
 */
 
+const (
+	// DustLimit is the current minimum output satoshis accepted by the network.
+	DustLimit = 136
+)
+
 // Tx wraps a bitcoin transaction
 //
 // DO NOT CHANGE ORDER - Optimized memory via malign
@@ -226,54 +231,130 @@ func (tx *Tx) ChangeToAddress(addr string, f []*Fee) error {
 	if err != nil {
 		return err
 	}
-
 	return tx.Change(s, f)
 }
 
-// Change calculates the amount of fees needed to cover the transaction
-//  and adds the left over change in a new output using the script provided.
-func (tx *Tx) Change(s *bscript.Script, f []*Fee) error {
+// HasOutputsWithAddress will return the index of any outputs found matching
+// the address 'addr'.
+//
+// bool will be false if none have been found.
+// err will not be nil if the addr is not a valid P2PKH address.
+func (tx *Tx) HasOutputsWithAddress(addr string) ([]int, bool, error) {
+	cs, err := bscript.NewP2PKHFromAddress(addr)
+	if err != nil {
+		return nil, false, err
+	}
+	ii, ok := tx.HasOutputsWithScript(cs)
+	return ii, ok, nil
+}
 
+// HasOutputsWithScript will return the index of any outputs found matching
+// the locking script 's'.
+//
+// bool will be false if none have been found.
+func (tx *Tx) HasOutputsWithScript(s *bscript.Script) ([]int, bool) {
+	idx := make([]int, 0)
+	for i, o := range tx.Outputs {
+		if bytes.Equal(*o.LockingScript, *s) {
+			idx = append(idx, i)
+		}
+	}
+	return idx, len(idx) > 0
+}
+
+// Change calculates the amount of fees needed to cover the transaction
+// and adds the left over change in a new output using the script provided.
+func (tx *Tx) Change(s *bscript.Script, f []*Fee) error {
+	available, hasChange, err := tx.change(s, f, true)
+	if err != nil {
+		return err
+	}
+	if hasChange {
+		// add rest of available sats to the change output
+		tx.Outputs[len(tx.GetOutputs())-1].Satoshis = available
+	}
+	return nil
+}
+
+// ChangeToOutput will calculate fees and add them to an output at the index specified (0 based).
+// If an invalid index is supplied and error is returned.
+func (tx *Tx) ChangeToOutput(index uint, f []*Fee) error {
+	if int(index) > len(tx.Outputs)-1 {
+		return errors.New("index is greater than number of inputs in transaction")
+	}
+	available, hasChange, err := tx.change(tx.Outputs[index].LockingScript, f, false)
+	if err != nil {
+		return err
+	}
+	if hasChange {
+		tx.Outputs[index].Satoshis += available
+	}
+	return nil
+}
+
+// CalculateFee will return the amount of fees the current transaction will
+// require.
+func (tx *Tx) CalculateFee(f []*Fee) (uint64, error) {
+	total := tx.GetTotalInputSatoshis() - tx.GetTotalOutputSatoshis()
+	sats, _, err := tx.change(nil, f, false)
+	if err != nil {
+		return 0, err
+	}
+	return total - sats, nil
+}
+
+// change will return the amount of satoshis to add to an output after fees are removed.
+// True will be returned if a change output has been added.
+func (tx *Tx) change(s *bscript.Script, f []*Fee, newOutput bool) (uint64, bool, error) {
 	inputAmount := tx.GetTotalInputSatoshis()
 	outputAmount := tx.GetTotalOutputSatoshis()
 
 	if inputAmount < outputAmount {
-		return errors.New("satoshis inputted to the tx are less than the outputted satoshis")
+		return 0, false, errors.New("satoshis inputted to the tx are less than the outputted satoshis")
 	}
 
 	available := inputAmount - outputAmount
 
 	standardFees, err := GetStandardFee(f)
 	if err != nil {
-		return err
+		return 0, false, err
 	}
 
 	if !tx.canAddChange(available, standardFees) {
-		return nil
+		return 0, false, nil
 	}
-
-	tx.AddOutput(&Output{Satoshis: 0, LockingScript: s})
+	if newOutput {
+		tx.AddOutput(&Output{Satoshis: 0, LockingScript: s})
+	}
 
 	var preSignedFeeRequired uint64
 	if preSignedFeeRequired, err = tx.getPreSignedFeeRequired(f); err != nil {
-		return err
+		return 0, false, err
 	}
 
 	var expectedUnlockingScriptFees uint64
 	if expectedUnlockingScriptFees, err = tx.getExpectedUnlockingScriptFees(f); err != nil {
-		return err
+		return 0, false, err
 	}
 
+	if available < (preSignedFeeRequired + expectedUnlockingScriptFees) {
+		if newOutput {
+			tx.Outputs = tx.Outputs[:tx.OutputCount()-1]
+		}
+		return 0, false, nil
+	}
 	available -= preSignedFeeRequired + expectedUnlockingScriptFees
+	if available <= DustLimit {
+		if newOutput {
+			tx.Outputs = tx.Outputs[:tx.OutputCount()-1]
+		}
+		return 0, false, nil
+	}
 
-	// add rest of available sats to the change output
-	tx.Outputs[len(tx.GetOutputs())-1].Satoshis = available
-
-	return nil
+	return available, true, nil
 }
 
 func (tx *Tx) canAddChange(available uint64, standardFees *Fee) bool {
-
 	varIntUpper := VarIntUpperLimitInc(uint64(tx.OutputCount()))
 	if varIntUpper == -1 {
 		return false // upper limit of outputs in one tx reached
@@ -305,7 +386,6 @@ func (tx *Tx) getPreSignedFeeRequired(f []*Fee) (uint64, error) {
 	}
 
 	fr += dataBytes * dataFee.MiningFee.Satoshis / dataFee.MiningFee.Bytes
-
 	return uint64(fr), nil
 }
 
@@ -458,8 +538,8 @@ func (tx *Tx) toBytesHelper(index int, lockingScript []byte) []byte {
 // signing implementations can be used to sign the transaction -
 // for example internal/local or external signing.
 func (tx *Tx) Sign(index uint32, s Signer) error {
-	// TODO: v2 put tx serialisation here so that the Signer.Sign
-	// func only does signing and not also serialisation which
+	// TODO: v2 put tx serialization here so that the Signer.Sign
+	// func only does signing and not also serialization which
 	// should be done here.
 
 	signedTx, err := s.Sign(index, tx)

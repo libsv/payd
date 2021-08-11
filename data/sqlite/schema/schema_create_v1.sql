@@ -64,6 +64,16 @@ CREATE TABLE txos (
     ,FOREIGN KEY (txid) REFERENCES transactions(txid)
  );
 
+CREATE TABLE proofs(
+    blockhash CHAR(255) NOT NULL
+    ,txid  CHAR(64) NOT NULL
+    ,index INTEGER NOT NULL
+    ,Target VARCHAR
+    ,Nodes
+    ,TargetTYpe
+    ,ProofType
+    ,Composite BOOL
+);
 
 INSERT INTO keys(name, xprv)
 VALUES('keyname','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');

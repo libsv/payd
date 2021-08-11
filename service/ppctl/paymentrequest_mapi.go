@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bitcoinsv/bsvutil/hdkeychain"
 	"github.com/labstack/gommon/log"
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bk/bip32"
+	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
@@ -65,14 +66,14 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args g
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create derivationPath when creating payment request")
 	}
-	// create output from from key and derivation path
+	// create output from key and derivation path
 	o, err := p.generateOutput(xprv, dp.Path, satoshis)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	outs = append(outs, &gopayd.Output{
 		Amount: o.Satoshis,
-		Script: o.GetLockingScriptHexString(),
+		Script: o.LockingScriptHexString(),
 	})
 
 	// store outputs so we can get them later for validation
@@ -85,7 +86,7 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args g
 	return outs, nil
 }
 
-func (p *mapiOutputs) generateOutput(xprv *hdkeychain.ExtendedKey, derivPath string, satoshis uint64) (*bt.Output, error) {
+func (p *mapiOutputs) generateOutput(xprv *bip32.ExtendedKey, derivPath string, satoshis uint64) (*bt.Output, error) {
 	key, err := p.privKeySvc.DeriveChildFromKey(xprv, derivPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -94,11 +95,14 @@ func (p *mapiOutputs) generateOutput(xprv *hdkeychain.ExtendedKey, derivPath str
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	o, err := bt.NewP2PKHOutputFromPubKeyBytes(pubKey, satoshis)
+	o, err := bscript.NewP2PKHFromPubKeyBytes(pubKey.SerialiseCompressed())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return o, nil
+	return &bt.Output{
+		Satoshis:      satoshis,
+		LockingScript: o,
+	}, nil
 }
 
 // storeKeys will store each key along with keyname and derivation path

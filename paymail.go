@@ -54,7 +54,6 @@ type PaymailReader interface {
 // PaymailWriter writes to a paymail datastore.
 type PaymailWriter interface {
 	OutputsCreate(ctx context.Context, args P2POutputCreateArgs, req P2PPayment) ([]*Output, error)
-	Send(ctx context.Context, args CreatePaymentArgs, req CreatePayment) error
 }
 
 // PaymailReaderWriter combines the reader and writer interfaces.

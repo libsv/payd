@@ -141,6 +141,19 @@ func (f *FeePayload) CalculateFee(feeCategory, feeType string, txBytes uint64) (
 	return 1, fmt.Errorf("feeType %s is not found in fees", feeType)
 }
 
+// GetFee will return the fee associated to the type (standard, data)
+func (f *FeePayload) GetFee(feeType string) *bt.Fee {
+
+	// Loop the fees for the given type
+	for index, fee := range f.Fees {
+		if fee.FeeType == feeType {
+			return f.Fees[index]
+		}
+	}
+
+	return nil
+}
+
 // FeeQuote will fire a Merchant API request to retrieve the fees from a given miner
 //
 // This endpoint is used to get the different fees quoted by a miner.
