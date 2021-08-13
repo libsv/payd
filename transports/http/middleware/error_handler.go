@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -28,7 +29,7 @@ func ErrorHandler(err error, c echo.Context) {
 	// Internal error, log it to a system and return small detail
 	if !lathos.IsClientError(err) {
 		log.Error(errs.NewErrInternal(err, nil))
-		_ = c.String(http.StatusInternalServerError, err.Error())
+		_ = c.String(http.StatusInternalServerError, fmt.Sprintf("%+v", err))
 		return
 	}
 	var clientErr lathos.ClientError

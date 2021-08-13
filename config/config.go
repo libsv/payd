@@ -2,7 +2,10 @@ package config
 
 import (
 	"fmt"
+	"regexp"
 	"time"
+
+	validator "github.com/theflyingcodr/govalidator"
 )
 
 // Environment variable constants.
@@ -19,6 +22,7 @@ const (
 	EnvDb             = "db.type"
 	EnvDbSchema       = "db.schema.path"
 	EnvDbDsn          = "db.dsn"
+	EnvDbMigrate      = "db.migrate"
 	EnvPaymailEnabled = "paymail.enabled"
 	EnvPaymailIsBeta  = "paymail.isbeta"
 	EnvPaymailAddress = "paymail.address"
@@ -35,6 +39,18 @@ const (
 	LogWarn  = "warn"
 )
 
+var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
+
+// DbType is used to restrict the dbs we can support.
+type DbType string
+
+// Supported database types.
+const (
+	DBSqlite   DbType = "sqlite"
+	DBMySql    DbType = "mysql"
+	DBPostgres DbType = "postgres"
+)
+
 // Config returns strongly typed config values.
 type Config struct {
 	Logging    *Logging
@@ -44,6 +60,15 @@ type Config struct {
 	Paymail    *Paymail
 	Wallet     *Wallet
 	Mapi       *MApi
+}
+
+// Validate will ensure the config matches certain parameters.
+func (c *Config) Validate() error {
+	vl := validator.New()
+	if c.Db != nil {
+		vl = vl.Validate("db.type", validator.MatchString(string(c.Db.Type), reDbType))
+	}
+	return vl.Err()
 }
 
 // Deployment contains information relating to the current
@@ -81,9 +106,10 @@ type Server struct {
 
 // Db contains database information.
 type Db struct {
-	Type       string
+	Type       DbType
 	SchemaPath string
 	Dsn        string
+	MigrateDb  bool
 }
 
 // Paymail settings relating to paymail.

@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  node1:
+    networks:
+      - payment-protocol-network
+
+  minerid:
+    networks:
+      - payment-protocol-network
+
+  mapi_db:
+    networks:
+      - payment-protocol-network
+
+  mapi:
+    networks:
+      - payment-protocol-network
+
+  mapi_add_node:
+    networks:
+      - payment-protocol-network
+
+  explorer:
+    networks:
+      - payment-protocol-network
+
+  dash:
+    networks:
+      - payment-protocol-network

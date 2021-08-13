@@ -5,7 +5,6 @@ package mocks
 
 import (
 	"context"
-	"github.com/libsv/go-bc"
 	"github.com/libsv/payd"
 	"sync"
 )
@@ -20,8 +19,8 @@ var _ gopayd.ProofsWriter = &ProofsWriterMock{}
 //
 // 		// make and configure a mocked gopayd.ProofsWriter
 // 		mockedProofsWriter := &ProofsWriterMock{
-// 			CreateFunc: func(ctx context.Context, req bc.MerkleProof) error {
-// 				panic("mock out the Create method")
+// 			ProofCreateFunc: func(ctx context.Context, req gopayd.ProofWrapper) error {
+// 				panic("mock out the ProofCreate method")
 // 			},
 // 		}
 //
@@ -30,53 +29,53 @@ var _ gopayd.ProofsWriter = &ProofsWriterMock{}
 //
 // 	}
 type ProofsWriterMock struct {
-	// CreateFunc mocks the Create method.
-	CreateFunc func(ctx context.Context, req bc.MerkleProof) error
+	// ProofCreateFunc mocks the ProofCreate method.
+	ProofCreateFunc func(ctx context.Context, req gopayd.ProofWrapper) error
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// Create holds details about calls to the Create method.
-		Create []struct {
+		// ProofCreate holds details about calls to the ProofCreate method.
+		ProofCreate []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Req is the req argument value.
-			Req bc.MerkleProof
+			Req gopayd.ProofWrapper
 		}
 	}
-	lockCreate sync.RWMutex
+	lockProofCreate sync.RWMutex
 }
 
-// Create calls CreateFunc.
-func (mock *ProofsWriterMock) Create(ctx context.Context, req bc.MerkleProof) error {
-	if mock.CreateFunc == nil {
-		panic("ProofsWriterMock.CreateFunc: method is nil but ProofsWriter.Create was just called")
+// ProofCreate calls ProofCreateFunc.
+func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req gopayd.ProofWrapper) error {
+	if mock.ProofCreateFunc == nil {
+		panic("ProofsWriterMock.ProofCreateFunc: method is nil but ProofsWriter.ProofCreate was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Req bc.MerkleProof
+		Req gopayd.ProofWrapper
 	}{
 		Ctx: ctx,
 		Req: req,
 	}
-	mock.lockCreate.Lock()
-	mock.calls.Create = append(mock.calls.Create, callInfo)
-	mock.lockCreate.Unlock()
-	return mock.CreateFunc(ctx, req)
+	mock.lockProofCreate.Lock()
+	mock.calls.ProofCreate = append(mock.calls.ProofCreate, callInfo)
+	mock.lockProofCreate.Unlock()
+	return mock.ProofCreateFunc(ctx, req)
 }
 
-// CreateCalls gets all the calls that were made to Create.
+// ProofCreateCalls gets all the calls that were made to ProofCreate.
 // Check the length with:
-//     len(mockedProofsWriter.CreateCalls())
-func (mock *ProofsWriterMock) CreateCalls() []struct {
+//     len(mockedProofsWriter.ProofCreateCalls())
+func (mock *ProofsWriterMock) ProofCreateCalls() []struct {
 	Ctx context.Context
-	Req bc.MerkleProof
+	Req gopayd.ProofWrapper
 } {
 	var calls []struct {
 		Ctx context.Context
-		Req bc.MerkleProof
+		Req gopayd.ProofWrapper
 	}
-	mock.lockCreate.RLock()
-	calls = mock.calls.Create
-	mock.lockCreate.RUnlock()
+	mock.lockProofCreate.RLock()
+	calls = mock.calls.ProofCreate
+	mock.lockProofCreate.RUnlock()
 	return calls
 }

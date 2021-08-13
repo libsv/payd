@@ -28,7 +28,7 @@ func (b *broadcast) Send(ctx context.Context, args gopayd.SendTransactionArgs, r
 		b.client.MinerByName(b.cfg.MinerName),
 		&minercraft.Transaction{
 			RawTx:              req.Transaction,
-			CallBackURL:        b.svrCfg.Hostname + "/api/v1/proofs/" + args.TxID,
+			CallBackURL:        "http://" + b.svrCfg.Hostname + "/api/v1/proofs/" + args.TxID,
 			CallBackToken:      "",
 			MerkleFormat:       "TSC",
 			CallBackEncryption: "",

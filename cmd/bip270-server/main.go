@@ -3,20 +3,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/viper"
 	"github.com/tonicpow/go-minercraft"
 	gopaymail "github.com/tonicpow/go-paymail"
 
 	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config/databases"
 	"github.com/libsv/payd/data/mapi"
 	"github.com/libsv/payd/data/paymail"
 	paydSQL "github.com/libsv/payd/data/sqlite"
-	"github.com/libsv/payd/data/sqlite/schema"
 	"github.com/libsv/payd/service"
 	"github.com/libsv/payd/service/ppctl"
 	"github.com/libsv/payd/transports/http"
@@ -52,13 +50,13 @@ func main() {
 		WithPaymail().
 		WithWallet().
 		WithMapi()
-
+	// validate the config, fail if it fails.
+	if err := cfg.Validate(); err != nil {
+		log.Fatal(err)
+	}
 	config.SetupLog(cfg.Logging)
 	log.Infof("\n------Environment: %s -----\n", cfg.Server)
-	if cfg.Deployment.IsDev() {
-		schema.MustSetup(cfg.Db)
-	}
-	db, err := sqlx.Open("sqlite3", cfg.Db.Dsn)
+	db, err := databases.NewDbSetup().SetupDb(cfg.Db)
 	if err != nil {
 		log.Fatalf("failed to setup database: %s", err)
 	}
@@ -80,9 +78,19 @@ func main() {
 
 	// setup stores
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
+	mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
+		{
+			Name:  cfg.Mapi.MinerName,
+			Token: cfg.Mapi.Token,
+			URL:   cfg.Mapi.URL,
+		},
+	})
+	if err != nil {
+		log.Fatalf("error occurred: %s", err)
+	}
 
 	// setup services
-	var paymentSender gopayd.PaymentSender
+	paymentSender := ppctl.NewPaymentMapiSender(mapi.NewBroadcast(cfg.Mapi, cfg.Server, mapiCli))
 	var paymentOutputter gopayd.PaymentRequestOutputer
 	if cfg.Paymail.UsePaymail {
 		pCli, err := gopaymail.NewClient(nil, nil, nil)
@@ -90,22 +98,10 @@ func main() {
 			log.Fatalf("unable to create paymail client %s: ", err)
 		}
 		paymailStore := paymail.NewPaymail(cfg.Paymail, pCli)
-		paymentSender = ppctl.NewPaymailPaymentService(paymailStore, cfg.Paymail)
 		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore, sqlLiteStore)
 	} else {
-		mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
-			{
-				Name:  cfg.Mapi.MinerName,
-				Token: cfg.Mapi.Token,
-				URL:   cfg.Mapi.URL,
-			},
-		})
-		if err != nil {
-			log.Fatalf("error occurred: %s", err)
-		}
 		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
-		mapiStore := mapi.NewBroadcast(cfg.Mapi, mapiCli)
-		paymentSender = ppctl.NewPaymentMapiSender(mapiStore)
+
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, &paydSQL.Transacter{}, sqlLiteStore)
 	}
 
@@ -118,6 +114,8 @@ func main() {
 	http.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
 		RegisterRoutes(g)
 	http.NewBalance(service.NewBalance(sqlLiteStore)).
+		RegisterRoutes(g)
+	http.NewProofs(service.NewProofsService(sqlLiteStore)).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

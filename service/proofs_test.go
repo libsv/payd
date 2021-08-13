@@ -18,7 +18,7 @@ func Test_Proofs_create(t *testing.T) {
 	tests := map[string]struct {
 		args           gopayd.ProofCreateArgs
 		req            envelope.JSONEnvelope
-		proofsCreateFn func(ctx context.Context, req bc.MerkleProof) error
+		proofsCreateFn func(ctx context.Context, req gopayd.ProofWrapper) error
 		err            error
 	}{
 		"successful run should return no errors": {
@@ -37,7 +37,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    0,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "merkleProof",
 				})
@@ -45,7 +45,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: nil,
@@ -65,7 +65,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    123,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "merkleProof",
 				})
@@ -73,7 +73,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[callbackPayload.txOrId: txId provided in callbackPayload doesn't match expected txID 2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb], [callbackTxID: proof txid does not match expected txid 2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb]"),
@@ -93,7 +93,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    123,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb",
 					CallbackReason: "merkleProof",
 				})
@@ -101,7 +101,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[callbackPayload.txOrId: txId provided in callbackPayload doesn't match expected txID 2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb]"),
@@ -112,7 +112,7 @@ func Test_Proofs_create(t *testing.T) {
 			req: func() envelope.JSONEnvelope {
 				e, err := envelope.NewJSONEnvelope(gopayd.ProofWrapper{
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    0,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb",
 					CallbackReason: "merkleProof",
 				})
@@ -120,7 +120,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[callbackPayload: value cannot be empty]"),
@@ -131,7 +131,7 @@ func Test_Proofs_create(t *testing.T) {
 			req: func() envelope.JSONEnvelope {
 				e, err := envelope.NewJSONEnvelope(gopayd.ProofWrapper{
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    1,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70cb",
 					CallbackReason: "merkleProof",
 				})
@@ -140,7 +140,7 @@ func Test_Proofs_create(t *testing.T) {
 				e.Signature = func() *string { s := "aaaaaaaa"; return &s }()
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[jsonEnvelope: invalid merkleproof envelope: failed to parse json envelope signature malformed signature: too short]"),
@@ -160,7 +160,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    2,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "mine",
 				})
@@ -168,7 +168,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[callbackReason: invalid callback received, should be of type merkleProof]"),
@@ -188,7 +188,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    7,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "merkleProof",
 				})
@@ -196,7 +196,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 		}, "invalid targetType should error": {
@@ -215,7 +215,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    0,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "merkleProof",
 				})
@@ -223,7 +223,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return nil
 			},
 			err: errors.New("[callbackPayload.targetType: value mine failed to meet requirements]"),
@@ -243,7 +243,7 @@ func Test_Proofs_create(t *testing.T) {
 						Composite:  false,
 					},
 					BlockHash:      "abc123",
-					BlockHeight:    "0",
+					BlockHeight:    0,
 					CallbackTxID:   "2f8d0ac044aa2fd8fc7675809f5d17acac4e9bf63dd0ea4eb58f43b66ccc70ca",
 					CallbackReason: "merkleProof",
 				})
@@ -251,7 +251,7 @@ func Test_Proofs_create(t *testing.T) {
 				assert.NotEmpty(t, e)
 				return *e
 			}(),
-			proofsCreateFn: func(ctx context.Context, req bc.MerkleProof) error {
+			proofsCreateFn: func(ctx context.Context, req gopayd.ProofWrapper) error {
 				return errors.New("I failed")
 			},
 			err: errors.New("failed to save proof: I failed"),
@@ -259,7 +259,7 @@ func Test_Proofs_create(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			mockProofWrtr := &mocks.ProofsWriterMock{CreateFunc: test.proofsCreateFn}
+			mockProofWrtr := &mocks.ProofsWriterMock{ProofCreateFunc: test.proofsCreateFn}
 			err := NewProofsService(mockProofWrtr).Create(context.Background(), test.args, test.req)
 			if test.err != nil {
 				assert.Error(t, err)

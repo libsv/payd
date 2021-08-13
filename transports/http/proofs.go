@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/libsv/go-bk/envelope"
+	"github.com/pkg/errors"
 
 	gopayd "github.com/libsv/payd"
 )
@@ -28,10 +29,11 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 func (p *proofs) create(c echo.Context) error {
 	var req envelope.JSONEnvelope
 	if err := c.Bind(&req); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
-	if err := p.svc.Create(c.Request().Context(), req); err != nil {
-		return nil
+	args := gopayd.ProofCreateArgs{TxID: c.Param("txid")}
+	if err := p.svc.Create(c.Request().Context(), args, req); err != nil {
+		return errors.WithStack(err)
 	}
 	return c.NoContent(http.StatusCreated)
 }

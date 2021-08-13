@@ -72,6 +72,7 @@ type CreatePaymentArgs struct {
 	PaymentID string
 }
 
+// SendTransactionArgs contains params required when broadcasting a tx to the network.
 type SendTransactionArgs struct {
 	TxID string
 }

@@ -21,24 +21,25 @@ type ProofCreateArgs struct {
 	TxID string `json:"txId" param:"txid"`
 }
 
+// ProofWrapper represents a mapi callback payload for a merkleproof.
 type ProofWrapper struct {
 	CallbackPayload *bc.MerkleProof `json:"callbackPayload"`
 	BlockHash       string          `json:"blockHash"`
-	BlockHeight     string          `json:"blockHeight"`
+	BlockHeight     uint32          `json:"blockHeight"`
 	CallbackTxID    string          `json:"callbackTxID"`
 	CallbackReason  string          `json:"callbackReason"`
 }
 
-// Validate will ensure the ProofWrapper is valid
+// Validate will ensure the ProofWrapper is valid.
 func (p ProofWrapper) Validate(args ProofCreateArgs) error {
 	vl := validator.New().Validate("blockhash",
 		validator.NotEmpty(p.BlockHash)).
-		Validate("blockHeight", validator.NotEmpty(p.BlockHeight)).Validate("callbackReason", func() error {
-		if strings.ToLower(p.CallbackReason) != "merkleproof" {
-			return errors.New("invalid callback received, should be of type merkleProof")
-		}
-		return nil
-	}).Validate("callbackTxID", func() error {
+		Validate("callbackReason", func() error {
+			if strings.ToLower(p.CallbackReason) != "merkleproof" {
+				return errors.New("invalid callback received, should be of type merkleProof")
+			}
+			return nil
+		}).Validate("callbackTxID", func() error {
 		if args.TxID != p.CallbackTxID {
 			return fmt.Errorf("proof txid does not match expected txid %s", args.TxID)
 		}
@@ -76,14 +77,16 @@ func (p ProofWrapper) Validate(args ProofCreateArgs) error {
 	return vl.Err()
 }
 
+// ProofsService enforces business rules and validation when handling merkle proofs.
 type ProofsService interface {
 	// Create will store a JSONEnvelope that contains a merkleproof. The envelope should
 	// be validated to not be tampered with and the Envelope should be opened to check the payload
 	// is indeed a MerkleProof.
-	Create(ctx context.Context, args, ProofCreateArgs, req envelope.JSONEnvelope) error
+	Create(ctx context.Context, args ProofCreateArgs, req envelope.JSONEnvelope) error
 }
 
+// ProofsWriter is used to persist a proof to a data store.
 type ProofsWriter interface {
-	// Create can be used to persist a merkle proof in TSC format.
-	Create(ctx context.Context, req bc.MerkleProof) error
+	// ProofCreate can be used to persist a merkle proof in TSC format.
+	ProofCreate(ctx context.Context, req ProofWrapper) error
 }

@@ -5,9 +5,15 @@ services:
     container_name: payd
     image: local.payd
     environment:
-      - DB_DSN=file:/data/wallet.db?cache=shared&_foreign_keys=true;
-      - DB_SCHEMA_PATH=/schema
+      DB_DSN: "file:/data/wallet.db?cache=shared&_foreign_keys=true;"
+      DB_SCHEMA_PATH: "/schema"
     volumes:
       - ~/data/payd:/data
     ports:
-      - "8442:8442"
+      - "8443:8443"
+    networks:
+      - payment-protocol-network
+
+networks:
+  payment-protocol-network:
+    name: payment-protocol-network

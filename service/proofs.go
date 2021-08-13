@@ -40,7 +40,7 @@ func (p *proofs) Create(ctx context.Context, args gopayd.ProofCreateArgs, req en
 	if err := proof.Validate(args); err != nil {
 		return err
 	}
-	if err := p.wtr.Create(ctx, *proof.CallbackPayload); err != nil {
+	if err := p.wtr.ProofCreate(ctx, *proof); err != nil {
 		return errors.Wrap(err, "failed to save proof")
 	}
 	return nil

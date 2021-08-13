@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/boombuler/barcode v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.17
@@ -27,6 +28,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.7.0
 	github.com/theflyingcodr/govalidator v0.0.1
 	github.com/theflyingcodr/lathos v0.0.1
 	github.com/tonicpow/go-minercraft v0.2.11

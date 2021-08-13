@@ -65,14 +65,13 @@ CREATE TABLE txos (
  );
 
 CREATE TABLE proofs(
-    blockhash CHAR(255) NOT NULL
-    ,txid  CHAR(64) NOT NULL
-    ,index INTEGER NOT NULL
-    ,Target VARCHAR
-    ,Nodes
-    ,TargetTYpe
-    ,ProofType
-    ,Composite BOOL
+    blockhash VARCHAR(255) NOT NULL
+    ,txid  VARCHAR(64) NOT NULL
+    ,data TEXT NOT NULL
+    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,PRIMARY KEY(blockhash, txid)
+    ,FOREIGN KEY (txid) REFERENCES transactions(txid)
 );
 
 INSERT INTO keys(name, xprv)
