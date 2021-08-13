@@ -3,7 +3,7 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    target-branch: "master"
+    target-branch: "main"
     directory: "/"
     schedule:
       interval: "daily"
@@ -11,8 +11,10 @@ updates:
       time: "10:00"
     reviewers:
       - "jadwahab"
+      - "theflyingcodr"
     assignees:
       - "jadwahab"
+      - "theflyingcodr
     # Labels must be created first
     labels:
       - "update"
