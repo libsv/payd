@@ -46,7 +46,7 @@ run-compose-d:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up -d
 
 run-compose-dev:
-	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml -f docker-compose.rt.yml -f docker-compose.rt.override.yml up
+	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml up
 
 build-image:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
