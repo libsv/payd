@@ -105,7 +105,7 @@ func getChildInt(child string) (uint32, error) {
 		child = strings.TrimRight(child, "'")
 		suffix = 2147483648 // 2^32
 	}
-	t, err := strconv.Atoi(child)
+	t, err := strconv.ParseUint(child, 10, 32)
 	if err != nil {
 		return 0, errors.Wrap(err, "getChildInt: "+child)
 	}
