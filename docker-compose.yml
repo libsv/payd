@@ -12,9 +12,9 @@ services:
     ports:
       - "8443:8443"
     networks:
-      - platform-services-network
+      - regtest-network
 
 networks:
-  platform-services-network:
+  regtest-network:
     external: true
-    name: platform-services-network
+    name: regtest-network
