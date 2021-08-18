@@ -16,8 +16,8 @@ func NewViperConfig(appname string) *Config {
 
 // WithServer will setup the web server configuration if required.
 func (c *Config) WithServer() *Config {
-	viper.SetDefault(EnvServerPort, ":8442")
-	viper.SetDefault(EnvServerHost, "localhost:8442")
+	viper.SetDefault(EnvServerPort, ":8443")
+	viper.SetDefault(EnvServerHost, "payd:8443")
 	c.Server = &Server{
 		Port:     viper.GetString(EnvServerPort),
 		Hostname: viper.GetString(EnvServerHost),
@@ -56,19 +56,21 @@ func (c *Config) WithLog() *Config {
 // WithDb sets up and returns database configuration.
 func (c *Config) WithDb() *Config {
 	viper.SetDefault(EnvDb, "sqlite")
-	viper.SetDefault(EnvDbDsn, "file:data/wallet.db?cache=shared&_foreign_keys=true;")
-	viper.SetDefault(EnvDbSchema, "./data/sqlite/schema")
+	viper.SetDefault(EnvDbDsn, "file:data/wallet.db?_foreign_keys=true&pooled=true")
+	viper.SetDefault(EnvDbSchema, "data/sqlite/migrations")
+	viper.SetDefault(EnvDbMigrate, true)
 	c.Db = &Db{
-		Type:       viper.GetString(EnvDb),
+		Type:       DbType(viper.GetString(EnvDb)),
 		Dsn:        viper.GetString(EnvDbDsn),
 		SchemaPath: viper.GetString(EnvDbSchema),
+		MigrateDb:  viper.GetBool(EnvDbMigrate),
 	}
 	return c
 }
 
 // WithPaymail sets up and returns paymail configuration.
 func (c *Config) WithPaymail() *Config {
-	viper.SetDefault(EnvPaymailEnabled, true)
+	viper.SetDefault(EnvPaymailEnabled, false)
 	viper.SetDefault(EnvPaymailAddress, "test@test.com")
 	viper.SetDefault(EnvPaymailIsBeta, false)
 	c.Paymail = &Paymail{
@@ -95,7 +97,7 @@ func (c *Config) WithWallet() *Config {
 // WithMapi will setup Mapi settings.
 func (c *Config) WithMapi() *Config {
 	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
-	viper.SetDefault(EnvMAPIURL, "mapi:9004")
+	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
 	viper.SetDefault(EnvMAPIToken, "")
 	c.Mapi = &MApi{
 		MinerName: viper.GetString(EnvMAPIMinerName),

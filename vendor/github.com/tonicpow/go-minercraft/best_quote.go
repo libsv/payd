@@ -26,7 +26,8 @@ func (c *Client) BestQuote(feeCategory, feeType string) (*FeeQuoteResponse, erro
 	var wg sync.WaitGroup
 	for _, miner := range c.Miners {
 		wg.Add(1)
-		go func(ctx context.Context, wg *sync.WaitGroup, client *Client, miner *Miner, resultsChannel chan *internalResult) {
+		go func(ctx context.Context, wg *sync.WaitGroup, client *Client,
+			miner *Miner, resultsChannel chan *internalResult) {
 			defer wg.Done()
 			resultsChannel <- getQuote(ctx, client, miner)
 		}(ctx, &wg, c, miner, resultsChannel)

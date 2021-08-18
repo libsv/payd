@@ -23,7 +23,7 @@ COPY --from=builder /app/bip270-server /bin/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app/data/sqlite/schema/ /schema
+COPY --from=builder /app/data/sqlite/migrations/ /migrations
 USER appuser:appuser
 
 EXPOSE 8442

@@ -123,7 +123,7 @@ type ClientOptions struct {
 	UserAgent                      string        `json:"user_agent"`
 }
 
-// DefaultClientOptions will return an Options struct with the default settings.
+// DefaultClientOptions will return a ClientOptions struct with the default settings.
 // Useful for starting with the default and then modifying as needed
 func DefaultClientOptions() (clientOptions *ClientOptions) {
 	return &ClientOptions{
@@ -170,15 +170,18 @@ func createClient(options *ClientOptions, customHTTPClient *http.Client) (c *Cli
 	// Create a client
 	c = new(Client)
 
+	// Set options (either default or user modified)
+	if options == nil {
+		options = DefaultClientOptions()
+	}
+
+	// Set the options
+	c.Options = options
+
 	// Is there a custom HTTP client to use?
 	if customHTTPClient != nil {
 		c.httpClient = customHTTPClient
 		return
-	}
-
-	// Set options (either default or user modified)
-	if options == nil {
-		options = DefaultClientOptions()
 	}
 
 	// dial is the net dialer for clientDefaultTransport
@@ -193,9 +196,6 @@ func createClient(options *ClientOptions, customHTTPClient *http.Client) (c *Cli
 		Proxy:                 http.ProxyFromEnvironment,
 		TLSHandshakeTimeout:   options.TransportTLSHandshakeTimeout,
 	}
-
-	// Set the options
-	c.Options = options
 
 	// Determine the strategy for the http client
 	if options.RequestRetryCount <= 0 {

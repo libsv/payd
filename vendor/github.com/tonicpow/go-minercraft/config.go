@@ -1,12 +1,17 @@
 package minercraft
 
+import "time"
+
 const (
 
 	// version is the current package version
-	version = "v0.2.2"
+	version = "v0.2.11"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-minercraft: " + version
+
+	// defaultFastQuoteTimeout is used for the FastestQuote timeout
+	defaultFastQuoteTimeout = 20 * time.Second
 )
 
 const (

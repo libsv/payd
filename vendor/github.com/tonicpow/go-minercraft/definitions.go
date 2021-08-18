@@ -22,7 +22,7 @@ type Miner struct {
 // Any changes to a document being signed and verified, however minor they may be, will cause the signature
 // verification to fail since the document will be converted into a string before being
 // (hashed and then) signed. With JSON documents, the format permits changes to be made without
-// compromising the validity of the format (eg. extra spaces, carriage returns, etc.).
+// compromising the validity of the format (e.g. extra spaces, carriage returns, etc.).
 //
 // This spec describes a technique to ensure consistency of the data being signed by encapsulating the
 // JSON data as a string in parent JSON object. That way, however the JSON is marshaled,

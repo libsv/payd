@@ -18,7 +18,7 @@ func NewPaymentMapiSender(sender gopayd.PaymentSender) *paymentMapiService {
 
 // CreatePayment will inform the merchant of a new payment being made,
 // this payment will then be transmitted to the network and and acknowledgement sent to the user.
-func (p *paymentMapiService) Send(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) error {
+func (p *paymentMapiService) Send(ctx context.Context, args gopayd.SendTransactionArgs, req gopayd.CreatePayment) error {
 	// Broadcast the transaction.
 	return errors.WithStack(p.sender.Send(ctx, args, req))
 }

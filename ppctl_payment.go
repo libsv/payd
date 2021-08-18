@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
 )
@@ -72,6 +72,11 @@ type CreatePaymentArgs struct {
 	PaymentID string
 }
 
+// SendTransactionArgs contains params required when broadcasting a tx to the network.
+type SendTransactionArgs struct {
+	TxID string
+}
+
 // PaymentService enforces business rules when creating payments.
 type PaymentService interface {
 	CreatePayment(ctx context.Context, args CreatePaymentArgs, req CreatePayment) (*PaymentACK, error)
@@ -85,5 +90,5 @@ type PaymentWriter interface {
 
 // PaymentSender will broadcast a payment to a network.
 type PaymentSender interface {
-	Send(ctx context.Context, args CreatePaymentArgs, req CreatePayment) error
+	Send(ctx context.Context, args SendTransactionArgs, req CreatePayment) error
 }

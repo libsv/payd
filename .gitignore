@@ -4,7 +4,7 @@ debug
 .DS_Store
 build/
 dist/
-data/sqlite/schema/data.db
+data/sqlite/migrations/data.db
 cover.go
 cover.out
 

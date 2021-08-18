@@ -5,7 +5,9 @@ const (
 	RoutePaymentRequest = "r/:paymentID"
 	RoutePayment        = "payment/:paymentID"
 
-	RouteInvoice  = "v1/invoices/:paymentID"
-	RouteInvoices = "v1/invoices"
-	RouteBalance  = "v1/balance"
+	RouteInvoice  = "api/v1/invoices/:paymentID"
+	RouteInvoices = "api/v1/invoices"
+	RouteBalance  = "api/v1/balance"
+
+	RouteProofs = "api/v1/proofs/:txid"
 )
