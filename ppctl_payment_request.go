@@ -80,6 +80,7 @@ type PaymentRequestService interface {
 // to provide data for creating ppctl payment requests for users.
 type PaymentRequestReaderWriter interface {
 	ScriptKeyWriter
+	InvoiceReader
 	DerivationPathReaderWriter
 }
 
