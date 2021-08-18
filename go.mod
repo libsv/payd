@@ -13,7 +13,7 @@ require (
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/libsv/go-bc v0.1.1
 	github.com/libsv/go-bk v0.1.3
-	github.com/libsv/go-bt/v2 v2.0.0-beta
+	github.com/libsv/go-bt/v2 v2.0.0-beta.1
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
@@ -33,6 +33,7 @@ require (
 	github.com/theflyingcodr/lathos v0.0.1
 	github.com/tonicpow/go-minercraft v0.2.11
 	github.com/tonicpow/go-paymail v0.1.6
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/guregu/null.v3 v3.5.0
 	gopkg.in/ini.v1 v1.62.0 // indirect

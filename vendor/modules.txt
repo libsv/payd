@@ -91,7 +91,7 @@ github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
-# github.com/libsv/go-bt/v2 v2.0.0-beta
+# github.com/libsv/go-bt/v2 v2.0.0-beta.1
 ## explicit
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
@@ -173,7 +173,8 @@ github.com/tonicpow/go-paymail
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
-# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+# golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+## explicit
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ed25519

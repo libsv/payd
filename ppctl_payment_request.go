@@ -2,6 +2,8 @@ package gopayd
 
 import (
 	"context"
+
+	"github.com/libsv/go-bt/v2"
 )
 
 // PaymentRequest message used in BIP270.
@@ -34,7 +36,7 @@ type PaymentRequest struct {
 	MerchantData *MerchantData `json:"merchantData,omitempty"`
 	// FeeRate defines the amount of fees a users wallet should add to the payment
 	// when submitting their final payments.
-	FeeRate *FeeRate `json:"feeRate"`
+	FeeRate *bt.FeeQuote `json:"fee"`
 }
 
 // Output message used in BIP270.
@@ -59,9 +61,15 @@ type FeeRate struct {
 // MerchantData to be displayed to the user.
 type MerchantData struct {
 	// AvatarURL displays a canonical url to a merchants avatar.
-	AvatarURL string `json:"avatarUrl,omitempty"`
+	AvatarURL string `json:"avatar,omitempty"`
 	// MerchantName is a human readable string identifying the merchant.
-	MerchantName string `json:"merchantName,omitempty"`
+	MerchantName string `json:"name,omitempty"`
+	// AvatarURL displays a canonical url to a merchants avatar.
+	Email string `json:"email,omitempty"`
+	// MerchantName is a human readable string identifying the merchant.
+	Address          string                 `json:"address,omitempty"`
+	PaymentReference string                 `json:"paymentReference"`
+	ExtendedData     map[string]interface{} `json:"extendedData"`
 }
 
 // PaymentRequestArgs are request arguments that can be passed to the service.
