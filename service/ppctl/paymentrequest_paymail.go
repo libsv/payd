@@ -27,7 +27,7 @@ func NewPaymailOutputs(cfg *config.Paymail, rdrwtr gopayd.PaymailReaderWriter, s
 }
 
 // CreateOutputs will generate paymail outputs for the current server paymail address.
-func (p *paymailOutputs) CreateOutputs(ctx context.Context, satoshis uint64, _ gopayd.PaymentRequestArgs) ([]*gopayd.Output, error) {
+func (p *paymailOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCreate) ([]*gopayd.Output, error) {
 	addr, err := gopaymail.ValidateAndSanitisePaymail(p.cfg.Address, p.cfg.IsBeta)
 	if err != nil {
 		// convert to known type for the global error handler.
@@ -38,7 +38,7 @@ func (p *paymailOutputs) CreateOutputs(ctx context.Context, satoshis uint64, _ g
 	oo, err := p.rdrwtr.OutputsCreate(ctx, gopayd.P2POutputCreateArgs{
 		Domain: addr.Domain,
 		Alias:  addr.Alias,
-	}, gopayd.P2PPayment{Satoshis: satoshis})
+	}, gopayd.P2PPayment{Satoshis: args.Satoshis})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create outputs for Alias %s", addr.Alias)
 	}

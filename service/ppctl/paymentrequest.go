@@ -44,7 +44,10 @@ func (p *paymentRequest) CreatePaymentRequest(ctx context.Context, args gopayd.P
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get invoice when creating payment request")
 	}
-	oo, err := p.outputter.CreateOutputs(ctx, inv.Satoshis, args)
+	oo, err := p.outputter.CreateOutputs(ctx, gopayd.OutputsCreate{
+		Satoshis:     inv.Satoshis,
+		Denomination: 0,
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate outputs for paymentID %s", args.PaymentID)
 	}

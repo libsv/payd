@@ -88,9 +88,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("error occurred: %s", err)
 	}
-
+	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
 	// setup services
-	paymentSender := ppctl.NewPaymentMapiSender(mapi.NewBroadcast(cfg.Mapi, cfg.Server, mapiCli))
+	paymentSender := ppctl.NewPaymentMapiSender(mapiStore)
 	var paymentOutputter gopayd.PaymentRequestOutputer
 	if cfg.Paymail.UsePaymail {
 		pCli, err := gopaymail.NewClient(nil, nil, nil)
@@ -116,6 +116,8 @@ func main() {
 	http.NewBalance(service.NewBalance(sqlLiteStore)).
 		RegisterRoutes(g)
 	http.NewProofs(service.NewProofsService(sqlLiteStore)).
+		RegisterRoutes(g)
+	http.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

@@ -317,6 +317,8 @@ github.com/libsv/go-bt/v2 v2.0.0-beta h1:aoUrsocAYqA/dWiNNFNVA8YaBd1vM6KpA6MrSPf
 github.com/libsv/go-bt/v2 v2.0.0-beta/go.mod h1:62PATaSIMQ3omXVr9D4S7uMKaQByCJjNkrNzFpYThco=
 github.com/libsv/go-bt/v2 v2.0.0-beta.1 h1:t9pRMfo6CEVXl0+BDhRal7VO8NSXKR+SRoueFbVTcqw=
 github.com/libsv/go-bt/v2 v2.0.0-beta.1/go.mod h1:62PATaSIMQ3omXVr9D4S7uMKaQByCJjNkrNzFpYThco=
+github.com/libsv/go-bt/v2 v2.0.0-beta.2 h1:JyIcwDGoXg8XW/+mUIgYs53PGFlhAKzyiOVroLqz264=
+github.com/libsv/go-bt/v2 v2.0.0-beta.2/go.mod h1:Z6r0cw8sgqGQZC7jaayQMLDic8A/VwbTKNwDoWH+EIQ=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.4 h1:8KGKTcQQGm0Kv7vEbKFErAoAOFyyacLStRtQSeYtvkY=
 github.com/magiconair/properties v1.8.4/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=

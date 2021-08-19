@@ -48,7 +48,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}
 	pa := &gopayd.PaymentACK{
 		Payment: &req,
-		Success: paymentSuccess,
 	}
 	// get and attempt to store transaction before processing payment.
 	tx, err := bt.NewTxFromString(req.Transaction)
@@ -89,7 +88,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	if outputTotal < inv.Satoshis {
 		log.Info("satoshis are less than expt outputs")
 		pa.Error = 1
-		pa.Success = paymentFailed
 		pa.Memo = "Outputs do not fully pay invoice for paymentID " + args.PaymentID
 		return pa, nil
 	}
@@ -103,7 +101,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}); err != nil {
 		log.Error(err)
 		pa.Error = 1
-		pa.Success = paymentFailed
 		pa.Memo = err.Error()
 		return nil, errors.Wrapf(err, "failed to complete payment for paymentID %s", args.PaymentID)
 	}
@@ -112,7 +109,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}); err != nil {
 		log.Error(err)
 		pa.Error = 1
-		pa.Success = paymentFailed
 		pa.Memo = err.Error()
 		return nil, errors.Wrapf(err, "failed to update invoice payment for paymentID %s", args.PaymentID)
 	}
@@ -120,7 +116,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	if err := p.sender.Send(ctx, gopayd.SendTransactionArgs{TxID: tx.TxID()}, req); err != nil {
 		log.Error(err)
 		pa.Error = 1
-		pa.Success = paymentFailed
 		pa.Memo = err.Error()
 		return pa, errors.Wrapf(err, "failed to send payment for paymentID %s", args.PaymentID)
 	}

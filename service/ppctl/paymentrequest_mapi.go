@@ -39,15 +39,15 @@ func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txr
 }
 
 // CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
-func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args gopayd.PaymentRequestArgs) ([]*gopayd.Output, error) {
+func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCreate) ([]*gopayd.Output, error) {
 	ctx = p.txrunner.WithTx(ctx)
-	exists, err := p.store.DerivationPathExists(ctx, gopayd.DerivationPathExistsArgs{PaymentID: args.PaymentID})
+	exists, err := p.store.DerivationPathExists(ctx, gopayd.DerivationPathExistsArgs{PaymentID: "1"})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to check payment request is a duplicate")
 	}
 	if exists {
 		return nil, errs.NewErrDuplicate(
-			duplicatePayment, fmt.Sprintf("payment request for paymentID %s already exists", args.PaymentID))
+			duplicatePayment, fmt.Sprintf("payment request for paymentID %s already exists", "1"))
 	}
 	// get the master key stored
 	// TODO: later we will allow users to provide their own key for now we've hardcoded to keyname
@@ -60,14 +60,14 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, satoshis uint64, args g
 	// TODO: figure out how many outputs we need?
 	// TODO: what should derivation path be, prefix is just hardcoded for now, this could be a user setting.
 	dp, err := p.store.DerivationPathCreate(ctx, gopayd.DerivationPathCreate{
-		PaymentID: args.PaymentID,
+		PaymentID: "1",
 		Prefix:    derivationPathPrefix,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create derivationPath when creating payment request")
 	}
 	// create output from key and derivation path
-	o, err := p.generateOutput(xprv, dp.Path, satoshis)
+	o, err := p.generateOutput(xprv, dp.Path, args.Satoshis)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

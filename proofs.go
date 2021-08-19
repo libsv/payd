@@ -22,6 +22,9 @@ type ProofCreateArgs struct {
 }
 
 // ProofWrapper represents a mapi callback payload for a merkleproof.
+// mAPI returns proofs in a JSONEnvelope with a payload. This represents the
+// Payload format which contains a parent object with tx meta and a nested object
+// which is the TSC format merkleProof.
 type ProofWrapper struct {
 	CallbackPayload *bc.MerkleProof `json:"callbackPayload"`
 	BlockHash       string          `json:"blockHash"`

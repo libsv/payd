@@ -39,39 +39,6 @@ type PaymentRequest struct {
 	FeeRate *bt.FeeQuote `json:"fee"`
 }
 
-// Output message used in BIP270.
-// See https://github.com/moneybutton/bips/blob/master/bip-0270.mediawiki#output
-type Output struct {
-	// Amount is the number of satoshis to be paid.
-	Amount uint64 `json:"amount"`
-	// Script is a locking script where payment should be sent, formatted as a hexadecimal string.
-	Script string `json:"script"`
-	// Description, an optional description such as "tip" or "sales tax". Maximum length is 100 chars.
-	Description string `json:"description"`
-}
-
-// FeeRate as described in BIP-274.
-// See https://github.com/moneybutton/bips/blob/master/bip-0274.mediawiki
-type FeeRate struct {
-	// SatoshisPerByte is a number indicating how many satoshis per byte
-	// each transaction in the Payment ought to pay to miners.
-	SatoshisPerByte uint64 `json:"satoshisPerByte"`
-}
-
-// MerchantData to be displayed to the user.
-type MerchantData struct {
-	// AvatarURL displays a canonical url to a merchants avatar.
-	AvatarURL string `json:"avatar,omitempty"`
-	// MerchantName is a human readable string identifying the merchant.
-	MerchantName string `json:"name,omitempty"`
-	// AvatarURL displays a canonical url to a merchants avatar.
-	Email string `json:"email,omitempty"`
-	// MerchantName is a human readable string identifying the merchant.
-	Address          string                 `json:"address,omitempty"`
-	PaymentReference string                 `json:"paymentReference"`
-	ExtendedData     map[string]interface{} `json:"extendedData"`
-}
-
 // PaymentRequestArgs are request arguments that can be passed to the service.
 type PaymentRequestArgs struct {
 	// PaymentID is an identifier for an invoice.
@@ -90,9 +57,4 @@ type PaymentRequestReaderWriter interface {
 	ScriptKeyWriter
 	InvoiceReader
 	DerivationPathReaderWriter
-}
-
-// PaymentRequestOutputer will create outputs that equal the amount of request satoshis.
-type PaymentRequestOutputer interface {
-	CreateOutputs(ctx context.Context, satoshis uint64, args PaymentRequestArgs) ([]*Output, error)
 }

@@ -13,7 +13,7 @@ require (
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/libsv/go-bc v0.1.1
 	github.com/libsv/go-bk v0.1.3
-	github.com/libsv/go-bt/v2 v2.0.0-beta.1
+	github.com/libsv/go-bt/v2 v2.0.0-beta.2
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.8 // indirect

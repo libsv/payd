@@ -24,10 +24,12 @@ type CreatePayment struct {
 	MerchantData null.String `json:"merchantData,omitempty"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
-	// TODO - we're not handling paymail in V1 so this will always be empty
 	RefundTo null.String `json:"refundTo,omitempty"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo,omitempty"`
+	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
+	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
+	SPVEnvelope string `json:"spvEnvelope"`
 }
 
 // Validate will ensure the users request is correct.
@@ -47,6 +49,7 @@ func (c CreatePayment) Validate() validator.ErrValidation {
 	if c.RefundTo.Valid {
 		v = v.Validate("refundTo", validator.Length(c.RefundTo.String, 0, 100))
 	}
+	// TODO validate SPVEnvelope - may be better in service however.
 	return v
 }
 
@@ -60,11 +63,6 @@ type PaymentACK struct {
 	// it is recommended only to use “1” and to fill the memo with a textual explanation about why
 	// the transaction was not accepted until further numbers are defined and standardised.
 	Error int `json:"error,omitempty"`
-	// TODO: check anypay https://docs.anypayinc.com/pay-protocol/overview
-	// and consider deleting success field because seems they don't actually
-	// return it, tried sending a rubbish tx and didn't get back success: "false"
-	// - only got back proper bip270 paymentack response (like above)
-	Success string `json:"success,omitempty"` // 'true' or 'false' string
 }
 
 // CreatePaymentArgs identifies the paymentID used for the payment.
