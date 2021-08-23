@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
+	"github.com/theflyingcodr/lathos/errs"
 
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config"
@@ -43,6 +44,9 @@ func (p *paymentRequest) CreatePaymentRequest(ctx context.Context, args gopayd.P
 	inv, err := p.store.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get invoice when creating payment request")
+	}
+	if !inv.PaymentReceivedAt.IsZero() {
+		return nil, errs.NewErrDuplicate("D103", fmt.Sprintf("payment already received for paymentId %s", args.PaymentID))
 	}
 	oo, err := p.outputter.CreateOutputs(ctx, gopayd.OutputsCreate{
 		Satoshis:     inv.Satoshis,

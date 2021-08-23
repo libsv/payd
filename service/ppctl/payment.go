@@ -86,7 +86,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}
 	// if it doesn't fully pay the invoice, reject it
 	if outputTotal < inv.Satoshis {
-		log.Info("satoshis are less than expt outputs")
 		pa.Error = 1
 		pa.Memo = "Outputs do not fully pay invoice for paymentID " + args.PaymentID
 		return pa, nil

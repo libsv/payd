@@ -8,36 +8,16 @@ txos            - to store our outputs and note when they have been spent
 CREATE TABLE keys (
     name        VARCHAR NOT NULL PRIMARY KEY
     ,xprv       VARCHAR NOT NULL
+    ,pathCounter BIGINT NOT NULL DEFAULT 0
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
     paymentID           VARCHAR PRIMARY KEY
     ,satoshis           INTEGER NOT NULL
     ,paymentReceivedAt  TIMESTAMP
     ,refundTo           VARCHAR
-);
-
-CREATE TABLE script_keys(
-    derivationID INTEGER
-    ,keyname        TEXT
-    ,lockingscript  TEXT NOT NULL PRIMARY KEY
-    ,FOREIGN KEY (keyname) REFERENCES keys(name)
-    ,FOREIGN KEY (derivationID) REFERENCES derivation_paths(ID)
-);
-
-CREATE TABLE script_keys_paymail(
-    lockingscript  TEXT NOT NULL PRIMARY KEY
-);
-
-CREATE TABLE derivation_paths(
-    ID INTEGER PRIMARY KEY AUTOINCREMENT
-    ,paymentID INTEGER NOT NULL
-    ,path TEXT NOT NULL
-    ,prefix TEXT NOT NULL
-    ,pathIndex INTEGER NOT NULL
-    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
 );
 
 CREATE TABLE transactions (

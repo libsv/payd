@@ -56,5 +56,5 @@ type PaymentRequestService interface {
 type PaymentRequestReaderWriter interface {
 	ScriptKeyWriter
 	InvoiceReader
-	DerivationPathReaderWriter
+	DerivationCounterReaderWriter
 }

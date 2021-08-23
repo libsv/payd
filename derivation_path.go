@@ -2,53 +2,35 @@ package gopayd
 
 import (
 	"context"
-	"time"
 )
 
-// DerivationPath defines a single derivation path, used when signing
-// tx outputs.
-type DerivationPath struct {
-	ID        int       `db:"ID"`
-	PaymentID string    `db:"paymentID"`
-	Path      string    `db:"path"`
-	Prefix    string    `db:"prefix"`
-	Index     int       `db:"pathIndex"`
-	CreatedAt time.Time `db:"createdAt"`
+// DerivationIncrementArgs are used to increment a derivation counter.
+type DerivationIncrementArgs struct {
+	// Key is the private key name to increment.
+	Key string `db:"key"`
+	// Offset is the amount we are going to increment by.
+	Offset uint64 `db:"offset"`
 }
 
-// DerivationPathCreate is used to create a new derivationPath.
-type DerivationPathCreate struct {
-	PaymentID string `db:"paymentID"`
-	Prefix    string `db:"prefix"`
+// DerivationCounterArgs are used to return the current derivation counter for a master key.
+type DerivationCounterArgs struct {
+	Key string `db:"key"`
 }
 
-// DerivationPathArgs is used to return a single derivation path matching the args.
-type DerivationPathArgs struct {
-	ID int `db:"id"`
+// DerivationCounterWriter can be used to write derivation path data to a data store.
+type DerivationCounterWriter interface {
+	// IncrementKeyCounter will increment the key counter using the provided arguments.
+	IncrementKeyCounter(ctx context.Context, args DerivationIncrementArgs) error
 }
 
-// DerivationPathExistsArgs are used to identify a derivPath by the paymentID .
-type DerivationPathExistsArgs struct {
-	PaymentID string `db:"paymentID"`
+// DerivationCounterReader can be used to read derivation path data from a data store.
+type DerivationCounterReader interface {
+	// DerivationCounter will return the current counter for a private key.
+	DerivationCounter(ctx context.Context, args DerivationCounterArgs) (uint64, error)
 }
 
-// DerivationPathWriter can be used to write derivation path data to a data store.
-type DerivationPathWriter interface {
-	// ReserveDerivationPath will create a derivation path for an invoice and
-	// return with the index incremented ready for use.
-	DerivationPathCreate(ctx context.Context, req DerivationPathCreate) (*DerivationPath, error)
-}
-
-// DerivationPathReader can be used to read derivation path data from a data store.
-type DerivationPathReader interface {
-	// DerivationPath will return a derivationPath that matches the supplied args.
-	DerivationPath(ctx context.Context, args DerivationPathArgs) (*DerivationPath, error)
-	// DerivationPathExists will return a true/false if key/s existing matching the args field.
-	DerivationPathExists(ctx context.Context, args DerivationPathExistsArgs) (bool, error)
-}
-
-// DerivationPathReaderWriter allows derivation paths to be written and read from a data store.
-type DerivationPathReaderWriter interface {
-	DerivationPathReader
-	DerivationPathWriter
+// DerivationCounterReaderWriter allows derivation paths to be written and read from a data store.
+type DerivationCounterReaderWriter interface {
+	DerivationCounterReader
+	DerivationCounterWriter
 }
