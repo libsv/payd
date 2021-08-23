@@ -68,6 +68,7 @@ func (c *Config) WithDb() *Config {
 	return c
 }
 
+// WithHeadersv sets up and returns Headersv configuration.
 func (c *Config) WithHeadersv() *Config {
 	viper.SetDefault(EnvHeadersvAddress, "localhst:8001")
 	c.Headersv = &Headersv{

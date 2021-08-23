@@ -16,6 +16,7 @@ type headersv struct {
 	host   string
 }
 
+// NewHeadersv returns a bc.BlockHeaderChain using Headersv.
 func NewHeadersv(client HTTPClient, host string) bc.BlockHeaderChain {
 	return &headersv{
 		client: client,
@@ -23,6 +24,7 @@ func NewHeadersv(client HTTPClient, host string) bc.BlockHeaderChain {
 	}
 }
 
+// BlockHeader returns the header for the provided.
 func (h *headersv) BlockHeader(ctx context.Context, blockHash string) (*bc.BlockHeader, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -39,7 +41,9 @@ func (h *headersv) BlockHeader(ctx context.Context, blockHash string) (*bc.Block
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {

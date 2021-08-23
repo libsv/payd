@@ -114,7 +114,7 @@ type Db struct {
 	MigrateDb  bool
 }
 
-// Headersv contains headersv information
+// Headersv contains headersv information.
 type Headersv struct {
 	Address string
 }
