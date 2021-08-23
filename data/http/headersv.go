@@ -24,7 +24,7 @@ func NewHeadersv(client HTTPClient, host string) bc.BlockHeaderChain {
 	}
 }
 
-// BlockHeader returns the header for the provided.
+// BlockHeader returns the header for the provided blockhash.
 func (h *headersv) BlockHeader(ctx context.Context, blockHash string) (*bc.BlockHeader, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
