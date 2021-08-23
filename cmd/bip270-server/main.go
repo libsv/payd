@@ -112,7 +112,6 @@ func main() {
 	spvc, err := spv.NewClient(
 		spv.WithBlockHeaderChain(phttp.NewHeadersv(&http.Client{}, cfg.Headersv.Address)),
 	)
-
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
