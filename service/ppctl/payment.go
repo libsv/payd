@@ -24,17 +24,17 @@ const (
 // * paymail payments, that use the paymail protocol for making the payments.
 type payment struct {
 	store    gopayd.PaymentWriter
-	script   gopayd.ScriptKeyReader
+	txoRdr   gopayd.TxoReader
 	invStore gopayd.InvoiceReaderWriter
 	sender   gopayd.PaymentSender
 	txrunner gopayd.Transacter
 }
 
 // NewPayment will create and return a new payment service.
-func NewPayment(store gopayd.PaymentWriter, script gopayd.ScriptKeyReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
+func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
 	return &payment{
 		store:    store,
-		script:   script,
+		txoRdr:   txoRdr,
 		invStore: invStore,
 		sender:   sender,
 		txrunner: txrunner,
@@ -59,7 +59,10 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	txos := make([]gopayd.CreateTxo, 0)
 	// iterate outputs and gather the total satoshis for our known outputs
 	for i, o := range tx.Outputs {
-		sk, err := p.script.ScriptKey(ctx, gopayd.ScriptKeyArgs{LockingScript: o.LockingScript.String()})
+		sk, err := p.txoRdr.PartialTxo(ctx, gopayd.UnspentTxoArgs{
+			LockingScript: o.LockingScript.String(),
+			Satoshis:      o.Satoshis,
+		})
 		if err != nil {
 			// script isn't known to us, could be a change utxo, skip and carry on
 			if lathos.IsNotFound(err) {
@@ -73,7 +76,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 			TxID:           tx.TxID(),
 			Vout:           i,
 			KeyName:        null.StringFrom(keyname),
-			DerivationPath: sk.DerivationPath,
+			DerivationPath: null.StringFrom(sk.DerivationPath),
 			LockingScript:  sk.LockingScript,
 			Satoshis:       o.Satoshis,
 		})

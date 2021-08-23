@@ -8,7 +8,6 @@ txos            - to store our outputs and note when they have been spent
 CREATE TABLE keys (
     name        VARCHAR NOT NULL PRIMARY KEY
     ,xprv       VARCHAR NOT NULL
-    ,pathCounter BIGINT NOT NULL DEFAULT 0
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -22,17 +21,28 @@ CREATE TABLE invoices (
 
 CREATE TABLE transactions (
     txid            CHAR(64) NOT NULL PRIMARY KEY
-    ,paymentID      VARCHAR NOT NULL
+    ,paymentid      VARCHAR NOT NULL
     ,txhex          TEXT NOT NULL
-    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
+);
+
+-- store outputs generated during payment requests
+CREATE TABLE script_keys
+(
+    lockingscript   VARCHAR NOT NULL PRIMARY KEY,
+    keyname         TEXT,
+    derivationpath  TEXT,
+    satoshis        BIGINT NOT NULL,
+    createdat       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (keyname) REFERENCES keys (name)
 );
 
 -- store unspent transactions
 CREATE TABLE txos (
-    outpoint        VARCHAR NOT NULL PRIMARY KEY
-    ,txid           CHAR(64) NOT NULL
-    ,vout		    BIGINT NOT NULL CHECK (vout >= 0 AND vout < 4294967296)
+    outpoint        VARCHAR
+    ,txid           CHAR(64)
+    ,vout		    BIGINT CHECK (vout >= 0 AND vout < 4294967296)
     ,keyname		TEXT -- can be null on paymail payments
     ,derivationpath TEXT  -- can be null on paymail payments
     ,lockingscript  TEXT NOT NULL
@@ -42,7 +52,12 @@ CREATE TABLE txos (
     ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (txid) REFERENCES transactions(txid)
+    ,CONSTRAINT outpoint_key UNIQUE(outpoint)
  );
+
+CREATE INDEX txos_keyname ON txos (keyname);
+CREATE INDEX txos_derivationpath ON txos (derivationpath);
+CREATE INDEX txos_lockingscript ON txos (lockingscript);
 
 CREATE TABLE proofs(
     blockhash VARCHAR(255) NOT NULL

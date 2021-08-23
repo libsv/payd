@@ -309,10 +309,14 @@ github.com/libsv/go-bc v0.1.1/go.mod h1:n3jCU78GOOER2PxfN/czBE/dCMfuAwpfCjNpHrti
 github.com/libsv/go-bk v0.0.0-20210430094342-ff08e691962b/go.mod h1:xbDkeFFpP0uyFaPLnP6TwaLpAsHaslZ0LftTdWlB6HI=
 github.com/libsv/go-bk v0.1.3 h1:yhcoB9mOHReM1CeeGEPHpeQH5O2YpSHdpeSfKn6qaxs=
 github.com/libsv/go-bk v0.1.3/go.mod h1:xbDkeFFpP0uyFaPLnP6TwaLpAsHaslZ0LftTdWlB6HI=
+github.com/libsv/go-bk v0.1.4 h1:bTxlerGeibh8RRmyhFK03wSAEp6EAJxGR4vXuRT0LCE=
+github.com/libsv/go-bk v0.1.4/go.mod h1:xbDkeFFpP0uyFaPLnP6TwaLpAsHaslZ0LftTdWlB6HI=
 github.com/libsv/go-bt v0.0.10/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcykF2k=
 github.com/libsv/go-bt v0.0.11/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcykF2k=
 github.com/libsv/go-bt v1.0.0-beta h1:Sh/ACr0y/uTI41qS+3yo9jMl5VUDIa+euWdk33c4OJg=
 github.com/libsv/go-bt v1.0.0-beta/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcykF2k=
+github.com/libsv/go-bt v1.0.0 h1:Ss08pxPwLP6ztm15QEyjLFLX372Z6OKHS5bsqO6PiIs=
+github.com/libsv/go-bt v1.0.0/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcykF2k=
 github.com/libsv/go-bt/v2 v2.0.0-beta h1:aoUrsocAYqA/dWiNNFNVA8YaBd1vM6KpA6MrSPfUHoU=
 github.com/libsv/go-bt/v2 v2.0.0-beta/go.mod h1:62PATaSIMQ3omXVr9D4S7uMKaQByCJjNkrNzFpYThco=
 github.com/libsv/go-bt/v2 v2.0.0-beta.1 h1:t9pRMfo6CEVXl0+BDhRal7VO8NSXKR+SRoueFbVTcqw=
@@ -470,6 +474,8 @@ github.com/tidwall/pretty v0.0.0-20180105212114-65a9db5fad51/go.mod h1:XNkn88O1C
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tonicpow/go-minercraft v0.2.11 h1:UuKdjojwz+7Z0ppFATSA6fMRtDX29rp9qjL6MqdzQzA=
 github.com/tonicpow/go-minercraft v0.2.11/go.mod h1:eyGNUs6iyGTKgdXp0yWXQUfBBxIRqnfzM+jMb2eeyog=
+github.com/tonicpow/go-minercraft v0.3.0 h1:dPINML45rRKiK7AjjBw9e/baqbQwgkcKKmtil6/cu0c=
+github.com/tonicpow/go-minercraft v0.3.0/go.mod h1:kkb/M/RpaWvnR/JqOJSKA+rmt5Nkjbz+3ELYyU5GEpQ=
 github.com/tonicpow/go-paymail v0.1.6 h1:7U/fZLW4Slg0jNdwUzVoRvJJsNsrVIjzsBFAAV8HzEs=
 github.com/tonicpow/go-paymail v0.1.6/go.mod h1:scpDQ2kfQtOE9X1ssjoYf0QQATuNOO+J05b/vMwMXrY=
 github.com/ugorji/go v1.2.3/go.mod h1:5l8GZ8hZvmL4uMdy+mhCO1LjswGRYco9Q3HfuisB21A=

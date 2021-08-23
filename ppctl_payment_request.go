@@ -50,11 +50,3 @@ type PaymentRequestArgs struct {
 type PaymentRequestService interface {
 	CreatePaymentRequest(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
 }
-
-// PaymentRequestReaderWriter is used to read and write data from a data store
-// to provide data for creating ppctl payment requests for users.
-type PaymentRequestReaderWriter interface {
-	ScriptKeyWriter
-	InvoiceReader
-	DerivationCounterReaderWriter
-}

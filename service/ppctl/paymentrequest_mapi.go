@@ -3,13 +3,12 @@ package ppctl
 import (
 	"context"
 	"math"
-	"time"
+	"math/rand"
 
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
-	"gopkg.in/guregu/null.v3"
 
 	gopayd "github.com/libsv/payd"
 
@@ -23,17 +22,17 @@ const (
 )
 
 type mapiOutputs struct {
-	privKeySvc gopayd.PrivateKeyService
-	store      gopayd.PaymentRequestReaderWriter
-	txrunner   gopayd.Transacter
+	privKeySvc    gopayd.PrivateKeyService
+	txoWtr        gopayd.TxoWriter
+	derivationRdr gopayd.DerivationReader
 }
 
 // NewMapiOutputs will create and return a new payment service.
-func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txrunner gopayd.Transacter, store gopayd.PaymentRequestReaderWriter) *mapiOutputs {
+func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txoWtr gopayd.TxoWriter, derivationRdr gopayd.DerivationReader) *mapiOutputs {
 	if env == nil || env.Hostname == "" {
 		log.Fatal("env hostname should be set")
 	}
-	return &mapiOutputs{privKeySvc: privKeySvc, store: store, txrunner: txrunner}
+	return &mapiOutputs{privKeySvc: privKeySvc, derivationRdr: derivationRdr, txoWtr: txoWtr}
 }
 
 // CreatePaymentRequest handles setting up a new PaymentRequest response and can use and optional existing paymentID.
@@ -42,58 +41,57 @@ func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txr
 // its own locking script to help with privacy when payments are broadcast.
 // This is limited however, for full privacy you'd probably want a new TX per script.
 func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCreate) ([]*gopayd.Output, error) {
-	ctx = p.txrunner.WithTx(ctx)
 	// get our master key
 	priv, err := p.privKeySvc.PrivateKey(ctx, keyname)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	// get the current derivation path counter, we will increment this
-	// to generate a new deterministic derivationPath from the master.
-	counter, err := p.store.DerivationCounter(ctx, gopayd.DerivationCounterArgs{Key: keyname})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to check payment request is a duplicate")
-	}
 	totOutputs := math.Ceil(float64(args.Satoshis) / float64(args.Denomination))
-	if err := p.store.IncrementKeyCounter(ctx, gopayd.DerivationIncrementArgs{
-		Key:    keyname,
-		Offset: uint64(totOutputs),
-	}); err != nil {
-		return nil, errors.Wrap(err, "failed to increment derivation path")
-	}
-	txos := make([]*gopayd.Txo, 0)
-	for c := counter + 1; c <= uint64(totOutputs); c++ {
-		path := bip32.DerivePath(counter)
-		key, err := p.privKeySvc.DeriveChildFromKey(priv, path)
+	txos := make([]*gopayd.TxoCreate, totOutputs, totOutputs)
+	oo := make([]*gopayd.Output, totOutputs, totOutputs)
+	for i := 0; i < int(totOutputs); i++ {
+		var path string
+		for { // attempt to create a unique derivation path
+			seed := rand.Uint64()
+			path = bip32.DerivePath(seed)
+			exists, err := p.derivationRdr.DerivationPathExists(ctx, gopayd.DerivationExistsArgs{
+				KeyName: keyname,
+				Path:    path,
+			})
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to check derivation path exists when creating new payment request output")
+			}
+			if !exists {
+				break
+			}
+		}
+		pubKey, err := priv.DerivePublicKeyFromPath(path)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create new extended key when creating new payment request output")
+		}
+		s, err := bscript.NewP2PKHFromPubKeyBytes(pubKey)
 		if err != nil {
 			return nil, errors.WithMessage(err, "failed to derive key when creating output")
 		}
-		pubKey, err := key.ECPubKey()
-		if err != nil {
-			return nil, errors.WithMessage(err, "failed to derive key when creating output")
-		}
-		s, err := bscript.NewP2PKHFromPubKeyBytes(pubKey.SerialiseCompressed())
-		if err != nil {
-			return nil, errors.WithMessage(err, "failed to derive key when creating output")
-		}
-		sats := args.Denomination * c
+		sats := args.Denomination * uint64(i+1)
 		if sats > args.Satoshis {
 			sats = sats - args.Satoshis
 		} else {
 			sats = args.Denomination
 		}
-		txos = append(txos, &gopayd.Txo{
-			KeyName:        null.StringFrom(keyname),
-			DerivationPath: null.StringFrom(path),
+		txos = append(txos, &gopayd.TxoCreate{
+			KeyName:        keyname,
+			DerivationPath: path,
 			LockingScript:  s.String(),
 			Satoshis:       sats,
-			CreatedAt:      time.Now().UTC(),
-			ModifiedAt:     time.Now().UTC(),
 		})
-
+		oo = append(oo, &gopayd.Output{
+			Amount: sats,
+			Script: s.String(),
+		})
 	}
-	if err := p.txrunner.Commit(ctx); err != nil {
-		return nil, errors.Wrap(err, "failed to created payment")
+	if err := p.txoWtr.TxosCreate(ctx, txos); err != nil {
+		return nil, errors.Wrap(err, "failed to store outputs")
 	}
-	return outs, nil
+	return oo, nil
 }

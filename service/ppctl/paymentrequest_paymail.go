@@ -14,15 +14,15 @@ import (
 type paymailOutputs struct {
 	cfg    *config.Paymail
 	rdrwtr gopayd.PaymailReaderWriter
-	skWtr  gopayd.ScriptKeyWriter
+	txoWtr gopayd.TxoWriter
 }
 
 // NewPaymailOutputs will setup and return a new paymailOutputs service that implements a paymentRequestOutputer.
-func NewPaymailOutputs(cfg *config.Paymail, rdrwtr gopayd.PaymailReaderWriter, skWtr gopayd.ScriptKeyWriter) *paymailOutputs {
+func NewPaymailOutputs(cfg *config.Paymail, rdrwtr gopayd.PaymailReaderWriter, txoWtr gopayd.TxoWriter) *paymailOutputs {
 	return &paymailOutputs{
 		cfg:    cfg,
 		rdrwtr: rdrwtr,
-		skWtr:  skWtr,
+		txoWtr: txoWtr,
 	}
 }
 
@@ -42,11 +42,14 @@ func (p *paymailOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsC
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create outputs for Alias %s", addr.Alias)
 	}
-	sk := make([]gopayd.CreateScriptKey, 0, len(oo))
+	txos := make([]*gopayd.TxoCreate, len(oo), len(oo))
 	for _, o := range oo {
-		sk = append(sk, gopayd.CreateScriptKey{
-			LockingScript: o.Script,
+		txos = append(txos, &gopayd.TxoCreate{
+			KeyName:        p.cfg.Address,
+			DerivationPath: "paymail",
+			LockingScript:  o.Script,
+			Satoshis:       args.Satoshis,
 		})
 	}
-	return oo, errors.Wrap(p.skWtr.CreateScriptKeys(ctx, sk), "failed to store paymail outputs")
+	return oo, errors.Wrap(p.txoWtr.TxosCreate(ctx, txos), "failed to store paymail outputs")
 }

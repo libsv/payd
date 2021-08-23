@@ -102,7 +102,7 @@ func main() {
 	} else {
 		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
-		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, &paydSQL.Transacter{}, sqlLiteStore)
+		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
 	http.NewPaymentRequestHandler(

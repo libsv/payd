@@ -24,7 +24,7 @@ func NewMapi(cfg *config.MApi, svrCfg *config.Server, client *minercraft.Client)
 // Broadcast will submit a transaction to mapi for inclusion in a block.
 // Any errors will be returned, no error denotes success.
 func (m *minercraftMapi) Send(ctx context.Context, args gopayd.SendTransactionArgs, req gopayd.CreatePayment) error {
-	resp, err := m.client.SubmitTransaction(
+	resp, err := m.client.SubmitTransaction(ctx,
 		m.client.MinerByName(m.cfg.MinerName),
 		&minercraft.Transaction{
 			RawTx:              req.Transaction,
@@ -46,7 +46,7 @@ func (m *minercraftMapi) Send(ctx context.Context, args gopayd.SendTransactionAr
 
 // Status will return the current network status of a transaction.
 func (m *minercraftMapi) Status(ctx context.Context, args gopayd.TxStatusArgs) (*gopayd.TxStatus, error) {
-	resp, err := m.client.QueryTransaction(m.client.MinerByName(m.cfg.MinerName), args.TxID)
+	resp, err := m.client.QueryTransaction(ctx, m.client.MinerByName(m.cfg.MinerName), args.TxID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query Tx from mAPI")
 	}

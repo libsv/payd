@@ -14,10 +14,10 @@ import (
 )
 
 type paymentRequest struct {
-	walletCfg *config.Wallet
-	envCfg    *config.Server
-	outputter gopayd.PaymentRequestOutputer
-	store     gopayd.PaymentRequestReaderWriter
+	walletCfg  *config.Wallet
+	envCfg     *config.Server
+	outputter  gopayd.PaymentRequestOutputer
+	invoiceRdr gopayd.InvoiceReader
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest service that will generate outputs
@@ -25,12 +25,12 @@ type paymentRequest struct {
 func NewPaymentRequest(walletCfg *config.Wallet,
 	envCfg *config.Server,
 	outputter gopayd.PaymentRequestOutputer,
-	store gopayd.PaymentRequestReaderWriter) *paymentRequest {
+	invoiceRdr gopayd.InvoiceReader) *paymentRequest {
 	return &paymentRequest{
-		walletCfg: walletCfg,
-		envCfg:    envCfg,
-		store:     store,
-		outputter: outputter,
+		walletCfg:  walletCfg,
+		envCfg:     envCfg,
+		invoiceRdr: invoiceRdr,
+		outputter:  outputter,
 	}
 }
 
@@ -41,7 +41,7 @@ func (p *paymentRequest) CreatePaymentRequest(ctx context.Context, args gopayd.P
 		Validate("hostname", validator.NotEmpty(p.envCfg)); err.Err() != nil {
 		return nil, err
 	}
-	inv, err := p.store.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
+	inv, err := p.invoiceRdr.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get invoice when creating payment request")
 	}

@@ -3,8 +3,13 @@ package bip32
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
+)
+
+var (
+	numericPlusTick = regexp.MustCompile(`^[0-9]+'{0,1}$`)
 )
 
 // DerivePath given an uint64 number will generate a hardened BIP32 path 3 layers deep.
@@ -43,4 +48,58 @@ func DeriveNumber(path string) (uint64, error) {
 	}
 	seed += d3 - (1 << 31)
 	return seed, nil
+}
+
+// DeriveChildFromPath will generate a new extended key derived from the key k using the
+// bip32 path provided, ie "1234/0/123"
+// Child keys must be ints or hardened keys followed by '.
+// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+func (k *ExtendedKey) DeriveChildFromPath(derivationPath string) (*ExtendedKey, error) {
+	if derivationPath == "" {
+		return k, nil
+	}
+	key := k
+	children := strings.Split(derivationPath, "/")
+	for _, child := range children {
+		if !numericPlusTick.MatchString(child) {
+			return nil, fmt.Errorf("invalid path: %q", derivationPath)
+		}
+		childInt, err := childInt(child)
+		if err != nil {
+			return nil, fmt.Errorf("derive key failed %w", err)
+		}
+		key, err = key.Child(childInt)
+		if err != nil {
+			return nil, fmt.Errorf("derive key failed %w", err)
+		}
+	}
+	return key, nil
+}
+
+// DerivePublicKeyFromPath will generate a new extended key derived from the key k using the
+// bip32 path provided, ie "1234/0/123". It will then transform to an bec.PublicKey before
+// serialising the bytes and returning.
+func (k *ExtendedKey) DerivePublicKeyFromPath(derivationPath string) ([]byte, error) {
+	key, err := k.DeriveChildFromPath(derivationPath)
+	if err != nil {
+		return nil, err
+	}
+	pubKey, err := key.ECPubKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate public key %w", err)
+	}
+	return pubKey.SerialiseCompressed(), nil
+}
+
+func childInt(child string) (uint32, error) {
+	var suffix uint32
+	if strings.HasSuffix(child, "'") {
+		child = strings.TrimRight(child, "'")
+		suffix = 2147483648 // 2^32
+	}
+	t, err := strconv.ParseUint(child, 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get child int %w", err)
+	}
+	return uint32(t) + suffix, nil
 }
