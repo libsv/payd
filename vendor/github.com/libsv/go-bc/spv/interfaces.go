@@ -7,26 +7,23 @@ import (
 	"github.com/libsv/go-bt/v2"
 )
 
-// An Client is a struct used to specify interfaces
-// used to complete Simple Payment Verification (SPV)
+// A Creator is an interface used to build the spv.Envelope data type for
+// Simple Payment Verification (SPV).
+//
+// The implementation of an spv.TxStore and spv.MerkleProofStore which is supplied will depend
+// on the client you are using.
+type Creator interface {
+	CreateEnvelope(context.Context, *bt.Tx) (*Envelope, error)
+}
+
+// A Verifier is an interface used to complete Simple Payment Verification (SPV)
 // in conjunction with a Merkle Proof.
 //
-// The implementation of BlockHeaderChain which is supplied will depend on the client
+// The implementation of bc.BlockHeaderChain which is supplied will depend on the client
 // you are using, some may return a HeaderJSON response others may return the blockhash.
-type Client interface {
-	EnvelopeHandler
-	MerkleProofVerifier
-}
-
-// EnvelopeHandler interfaces the handling (creation and verification) of SPV Envelopes
-type EnvelopeHandler interface {
-	EnvelopeCreator
+type Verifier interface {
 	EnvelopeVerifier
-}
-
-// EnvelopeCreator interfaces the creation of SPV Envelopes
-type EnvelopeCreator interface {
-	CreateEnvelope(context.Context, *bt.Tx) (*Envelope, error)
+	MerkleProofVerifier
 }
 
 // EnvelopeVerifier interfaces the verification of SPV Envelopes

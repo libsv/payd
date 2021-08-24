@@ -51,7 +51,7 @@ type Envelope struct {
 }
 
 // CreateEnvelope builds and returns an spv.Envelope for the provided tx.
-func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, error) {
+func (c *creator) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, error) {
 	if len(tx.Inputs) == 0 {
 		return nil, ErrNoTxInputs
 	}
@@ -72,7 +72,7 @@ func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, e
 		}
 
 		// Check the store for a Merkle Proof for the current input.
-		mp, err := s.mpg.MerkleProof(ctx, pTxID)
+		mp, err := c.mpc.MerkleProof(ctx, pTxID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get merkle proof for tx %s", pTxID)
 		}
@@ -90,7 +90,7 @@ func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, e
 		// If no merkle proof was found for the input, build a *bt.Tx from its TxID and recursively
 		// call this function building envelopes for inputs without proofs, until a parent with a
 		// Merkle Proof is found.
-		pTx, err := s.txg.Tx(ctx, pTxID)
+		pTx, err := c.txc.Tx(ctx, pTxID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get tx %s", pTxID)
 		}
@@ -98,7 +98,7 @@ func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, e
 			return nil, fmt.Errorf("could not find tx %s", pTxID)
 		}
 
-		pEnvelope, err := s.CreateEnvelope(ctx, pTx)
+		pEnvelope, err := c.CreateEnvelope(ctx, pTx)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, e
 }
 
 // VerifyPayment verifies whether or not the txs supplied via the supplied spv.Envelope are valid
-func (s *spvclient) VerifyPayment(ctx context.Context, initialPayment *Envelope) (bool, error) {
+func (v *verifier) VerifyPayment(ctx context.Context, initialPayment *Envelope) (bool, error) {
 	if initialPayment == nil {
 		return false, ErrNilInitialPayment
 	}
@@ -121,7 +121,7 @@ func (s *spvclient) VerifyPayment(ctx context.Context, initialPayment *Envelope)
 		return false, ErrTipTxConfirmed
 	}
 
-	valid, err := s.verifyTxs(ctx, initialPayment)
+	valid, err := v.verifyTxs(ctx, initialPayment)
 	if err != nil {
 		return false, err
 	}
@@ -129,7 +129,7 @@ func (s *spvclient) VerifyPayment(ctx context.Context, initialPayment *Envelope)
 	return valid, nil
 }
 
-func (s *spvclient) verifyTxs(ctx context.Context, payment *Envelope) (bool, error) {
+func (s *verifier) verifyTxs(ctx context.Context, payment *Envelope) (bool, error) {
 	// If at the beginning or middle of the tx chain and tx is unconfirmed, fail and error.
 	if !payment.IsAnchored() && (payment.Parents == nil || len(payment.Parents) == 0) {
 		return false, ErrNoConfirmedTransaction
@@ -167,7 +167,7 @@ func (s *spvclient) verifyTxs(ctx context.Context, payment *Envelope) (bool, err
 	return s.verifyUnconfirmedTx(tx, payment)
 }
 
-func (s *spvclient) verifyTxAnchor(ctx context.Context, payment *Envelope) (bool, error) {
+func (s *verifier) verifyTxAnchor(ctx context.Context, payment *Envelope) (bool, error) {
 	proofTxID := payment.Proof.TxOrID
 	if len(proofTxID) != 64 {
 		proofTx, err := bt.NewTxFromString(payment.Proof.TxOrID)
@@ -192,7 +192,7 @@ func (s *spvclient) verifyTxAnchor(ctx context.Context, payment *Envelope) (bool
 	return valid, nil
 }
 
-func (s *spvclient) verifyUnconfirmedTx(tx *bt.Tx, payment *Envelope) (bool, error) {
+func (s *verifier) verifyUnconfirmedTx(tx *bt.Tx, payment *Envelope) (bool, error) {
 	// If no tx inputs have been provided, fail and error
 	if len(tx.Inputs) == 0 {
 		return false, ErrNoTxInputsToVerify

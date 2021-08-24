@@ -21,7 +21,7 @@ const (
 )
 
 // VerifyMerkleProof verifies a Merkle Proof in standard byte format.
-func (spvc *spvclient) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, isLastInTree bool, err error) {
+func (v *verifier) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, isLastInTree bool, err error) {
 
 	mpb, err := parseBinaryMerkleProof(proof)
 	if err != nil {
@@ -43,7 +43,7 @@ func (spvc *spvclient) VerifyMerkleProof(ctx context.Context, proof []byte) (val
 	// if bits 1 and 2 of flags are NOT set, target should contain a block hash (32 bytes)
 	case 0:
 		// The `target` field contains a block hash
-		blockHeader, err := spvc.bhc.BlockHeader(ctx, mpb.target)
+		blockHeader, err := v.bhc.BlockHeader(ctx, mpb.target)
 		if err != nil {
 			return false, false, err
 		}
@@ -88,7 +88,7 @@ func (spvc *spvclient) VerifyMerkleProof(ctx context.Context, proof []byte) (val
 }
 
 // VerifyMerkleProofJSON verifies a Merkle Proof in standard JSON format.
-func (spvc *spvclient) VerifyMerkleProofJSON(ctx context.Context, proof *bc.MerkleProof) (bool, bool, error) {
+func (v *verifier) VerifyMerkleProofJSON(ctx context.Context, proof *bc.MerkleProof) (bool, bool, error) {
 
 	txid, err := txidFromTxOrID(proof.TxOrID)
 	if err != nil {
@@ -103,7 +103,7 @@ func (spvc *spvclient) VerifyMerkleProofJSON(ctx context.Context, proof *bc.Merk
 			return false, false, errors.New("invalid target field")
 		}
 
-		blockHeader, err := spvc.bhc.BlockHeader(ctx, proof.Target)
+		blockHeader, err := v.bhc.BlockHeader(ctx, proof.Target)
 		if err != nil {
 			return false, false, err
 		}

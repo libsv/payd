@@ -109,7 +109,7 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	spvc, err := spv.NewClient(spv.WithBlockHeaderChain(phttp.NewHeadersv(&http.Client{}, cfg.Headersv.Address)))
+	spvv, err := spv.NewVerifier(phttp.NewHeadersv(&http.Client{}, cfg.Headersv.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
@@ -118,7 +118,7 @@ func main() {
 		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore)).
 		RegisterRoutes(g)
 	thttp.NewPaymentHandler(
-		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{}, spvc)).
+		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{}, spvv)).
 		RegisterRoutes(g)
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
 		RegisterRoutes(g)
