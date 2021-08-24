@@ -48,7 +48,7 @@ func (spvc *spvclient) VerifyMerkleProof(ctx context.Context, proof []byte) (val
 			return false, false, err
 		}
 
-		merkleRoot = blockHeader.HashMerkleRoot
+		merkleRoot = blockHeader.HashMerkleRootStr()
 
 	// if bit 2 of flags is set, target should contain a merkle root (32 bytes)
 	case 4:
@@ -107,7 +107,7 @@ func (spvc *spvclient) VerifyMerkleProofJSON(ctx context.Context, proof *bc.Merk
 		if err != nil {
 			return false, false, err
 		}
-		merkleRoot = blockHeader.HashMerkleRoot
+		merkleRoot = blockHeader.HashMerkleRootStr()
 
 	} else if proof.TargetType == "header" && len(proof.Target) == 160 {
 		// The `target` field contains a block header

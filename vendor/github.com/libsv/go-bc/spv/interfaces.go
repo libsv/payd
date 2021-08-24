@@ -26,7 +26,7 @@ type EnvelopeHandler interface {
 
 // EnvelopeCreator interfaces the creation of SPV Envelopes
 type EnvelopeCreator interface {
-	CreateEnvelope(*bt.Tx) (*Envelope, error)
+	CreateEnvelope(context.Context, *bt.Tx) (*Envelope, error)
 }
 
 // EnvelopeVerifier interfaces the verification of SPV Envelopes
@@ -42,10 +42,10 @@ type MerkleProofVerifier interface {
 
 // TxStore interfaces the a tx store
 type TxStore interface {
-	Tx(txID string) (*bt.Tx, error)
+	Tx(ctx context.Context, txID string) (*bt.Tx, error)
 }
 
 // MerkleProofStore interfaces a Merkle Proof store
 type MerkleProofStore interface {
-	MerkleProof(txID string) (*bc.MerkleProof, error)
+	MerkleProof(ctx context.Context, txID string) (*bc.MerkleProof, error)
 }

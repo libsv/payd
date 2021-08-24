@@ -50,7 +50,8 @@ type Envelope struct {
 	Parents       map[string]*Envelope `json:"parents,omitempty"`
 }
 
-func (s *spvclient) CreateEnvelope(tx *bt.Tx) (*Envelope, error) {
+// CreateEnvelope builds and returns an spv.Envelope for the provided tx.
+func (s *spvclient) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, error) {
 	if len(tx.Inputs) == 0 {
 		return nil, ErrNoTxInputs
 	}
@@ -70,11 +71,13 @@ func (s *spvclient) CreateEnvelope(tx *bt.Tx) (*Envelope, error) {
 			continue
 		}
 
-		mp, err := s.mpg.MerkleProof(pTxID)
+		// Check the store for a Merkle Proof for the current input.
+		mp, err := s.mpg.MerkleProof(ctx, pTxID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get merkle proof for tx %s", pTxID)
 		}
 		if mp != nil {
+			// If a Merkle Proof exists, build and return an spv.Envelope
 			envelope.Parents[pTxID] = &Envelope{
 				TxID:  pTxID,
 				Proof: mp,
@@ -84,7 +87,10 @@ func (s *spvclient) CreateEnvelope(tx *bt.Tx) (*Envelope, error) {
 			continue
 		}
 
-		pTx, err := s.txg.Tx(pTxID)
+		// If no merkle proof was found for the input, build a *bt.Tx from its TxID and recursively
+		// call this function building envelopes for inputs without proofs, until a parent with a
+		// Merkle Proof is found.
+		pTx, err := s.txg.Tx(ctx, pTxID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get tx %s", pTxID)
 		}
@@ -92,7 +98,7 @@ func (s *spvclient) CreateEnvelope(tx *bt.Tx) (*Envelope, error) {
 			return nil, fmt.Errorf("could not find tx %s", pTxID)
 		}
 
-		pEnvelope, err := s.CreateEnvelope(pTx)
+		pEnvelope, err := s.CreateEnvelope(ctx, pTx)
 		if err != nil {
 			return nil, err
 		}
