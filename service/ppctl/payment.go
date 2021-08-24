@@ -9,9 +9,11 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	"github.com/theflyingcodr/lathos"
+	"github.com/theflyingcodr/lathos/errs"
 	"gopkg.in/guregu/null.v3"
 
 	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/errcodes"
 )
 
 const (
@@ -41,10 +43,18 @@ func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore go
 	}
 }
 
-// Create will setup a new payment and return the result.
+// CreatePayment will setup a new payment and return the result.
 func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentArgs, req gopayd.CreatePayment) (*gopayd.PaymentACK, error) {
 	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
 		return nil, err
+	}
+	// get the invoice for the paymentID to check total satoshis required.
+	inv, err := p.invStore.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get invoice to validate output total for paymentID %s.", args.PaymentID)
+	}
+	if !inv.PaymentReceivedAt.IsZero() {
+		return nil, errs.NewErrDuplicate(errcodes.ErrDuplicatePayment, fmt.Sprintf("payment already received for paymentID '%s'", args.PaymentID))
 	}
 	pa := &gopayd.PaymentACK{
 		Payment: &req,
@@ -56,12 +66,13 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	}
 	// TODO: validate the transaction inputs
 	outputTotal := uint64(0)
-	txos := make([]gopayd.CreateTxo, 0)
+	txos := make([]*gopayd.UpdateTxo, 0)
 	// iterate outputs and gather the total satoshis for our known outputs
 	for i, o := range tx.Outputs {
 		sk, err := p.txoRdr.PartialTxo(ctx, gopayd.UnspentTxoArgs{
 			LockingScript: o.LockingScript.String(),
 			Satoshis:      o.Satoshis,
+			Keyname:       keyname,
 		})
 		if err != nil {
 			// script isn't known to us, could be a change utxo, skip and carry on
@@ -71,7 +82,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 			return nil, errors.Wrapf(err, "failed to get store output for paymentID %s", args.PaymentID)
 		}
 		// push new txo onto list for persistence later
-		txos = append(txos, gopayd.CreateTxo{
+		txos = append(txos, &gopayd.UpdateTxo{
 			Outpoint:       fmt.Sprintf("%s%d", tx.TxID(), i),
 			TxID:           tx.TxID(),
 			Vout:           i,
@@ -81,11 +92,6 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 			Satoshis:       o.Satoshis,
 		})
 		outputTotal += o.Satoshis
-	}
-	// get the invoice for the paymentID to check total satoshis required.
-	inv, err := p.invStore.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get invoice to validate output total for paymentID %s.", args.PaymentID)
 	}
 	// if it doesn't fully pay the invoice, reject it
 	if outputTotal < inv.Satoshis {

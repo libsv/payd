@@ -20,8 +20,9 @@ type TxoCreate struct {
 
 // UnspentTxoArgs are used to located an unfulfilled txo.
 type UnspentTxoArgs struct {
-	LockingScript string
-	Satoshis      uint64
+	Keyname       string `db:"keyname"`
+	LockingScript string `db:"lockingscript"`
+	Satoshis      uint64 `db:"satoshis"`
 }
 
 // UnspentTxo is an unfulfilled txo not yet linked to a transaction.

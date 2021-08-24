@@ -49,8 +49,8 @@ CREATE TABLE txos (
     ,satoshis       BIGINT NOT NULL CHECK (satoshis >= 0)
     ,spentat        INTEGER(4) -- this is the date when YOU use the funds
     ,spendingtxid   CHAR(64) -- the txid where you'd spent this output
-    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,modifiedat     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (txid) REFERENCES transactions(txid)
     ,CONSTRAINT outpoint_key UNIQUE(outpoint)
  );

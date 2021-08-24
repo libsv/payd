@@ -106,7 +106,7 @@ func main() {
 	}
 
 	http.NewPaymentRequestHandler(
-		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore)).
+		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore, mapiStore)).
 		RegisterRoutes(g)
 	http.NewPaymentHandler(
 		ppctl.NewPayment(sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{})).

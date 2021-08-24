@@ -8,10 +8,10 @@ import (
 
 // Transaction defines a single transaction.
 type Transaction struct {
-	PaymentID string    `db:"paymentID"`
+	PaymentID string    `db:"paymentid"`
 	TxID      string    `db:"txid"`
 	TxHex     string    `db:"txhex"`
-	CreatedAt time.Time `db:"createdAt"`
+	CreatedAt time.Time `db:"createdat"`
 	Outputs   []Txo     `db:"-"`
 }
 
@@ -26,20 +26,20 @@ type Txo struct {
 	Satoshis       uint64      `db:"satoshis"`
 	SpentAt        null.Time   `db:"spentat"`
 	SpendingTxID   null.String `db:"spendingtxid"`
-	CreatedAt      time.Time   `db:"createdAt"`
-	ModifiedAt     time.Time   `db:"modifiedAt"`
+	CreatedAt      time.Time   `db:"createdat"`
+	ModifiedAt     time.Time   `db:"modifiedat"`
 }
 
 // CreateTransaction is used to insert a tx into the data store.
 type CreateTransaction struct {
-	PaymentID string      `db:"paymentID"`
-	TxID      string      `db:"txid"`
-	TxHex     string      `db:"txhex"`
-	Outputs   []CreateTxo `db:"-"`
+	PaymentID string       `db:"paymentID"`
+	TxID      string       `db:"txid"`
+	TxHex     string       `db:"txhex"`
+	Outputs   []*UpdateTxo `db:"-"`
 }
 
-// CreateTxo is used to create a single txo in the data store.
-type CreateTxo struct {
+// UpdateTxo is used to update a single txo in the data store.
+type UpdateTxo struct {
 	Outpoint       string      `db:"outpoint"`
 	TxID           string      `db:"txid"`
 	Vout           int         `db:"vout"`
