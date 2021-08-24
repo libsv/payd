@@ -10,28 +10,29 @@ import (
 
 // Environment variable constants.
 const (
-	EnvServerPort     = "server.port"
-	EnvServerHost     = "server.host"
-	EnvEnvironment    = "env.environment"
-	EnvMainNet        = "env.mainnet"
-	EnvRegion         = "env.region"
-	EnvVersion        = "env.version"
-	EnvCommit         = "env.commit"
-	EnvBuildDate      = "env.builddate"
-	EnvLogLevel       = "log.level"
-	EnvDb             = "db.type"
-	EnvDbSchema       = "db.schema.path"
-	EnvDbDsn          = "db.dsn"
-	EnvDbMigrate      = "db.migrate"
-	EnvPaymailEnabled = "paymail.enabled"
-	EnvPaymailIsBeta  = "paymail.isbeta"
-	EnvPaymailAddress = "paymail.address"
-	EnvNetwork        = "wallet.network"
-	EnvAvatarURL      = "wallet.avatarurl"
-	EnvMerchantName   = "wallet.merchantname"
-	EnvMAPIMinerName  = "mapi.minername"
-	EnvMAPIURL        = "mapi.minerurl"
-	EnvMAPIToken      = "mapi.token"
+	EnvServerPort      = "server.port"
+	EnvServerHost      = "server.host"
+	EnvEnvironment     = "env.environment"
+	EnvMainNet         = "env.mainnet"
+	EnvRegion          = "env.region"
+	EnvVersion         = "env.version"
+	EnvCommit          = "env.commit"
+	EnvBuildDate       = "env.builddate"
+	EnvLogLevel        = "log.level"
+	EnvDb              = "db.type"
+	EnvDbSchema        = "db.schema.path"
+	EnvDbDsn           = "db.dsn"
+	EnvDbMigrate       = "db.migrate"
+	EnvHeadersvAddress = "headersv.address"
+	EnvPaymailEnabled  = "paymail.enabled"
+	EnvPaymailIsBeta   = "paymail.isbeta"
+	EnvPaymailAddress  = "paymail.address"
+	EnvNetwork         = "wallet.network"
+	EnvAvatarURL       = "wallet.avatarurl"
+	EnvMerchantName    = "wallet.merchantname"
+	EnvMAPIMinerName   = "mapi.minername"
+	EnvMAPIURL         = "mapi.minerurl"
+	EnvMAPIToken       = "mapi.token"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -57,6 +58,7 @@ type Config struct {
 	Server     *Server
 	Deployment *Deployment
 	Db         *Db
+	Headersv   *Headersv
 	Paymail    *Paymail
 	Wallet     *Wallet
 	Mapi       *MApi
@@ -110,6 +112,11 @@ type Db struct {
 	SchemaPath string
 	Dsn        string
 	MigrateDb  bool
+}
+
+// Headersv contains headersv information
+type Headersv struct {
+	Address string
 }
 
 // Paymail settings relating to paymail.

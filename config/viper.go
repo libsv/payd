@@ -68,6 +68,14 @@ func (c *Config) WithDb() *Config {
 	return c
 }
 
+func (c *Config) WithHeadersv() *Config {
+	viper.SetDefault(EnvHeadersvAddress, "localhst:8001")
+	c.Headersv = &Headersv{
+		Address: viper.GetString(EnvHeadersvAddress),
+	}
+	return c
+}
+
 // WithPaymail sets up and returns paymail configuration.
 func (c *Config) WithPaymail() *Config {
 	viper.SetDefault(EnvPaymailEnabled, false)

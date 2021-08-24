@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
+	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
@@ -23,21 +24,23 @@ const (
 // * wallet payments, that are handled by the wallet and transmitted to the network
 // * paymail payments, that use the paymail protocol for making the payments.
 type payment struct {
-	store    gopayd.PaymentWriter
-	txoRdr   gopayd.TxoReader
-	invStore gopayd.InvoiceReaderWriter
-	sender   gopayd.PaymentSender
-	txrunner gopayd.Transacter
+	store     gopayd.PaymentWriter
+	txoRdr    gopayd.TxoReader
+	invStore  gopayd.InvoiceReaderWriter
+	sender    gopayd.PaymentSender
+	txrunner  gopayd.Transacter
+	envVerify spv.EnvelopeVerifier
 }
 
 // NewPayment will create and return a new payment service.
-func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
+func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter, envVerify spv.EnvelopeVerifier) *payment {
 	return &payment{
-		store:    store,
-		txoRdr:   txoRdr,
-		invStore: invStore,
-		sender:   sender,
-		txrunner: txrunner,
+		store:     store,
+		txoRdr:    txoRdr,
+		invStore:  invStore,
+		sender:    sender,
+		txrunner:  txrunner,
+		envVerify: envVerify,
 	}
 }
 
@@ -46,6 +49,16 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
 		return nil, err
 	}
+
+	// Validate the SPV Envelope before processing transaction
+	ok, err := p.envVerify.VerifyPayment(ctx, &req.SPVEnvelope)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to validate spv envelope for paymentID %s", args.PaymentID)
+	}
+	if !ok {
+		return nil, errors.WithStack(errors.New("failed to verify merkle proof in spv envelope"))
+	}
+
 	pa := &gopayd.PaymentACK{
 		Payment: &req,
 	}

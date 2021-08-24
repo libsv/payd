@@ -41,7 +41,7 @@ import (
 	"encoding/hex"
 	"log"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 )
 
 // BuildCoinbase recombines the different parts of the coinbase transaction.
@@ -76,10 +76,13 @@ func GetCoinbaseParts(height uint32, coinbaseValue uint64, defaultWitnessCommitm
 
 //nolint:makezero
 func makeCoinbaseOutputTransactions(coinbaseValue uint64, defaultWitnessCommitment string, wallet string, minerIDBytes []byte) ([]byte, error) {
-	o, err := bt.NewP2PKHOutputFromAddress(wallet, coinbaseValue)
+	tx := bt.NewTx()
+	err := tx.AddP2PKHOutputFromAddress(wallet, coinbaseValue)
 	if err != nil {
 		return nil, err
 	}
+
+	o := tx.OutputIdx(0)
 
 	buf := make([]byte, 8)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
@@ -29,7 +30,7 @@ type CreatePayment struct {
 	Memo string `json:"memo,omitempty"`
 	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
-	SPVEnvelope string `json:"spvEnvelope"`
+	SPVEnvelope spv.Envelope `json:"spvEnvelope"`
 }
 
 // Validate will ensure the users request is correct.
@@ -49,7 +50,6 @@ func (c CreatePayment) Validate() validator.ErrValidation {
 	if c.RefundTo.Valid {
 		v = v.Validate("refundTo", validator.Length(c.RefundTo.String, 0, 100))
 	}
-	// TODO validate SPVEnvelope - may be better in service however.
 	return v
 }
 

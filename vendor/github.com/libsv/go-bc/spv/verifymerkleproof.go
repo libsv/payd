@@ -1,4 +1,4 @@
-package bc
+package spv
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bc"
+	"github.com/libsv/go-bt/v2"
 )
 
 const (
@@ -20,7 +21,7 @@ const (
 )
 
 // VerifyMerkleProof verifies a Merkle Proof in standard byte format.
-func (spvc *SPVClient) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, isLastInTree bool, err error) {
+func (spvc *spvclient) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, isLastInTree bool, err error) {
 
 	mpb, err := parseBinaryMerkleProof(proof)
 	if err != nil {
@@ -58,7 +59,7 @@ func (spvc *SPVClient) VerifyMerkleProof(ctx context.Context, proof []byte) (val
 	case 2:
 		// The `target` field contains a block header
 		var err error
-		merkleRoot, err = ExtractMerkleRootFromBlockHeader(mpb.target)
+		merkleRoot, err = bc.ExtractMerkleRootFromBlockHeader(mpb.target)
 		if err != nil {
 			return false, false, err
 		}
@@ -87,7 +88,7 @@ func (spvc *SPVClient) VerifyMerkleProof(ctx context.Context, proof []byte) (val
 }
 
 // VerifyMerkleProofJSON verifies a Merkle Proof in standard JSON format.
-func (spvc *SPVClient) VerifyMerkleProofJSON(ctx context.Context, proof *MerkleProof) (bool, bool, error) {
+func (spvc *spvclient) VerifyMerkleProofJSON(ctx context.Context, proof *bc.MerkleProof) (bool, bool, error) {
 
 	txid, err := txidFromTxOrID(proof.TxOrID)
 	if err != nil {
@@ -111,7 +112,7 @@ func (spvc *SPVClient) VerifyMerkleProofJSON(ctx context.Context, proof *MerkleP
 	} else if proof.TargetType == "header" && len(proof.Target) == 160 {
 		// The `target` field contains a block header
 		var err error
-		merkleRoot, err = ExtractMerkleRootFromBlockHeader(proof.Target)
+		merkleRoot, err = bc.ExtractMerkleRootFromBlockHeader(proof.Target)
 		if err != nil {
 			return false, false, err
 		}
@@ -168,13 +169,13 @@ func verifyProof(c, merkleRoot string, index uint64, nodes []string) (bool, bool
 		// Calculate the parent node
 		if cIsLeft {
 			// Concatenate left leaf (c) with right leaf (p)
-			c, err = MerkleTreeParentStr(c, p)
+			c, err = bc.MerkleTreeParentStr(c, p)
 			if err != nil {
 				return false, false, err
 			}
 		} else {
 			// Concatenate left leaf (p) with right leaf (c)
-			c, err = MerkleTreeParentStr(p, c)
+			c, err = bc.MerkleTreeParentStr(p, c)
 			if err != nil {
 				return false, false, err
 			}
@@ -216,7 +217,7 @@ func txidFromTxOrID(txOrID string) (string, error) {
 			return "", err
 		}
 
-		return tx.GetTxID(), nil
+		return tx.TxID(), nil
 	}
 
 	return "", errors.New("invalid txOrId length - must be at least 64 chars (32 bytes)")
