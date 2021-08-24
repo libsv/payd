@@ -76,7 +76,7 @@ github.com/labstack/gommon/log
 github.com/labstack/gommon/random
 # github.com/lib/pq v1.9.0
 ## explicit
-# github.com/libsv/go-bc v0.1.2-0.20210824124142-0831be597c5d
+# github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
 ## explicit
 github.com/libsv/go-bc
 github.com/libsv/go-bc/spv

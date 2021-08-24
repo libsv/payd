@@ -29,11 +29,11 @@ type payment struct {
 	invStore  gopayd.InvoiceReaderWriter
 	sender    gopayd.PaymentSender
 	txrunner  gopayd.Transacter
-	envVerify spv.EnvelopeVerifier
+	envVerify spv.PaymentVerifier
 }
 
 // NewPayment will create and return a new payment service.
-func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter, envVerify spv.EnvelopeVerifier) *payment {
+func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter, envVerify spv.PaymentVerifier) *payment {
 	return &payment{
 		store:     store,
 		txoRdr:    txoRdr,

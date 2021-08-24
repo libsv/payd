@@ -109,7 +109,7 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	spvv, err := spv.NewVerifier(phttp.NewHeadersv(&http.Client{}, cfg.Headersv.Address))
+	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{}, cfg.Headersv.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
