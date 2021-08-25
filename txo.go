@@ -35,6 +35,7 @@ type UnspentTxo struct {
 	ModifiedAt     time.Time
 }
 
+// TxoWriter is used to add transaction information to a data store.
 type TxoWriter interface {
 	// TxoCreate will add a partial txo to a data store.
 	TxoCreate(ctx context.Context, req TxoCreate) error
@@ -42,6 +43,7 @@ type TxoWriter interface {
 	TxosCreate(ctx context.Context, req []*TxoCreate) error
 }
 
+// TxoReader is used to read tx information from a data store.
 type TxoReader interface {
 	// PartialTxo will return a txo that has not tet been assigned to a transaction.
 	PartialTxo(ctx context.Context, args UnspentTxoArgs) (*UnspentTxo, error)

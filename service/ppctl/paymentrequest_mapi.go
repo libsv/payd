@@ -2,7 +2,8 @@ package ppctl
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
 
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bk/bip32"
@@ -15,9 +16,7 @@ import (
 )
 
 const (
-	keyname              = "keyname"
-	derivationPathPrefix = "0"
-	duplicatePayment     = "D0001"
+	keyname = "keyname"
 )
 
 type mapiOutputs struct {
@@ -50,10 +49,13 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 	totOutputs := 1
 	txos := make([]*gopayd.TxoCreate, 0, totOutputs)
 	oo := make([]*gopayd.Output, 0, totOutputs)
-	for i := 0; i < int(totOutputs); i++ {
+	for i := 0; i < totOutputs; i++ {
 		var path string
 		for { // attempt to create a unique derivation path
-			seed := rand.Uint64()
+			seed, err := randUint64()
+			if err != nil {
+				return nil, errors.New("failed to create seed for derivation path")
+			}
 			path = bip32.DerivePath(seed)
 			exists, err := p.derivationRdr.DerivationPathExists(ctx, gopayd.DerivationExistsArgs{
 				KeyName: keyname,
@@ -96,4 +98,12 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 		return nil, errors.Wrap(err, "failed to store outputs")
 	}
 	return oo, nil
+}
+
+func randUint64() (uint64, error) {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return 0, err
+	}
+	return binary.LittleEndian.Uint64(b[:]), nil
 }

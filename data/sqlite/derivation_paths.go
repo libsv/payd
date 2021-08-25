@@ -9,14 +9,6 @@ import (
 )
 
 const (
-	sqlDerivationCounter = `
-	SELECT pathcounter FROM keys WHERE name = :name
-	`
-	sqlDerivationIncrement = `
-	UPDATE keys set pathCounter = pathCounter + $1
-	WHERE name = $2
-	`
-
 	sqlDerivationPathExists = `
 	SELECT EXISTS(
 	    SELECT derivationpath FROM txos WHERE derivationpath = $1 AND keyname = $2 

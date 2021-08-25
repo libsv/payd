@@ -18,11 +18,6 @@ import (
 	"github.com/libsv/payd/errcodes"
 )
 
-const (
-	paymentFailed  = "false"
-	paymentSuccess = "true"
-)
-
 // payment is a layer on top of the payment services of which we currently support:
 // * wallet payments, that are handled by the wallet and transmitted to the network
 // * paymail payments, that use the paymail protocol for making the payments.
@@ -88,7 +83,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		// has the payment expired - createdAt of the txo is the date the paymentRequest was received
 		// so used this as our base.
 		if sk.CreatedAt.Add(time.Hour * time.Duration(p.cfg.PaymentExpiryHours)).Before(time.Now().UTC()) {
-			return nil, errs.NewErrUnprocessable(errcodes.ErrExpiredPayment, fmt.Sprintf("paymentRequest has expired, request a new payment"))
+			return nil, errs.NewErrUnprocessable(errcodes.ErrExpiredPayment, fmt.Sprintf("paymentRequest '%s' has expired, request a new payment", args.PaymentID))
 		}
 		// push new txo onto list for persistence later
 		txos = append(txos, &gopayd.UpdateTxo{
