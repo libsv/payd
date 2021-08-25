@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -109,7 +110,7 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: 30 * cfg.Headersv.Timeout}, cfg.Headersv.Address))
+	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: cfg.Headersv.Timeout * time.Second}, cfg.Headersv.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
