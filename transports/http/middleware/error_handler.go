@@ -61,4 +61,8 @@ func ErrorHandler(err error, c echo.Context) {
 		_ = c.JSON(http.StatusForbidden, resp)
 		return
 	}
+	if lathos.IsCannotProcess(err) {
+		_ = c.JSON(http.StatusUnprocessableEntity, resp)
+		return
+	}
 }

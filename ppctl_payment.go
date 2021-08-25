@@ -21,12 +21,12 @@ type CreatePayment struct {
 	// Note that malicious clients may modify the merchantData, so should be authenticated
 	// in some way (for example, signed with a payment host-only key).
 	// Maximum length is 10000 characters.
-	MerchantData null.String `json:"merchantData,omitempty"`
+	MerchantData MerchantData `json:"merchantData"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
-	RefundTo null.String `json:"refundTo,omitempty"`
+	RefundTo null.String `json:"refundTo"`
 	// Memo is a plain-text note from the customer to the payment host.
-	Memo string `json:"memo,omitempty"`
+	Memo string `json:"memo"`
 	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
 	SPVEnvelope string `json:"spvEnvelope"`
@@ -42,10 +42,9 @@ func (c CreatePayment) Validate() validator.ErrValidation {
 				}
 				return nil
 			},
-		)
-	if c.MerchantData.Valid {
-		v = v.Validate("merchantData", validator.Length(c.MerchantData.String, 0, 10000))
-	}
+		).
+		Validate("merchantData.PaymentReference", validator.NotEmpty(c.MerchantData.PaymentReference))
+
 	if c.RefundTo.Valid {
 		v = v.Validate("refundTo", validator.Length(c.RefundTo.String, 0, 100))
 	}

@@ -31,6 +31,7 @@ const (
 	EnvMerchantName    = "wallet.merchantname"
 	EnvMerchantEmail   = "wallet.merchantemail"
 	EnvMerchantAddress = "wallet.merchantaddress"
+	EnvPaymentExpiry   = "wallet.paymentexpiry"
 	EnvMAPIMinerName   = "mapi.minername"
 	EnvMAPIURL         = "mapi.minerurl"
 	EnvMAPIToken       = "mapi.token"
@@ -123,11 +124,12 @@ type Paymail struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network           string
-	MerchantAvatarURL string
-	MerchantName      string
-	MerchantEmail     string
-	Address           string
+	Network            string
+	MerchantAvatarURL  string
+	MerchantName       string
+	MerchantEmail      string
+	Address            string
+	PaymentExpiryHours int
 }
 
 // MApi contains MAPI connection settings.

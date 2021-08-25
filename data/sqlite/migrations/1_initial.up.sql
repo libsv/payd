@@ -27,17 +27,6 @@ CREATE TABLE transactions (
     ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
 );
 
--- store outputs generated during payment requests
-CREATE TABLE script_keys
-(
-    lockingscript   VARCHAR NOT NULL PRIMARY KEY,
-    keyname         TEXT,
-    derivationpath  TEXT,
-    satoshis        BIGINT NOT NULL,
-    createdat       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (keyname) REFERENCES keys (name)
-);
-
 -- store unspent transactions
 CREATE TABLE txos (
     outpoint        VARCHAR

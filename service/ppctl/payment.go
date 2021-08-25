@@ -3,6 +3,7 @@ package ppctl
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bt/v2"
@@ -13,6 +14,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 
 	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/errcodes"
 )
 
@@ -25,6 +27,7 @@ const (
 // * wallet payments, that are handled by the wallet and transmitted to the network
 // * paymail payments, that use the paymail protocol for making the payments.
 type payment struct {
+	cfg      *config.Wallet
 	store    gopayd.PaymentWriter
 	txoRdr   gopayd.TxoReader
 	invStore gopayd.InvoiceReaderWriter
@@ -33,8 +36,9 @@ type payment struct {
 }
 
 // NewPayment will create and return a new payment service.
-func NewPayment(store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
+func NewPayment(cfg *config.Wallet, store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
 	return &payment{
+		cfg:      cfg,
 		store:    store,
 		txoRdr:   txoRdr,
 		invStore: invStore,
@@ -80,6 +84,11 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 				continue
 			}
 			return nil, errors.Wrapf(err, "failed to get store output for paymentID %s", args.PaymentID)
+		}
+		// has the payment expired - createdAt of the txo is the date the paymentRequest was received
+		// so used this as our base.
+		if sk.CreatedAt.Add(time.Hour * time.Duration(p.cfg.PaymentExpiryHours)).Before(time.Now().UTC()) {
+			return nil, errs.NewErrUnprocessable(errcodes.ErrExpiredPayment, fmt.Sprintf("paymentRequest has expired, request a new payment"))
 		}
 		// push new txo onto list for persistence later
 		txos = append(txos, &gopayd.UpdateTxo{

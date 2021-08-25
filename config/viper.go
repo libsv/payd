@@ -83,17 +83,19 @@ func (c *Config) WithPaymail() *Config {
 
 // WithWallet sets up and returns merchant wallet configuration.
 func (c *Config) WithWallet() *Config {
-	viper.SetDefault(EnvNetwork, "bitcoin-sv")
+	viper.SetDefault(EnvNetwork, "regtest")
 	viper.SetDefault(EnvMerchantName, "payd")
 	viper.SetDefault(EnvAvatarURL, "https://media.bitcoinfiles.org/eec638f2e10a533b344d71a20f102bca2dbf2385d3a18d77c303539a7e6b666b")
 	viper.SetDefault(EnvMerchantAddress, "1 the street, town, T1 1TT")
 	viper.SetDefault(EnvMerchantEmail, "test@ppctl.nchain.com")
+	viper.SetDefault(EnvPaymentExpiry, 24)
 	c.Wallet = &Wallet{
-		Network:           viper.GetString(EnvNetwork),
-		MerchantAvatarURL: viper.GetString(EnvAvatarURL),
-		MerchantName:      viper.GetString(EnvMerchantName),
-		MerchantEmail:     viper.GetString(EnvMerchantEmail),
-		Address:           viper.GetString(EnvMerchantAddress),
+		Network:            viper.GetString(EnvNetwork),
+		MerchantAvatarURL:  viper.GetString(EnvAvatarURL),
+		MerchantName:       viper.GetString(EnvMerchantName),
+		MerchantEmail:      viper.GetString(EnvMerchantEmail),
+		Address:            viper.GetString(EnvMerchantAddress),
+		PaymentExpiryHours: viper.GetInt(EnvPaymentExpiry),
 	}
 	return c
 }
