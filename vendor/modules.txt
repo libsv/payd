@@ -41,7 +41,7 @@ github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4/source/httpfs
-# github.com/google/uuid v1.2.0
+# github.com/google/uuid v1.3.0
 github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -161,7 +161,7 @@ github.com/subosito/gotenv
 # github.com/theflyingcodr/govalidator v0.0.1
 ## explicit
 github.com/theflyingcodr/govalidator
-# github.com/theflyingcodr/lathos v0.0.1
+# github.com/theflyingcodr/lathos v0.0.3
 ## explicit
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
@@ -176,7 +176,6 @@ github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
 # golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
-## explicit
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ed25519

@@ -2,8 +2,8 @@ package ppctl
 
 import (
 	"context"
-	"math"
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
 
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bk/bip32"
@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	keyname              = "keyname"
-	derivationPathPrefix = "0"
-	duplicatePayment     = "D0001"
+	keyname = "keyname"
 )
 
 type mapiOutputs struct {
@@ -46,13 +44,18 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	totOutputs := math.Ceil(float64(args.Satoshis) / float64(args.Denomination))
-	txos := make([]*gopayd.TxoCreate, totOutputs, totOutputs)
-	oo := make([]*gopayd.Output, totOutputs, totOutputs)
-	for i := 0; i < int(totOutputs); i++ {
+	// 1 for now - we may decide to increase or split output in future so
+	// keeping the code here flexible
+	totOutputs := 1
+	txos := make([]*gopayd.TxoCreate, 0, totOutputs)
+	oo := make([]*gopayd.Output, 0, totOutputs)
+	for i := 0; i < totOutputs; i++ {
 		var path string
 		for { // attempt to create a unique derivation path
-			seed := rand.Uint64()
+			seed, err := randUint64()
+			if err != nil {
+				return nil, errors.New("failed to create seed for derivation path")
+			}
 			path = bip32.DerivePath(seed)
 			exists, err := p.derivationRdr.DerivationPathExists(ctx, gopayd.DerivationExistsArgs{
 				KeyName: keyname,
@@ -73,20 +76,21 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 		if err != nil {
 			return nil, errors.WithMessage(err, "failed to derive key when creating output")
 		}
-		sats := args.Denomination * uint64(i+1)
+		// use the below if we decide to split outputs
+		/*sats := args.Denomination * uint64(i+1)
 		if sats > args.Satoshis {
 			sats = sats - args.Satoshis
 		} else {
 			sats = args.Denomination
-		}
+		}*/
 		txos = append(txos, &gopayd.TxoCreate{
 			KeyName:        keyname,
 			DerivationPath: path,
 			LockingScript:  s.String(),
-			Satoshis:       sats,
+			Satoshis:       args.Satoshis,
 		})
 		oo = append(oo, &gopayd.Output{
-			Amount: sats,
+			Amount: args.Satoshis,
 			Script: s.String(),
 		})
 	}
@@ -94,4 +98,12 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 		return nil, errors.Wrap(err, "failed to store outputs")
 	}
 	return oo, nil
+}
+
+func randUint64() (uint64, error) {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return 0, err
+	}
+	return binary.LittleEndian.Uint64(b[:]), nil
 }

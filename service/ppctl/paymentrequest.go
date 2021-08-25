@@ -18,6 +18,7 @@ type paymentRequest struct {
 	envCfg     *config.Server
 	outputter  gopayd.PaymentRequestOutputer
 	invoiceRdr gopayd.InvoiceReader
+	feeRdr     gopayd.FeeReader
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest service that will generate outputs
@@ -25,12 +26,14 @@ type paymentRequest struct {
 func NewPaymentRequest(walletCfg *config.Wallet,
 	envCfg *config.Server,
 	outputter gopayd.PaymentRequestOutputer,
-	invoiceRdr gopayd.InvoiceReader) *paymentRequest {
+	invoiceRdr gopayd.InvoiceReader,
+	feeRdr gopayd.FeeReader) *paymentRequest {
 	return &paymentRequest{
 		walletCfg:  walletCfg,
 		envCfg:     envCfg,
 		invoiceRdr: invoiceRdr,
 		outputter:  outputter,
+		feeRdr:     feeRdr,
 	}
 }
 
@@ -50,21 +53,32 @@ func (p *paymentRequest) CreatePaymentRequest(ctx context.Context, args gopayd.P
 	}
 	oo, err := p.outputter.CreateOutputs(ctx, gopayd.OutputsCreate{
 		Satoshis:     inv.Satoshis,
-		Denomination: 0,
+		Denomination: 1000,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate outputs for paymentID %s", args.PaymentID)
+	}
+	fees, err := p.feeRdr.Fees(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read fees when constructing payment request")
 	}
 	return &gopayd.PaymentRequest{
 		Network:             p.walletCfg.Network,
 		Outputs:             oo,
 		CreationTimestamp:   time.Now().UTC().Unix(),
 		ExpirationTimestamp: time.Now().Add(24 * time.Hour).UTC().Unix(),
-		PaymentURL:          fmt.Sprintf("http://%s/payment/%s", p.envCfg.Hostname, args.PaymentID),
+		PaymentURL:          fmt.Sprintf("http://%s/api/v1/payment/%s", p.envCfg.Hostname, args.PaymentID),
 		Memo:                fmt.Sprintf("invoice %s", args.PaymentID),
 		MerchantData: &gopayd.MerchantData{
-			AvatarURL:    p.walletCfg.MerchantAvatarURL,
-			MerchantName: p.walletCfg.MerchantName,
+			AvatarURL:        p.walletCfg.MerchantAvatarURL,
+			MerchantName:     p.walletCfg.MerchantName,
+			Email:            p.walletCfg.MerchantEmail,
+			Address:          p.walletCfg.Address,
+			PaymentReference: args.PaymentID,
+			ExtendedData: map[string]interface{}{
+				"test": 1234,
+			},
 		},
+		FeeRate: fees,
 	}, nil
 }

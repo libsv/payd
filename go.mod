@@ -31,10 +31,9 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/theflyingcodr/govalidator v0.0.1
-	github.com/theflyingcodr/lathos v0.0.1
+	github.com/theflyingcodr/lathos v0.0.3
 	github.com/tonicpow/go-minercraft v0.3.0
 	github.com/tonicpow/go-paymail v0.1.6
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect

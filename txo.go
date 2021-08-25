@@ -20,8 +20,9 @@ type TxoCreate struct {
 
 // UnspentTxoArgs are used to located an unfulfilled txo.
 type UnspentTxoArgs struct {
-	LockingScript string
-	Satoshis      uint64
+	Keyname       string `db:"keyname"`
+	LockingScript string `db:"lockingscript"`
+	Satoshis      uint64 `db:"satoshis"`
 }
 
 // UnspentTxo is an unfulfilled txo not yet linked to a transaction.
@@ -34,6 +35,7 @@ type UnspentTxo struct {
 	ModifiedAt     time.Time
 }
 
+// TxoWriter is used to add transaction information to a data store.
 type TxoWriter interface {
 	// TxoCreate will add a partial txo to a data store.
 	TxoCreate(ctx context.Context, req TxoCreate) error
@@ -41,6 +43,7 @@ type TxoWriter interface {
 	TxosCreate(ctx context.Context, req []*TxoCreate) error
 }
 
+// TxoReader is used to read tx information from a data store.
 type TxoReader interface {
 	// PartialTxo will return a txo that has not tet been assigned to a transaction.
 	PartialTxo(ctx context.Context, args UnspentTxoArgs) (*UnspentTxo, error)

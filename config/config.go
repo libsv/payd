@@ -24,12 +24,16 @@ const (
 	EnvDbDsn           = "db.dsn"
 	EnvDbMigrate       = "db.migrate"
 	EnvHeadersvAddress = "headersv.address"
+	EnvHeadersvTimeout = "headersv.timeout"
 	EnvPaymailEnabled  = "paymail.enabled"
 	EnvPaymailIsBeta   = "paymail.isbeta"
 	EnvPaymailAddress  = "paymail.address"
 	EnvNetwork         = "wallet.network"
 	EnvAvatarURL       = "wallet.avatarurl"
 	EnvMerchantName    = "wallet.merchantname"
+	EnvMerchantEmail   = "wallet.merchantemail"
+	EnvMerchantAddress = "wallet.merchantaddress"
+	EnvPaymentExpiry   = "wallet.paymentexpiry"
 	EnvMAPIMinerName   = "mapi.minername"
 	EnvMAPIURL         = "mapi.minerurl"
 	EnvMAPIToken       = "mapi.token"
@@ -117,6 +121,7 @@ type Db struct {
 // Headersv contains headersv information.
 type Headersv struct {
 	Address string
+	Timeout time.Duration
 }
 
 // Paymail settings relating to paymail.
@@ -128,9 +133,12 @@ type Paymail struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network           string
-	MerchantAvatarURL string
-	MerchantName      string
+	Network            string
+	MerchantAvatarURL  string
+	MerchantName       string
+	MerchantEmail      string
+	Address            string
+	PaymentExpiryHours int
 }
 
 // MApi contains MAPI connection settings.
