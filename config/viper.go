@@ -74,7 +74,7 @@ func (c *Config) WithHeadersv() *Config {
 	viper.SetDefault(EnvHeadersvTimeout, 30)
 	c.Headersv = &Headersv{
 		Address: viper.GetString(EnvHeadersvAddress),
-		Timeout: viper.GetDuration(EnvHeadersvTimeout),
+		Timeout: viper.GetInt(EnvHeadersvTimeout),
 	}
 	return c
 }

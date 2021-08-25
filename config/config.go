@@ -121,7 +121,7 @@ type Db struct {
 // Headersv contains headersv information.
 type Headersv struct {
 	Address string
-	Timeout time.Duration
+	Timeout int
 }
 
 // Paymail settings relating to paymail.
