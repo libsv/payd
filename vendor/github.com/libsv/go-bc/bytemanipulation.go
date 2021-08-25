@@ -2,6 +2,7 @@ package bc
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"log"
 	"sort"
@@ -77,4 +78,12 @@ func Decode32Byte(hexStr string) ([32]byte, error) {
 	copy(b32[:], b[0:32])
 
 	return b32, nil
+}
+
+// UInt32ToBytes converts a uint32 into an
+// array of bytes.
+func UInt32ToBytes(num uint32) []byte {
+	t := make([]byte, 4)
+	binary.LittleEndian.PutUint32(t, num)
+	return t
 }

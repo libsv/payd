@@ -68,6 +68,17 @@ func (c *Config) WithDb() *Config {
 	return c
 }
 
+// WithHeadersv sets up and returns Headersv configuration.
+func (c *Config) WithHeadersv() *Config {
+	viper.SetDefault(EnvHeadersvAddress, "headersv:8001")
+	viper.SetDefault(EnvHeadersvTimeout, 30)
+	c.Headersv = &Headersv{
+		Address: viper.GetString(EnvHeadersvAddress),
+		Timeout: viper.GetDuration(EnvHeadersvTimeout),
+	}
+	return c
+}
+
 // WithPaymail sets up and returns paymail configuration.
 func (c *Config) WithPaymail() *Config {
 	viper.SetDefault(EnvPaymailEnabled, false)

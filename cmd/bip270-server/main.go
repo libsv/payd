@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -10,14 +12,16 @@ import (
 	"github.com/tonicpow/go-minercraft"
 	gopaymail "github.com/tonicpow/go-paymail"
 
+	"github.com/libsv/go-bc/spv"
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config/databases"
+	phttp "github.com/libsv/payd/data/http"
 	"github.com/libsv/payd/data/mapi"
 	"github.com/libsv/payd/data/paymail"
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/service"
 	"github.com/libsv/payd/service/ppctl"
-	"github.com/libsv/payd/transports/http"
+	thttp "github.com/libsv/payd/transports/http"
 
 	"github.com/libsv/payd/config"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
@@ -47,6 +51,7 @@ func main() {
 		WithDb().
 		WithDeployment(appname).
 		WithLog().
+		WithHeadersv().
 		WithPaymail().
 		WithWallet().
 		WithMapi()
@@ -105,19 +110,23 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	http.NewPaymentRequestHandler(
+	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: cfg.Headersv.Timeout * time.Second}, cfg.Headersv.Address))
+	if err != nil {
+		log.Fatalf("failed to create spv cient %w", err)
+	}
+	thttp.NewPaymentRequestHandler(
 		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore, mapiStore)).
 		RegisterRoutes(g)
-	http.NewPaymentHandler(
-		ppctl.NewPayment(cfg.Wallet, sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{})).
+	thttp.NewPaymentHandler(
+		ppctl.NewPayment(cfg.Wallet, sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{}, spvv)).
 		RegisterRoutes(g)
-	http.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
+	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
 		RegisterRoutes(g)
-	http.NewBalance(service.NewBalance(sqlLiteStore)).
+	thttp.NewBalance(service.NewBalance(sqlLiteStore)).
 		RegisterRoutes(g)
-	http.NewProofs(service.NewProofsService(sqlLiteStore)).
+	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).
 		RegisterRoutes(g)
-	http.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
+	thttp.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

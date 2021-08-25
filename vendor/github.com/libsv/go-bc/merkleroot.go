@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/libsv/go-bt"
-	"github.com/libsv/go-bt/crypto"
+	"github.com/libsv/go-bk/crypto"
+	"github.com/libsv/go-bt/v2"
 )
 
 // TxsToTxIDs takes an array of transactions
@@ -20,7 +20,7 @@ func TxsToTxIDs(txs []string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid transaction at index: %q", i)
 		}
-		txids = append(txids, t.GetTxID())
+		txids = append(txids, t.TxID())
 	}
 	return txids, nil
 }

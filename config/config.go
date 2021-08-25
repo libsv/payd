@@ -23,6 +23,8 @@ const (
 	EnvDbSchema        = "db.schema.path"
 	EnvDbDsn           = "db.dsn"
 	EnvDbMigrate       = "db.migrate"
+	EnvHeadersvAddress = "headersv.address"
+	EnvHeadersvTimeout = "headersv.timeout"
 	EnvPaymailEnabled  = "paymail.enabled"
 	EnvPaymailIsBeta   = "paymail.isbeta"
 	EnvPaymailAddress  = "paymail.address"
@@ -60,6 +62,7 @@ type Config struct {
 	Server     *Server
 	Deployment *Deployment
 	Db         *Db
+	Headersv   *Headersv
 	Paymail    *Paymail
 	Wallet     *Wallet
 	Mapi       *MApi
@@ -113,6 +116,12 @@ type Db struct {
 	SchemaPath string
 	Dsn        string
 	MigrateDb  bool
+}
+
+// Headersv contains headersv information.
+type Headersv struct {
+	Address string
+	Timeout time.Duration
 }
 
 // Paymail settings relating to paymail.

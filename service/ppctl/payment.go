@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/labstack/gommon/log"
+	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
@@ -22,23 +23,25 @@ import (
 // * wallet payments, that are handled by the wallet and transmitted to the network
 // * paymail payments, that use the paymail protocol for making the payments.
 type payment struct {
-	cfg      *config.Wallet
-	store    gopayd.PaymentWriter
-	txoRdr   gopayd.TxoReader
-	invStore gopayd.InvoiceReaderWriter
-	sender   gopayd.PaymentSender
-	txrunner gopayd.Transacter
+	cfg       *config.Wallet
+	store     gopayd.PaymentWriter
+	txoRdr    gopayd.TxoReader
+	invStore  gopayd.InvoiceReaderWriter
+	sender    gopayd.PaymentSender
+	txrunner  gopayd.Transacter
+	envVerify spv.PaymentVerifier
 }
 
 // NewPayment will create and return a new payment service.
-func NewPayment(cfg *config.Wallet, store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter) *payment {
+func NewPayment(cfg *config.Wallet, store gopayd.PaymentWriter, txoRdr gopayd.TxoReader, invStore gopayd.InvoiceReaderWriter, sender gopayd.PaymentSender, txrunner gopayd.Transacter, envVerify spv.PaymentVerifier) *payment {
 	return &payment{
-		cfg:      cfg,
-		store:    store,
-		txoRdr:   txoRdr,
-		invStore: invStore,
-		sender:   sender,
-		txrunner: txrunner,
+		cfg:       cfg,
+		store:     store,
+		txoRdr:    txoRdr,
+		invStore:  invStore,
+		sender:    sender,
+		txrunner:  txrunner,
+		envVerify: envVerify,
 	}
 }
 
@@ -47,6 +50,16 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	if err := validator.New().Validate("paymentID", validator.NotEmpty(args.PaymentID)); err.Err() != nil {
 		return nil, err
 	}
+
+	// Validate the SPV Envelope before processing transaction
+	ok, err := p.envVerify.VerifyPayment(ctx, req.SPVEnvelope)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to validate spv envelope for paymentID %s", args.PaymentID)
+	}
+	if !ok {
+		return nil, errors.WithStack(errors.New("failed to verify merkle proof in spv envelope"))
+	}
+
 	// get the invoice for the paymentID to check total satoshis required.
 	inv, err := p.invStore.Invoice(ctx, gopayd.InvoiceArgs{PaymentID: args.PaymentID})
 	if err != nil {
