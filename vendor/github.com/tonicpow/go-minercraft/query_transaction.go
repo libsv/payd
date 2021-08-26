@@ -90,7 +90,7 @@ type QueryPayload struct {
 // the purpose of signing responses.
 //
 // Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#Query-transaction-status
-func (c *Client) QueryTransaction(miner *Miner, txID string) (*QueryTransactionResponse, error) {
+func (c *Client) QueryTransaction(ctx context.Context, miner *Miner, txID string) (*QueryTransactionResponse, error) {
 
 	// Make sure we have a valid miner
 	if miner == nil {
@@ -98,7 +98,7 @@ func (c *Client) QueryTransaction(miner *Miner, txID string) (*QueryTransactionR
 	}
 
 	// Make the HTTP request
-	result := queryTransaction(context.Background(), c, miner, txID)
+	result := queryTransaction(ctx, c, miner, txID)
 	if result.Response.Error != nil {
 		return nil, result.Response.Error
 	}

@@ -129,7 +129,7 @@ type ConflictedWith struct {
 // message content for the purpose of signing responses.
 //
 // Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#Submit-transaction
-func (c *Client) SubmitTransaction(miner *Miner, tx *Transaction) (*SubmitTransactionResponse, error) {
+func (c *Client) SubmitTransaction(ctx context.Context, miner *Miner, tx *Transaction) (*SubmitTransactionResponse, error) {
 
 	// Make sure we have a valid miner
 	if miner == nil {
@@ -137,7 +137,7 @@ func (c *Client) SubmitTransaction(miner *Miner, tx *Transaction) (*SubmitTransa
 	}
 
 	// Make the HTTP request
-	result := submitTransaction(context.Background(), c, miner, tx)
+	result := submitTransaction(ctx, c, miner, tx)
 	if result.Response.Error != nil {
 		return nil, result.Response.Error
 	}

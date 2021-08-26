@@ -68,6 +68,17 @@ func (c *Config) WithDb() *Config {
 	return c
 }
 
+// WithHeadersv sets up and returns Headersv configuration.
+func (c *Config) WithHeadersv() *Config {
+	viper.SetDefault(EnvHeadersvAddress, "headersv:8001")
+	viper.SetDefault(EnvHeadersvTimeout, 30)
+	c.Headersv = &Headersv{
+		Address: viper.GetString(EnvHeadersvAddress),
+		Timeout: viper.GetInt(EnvHeadersvTimeout),
+	}
+	return c
+}
+
 // WithPaymail sets up and returns paymail configuration.
 func (c *Config) WithPaymail() *Config {
 	viper.SetDefault(EnvPaymailEnabled, false)
@@ -83,13 +94,19 @@ func (c *Config) WithPaymail() *Config {
 
 // WithWallet sets up and returns merchant wallet configuration.
 func (c *Config) WithWallet() *Config {
-	viper.SetDefault(EnvNetwork, "bitcoin-sv")
+	viper.SetDefault(EnvNetwork, "regtest")
 	viper.SetDefault(EnvMerchantName, "payd")
 	viper.SetDefault(EnvAvatarURL, "https://media.bitcoinfiles.org/eec638f2e10a533b344d71a20f102bca2dbf2385d3a18d77c303539a7e6b666b")
+	viper.SetDefault(EnvMerchantAddress, "1 the street, town, T1 1TT")
+	viper.SetDefault(EnvMerchantEmail, "test@ppctl.nchain.com")
+	viper.SetDefault(EnvPaymentExpiry, 24)
 	c.Wallet = &Wallet{
-		Network:           viper.GetString(EnvNetwork),
-		MerchantAvatarURL: viper.GetString(EnvAvatarURL),
-		MerchantName:      viper.GetString(EnvMerchantName),
+		Network:            viper.GetString(EnvNetwork),
+		MerchantAvatarURL:  viper.GetString(EnvAvatarURL),
+		MerchantName:       viper.GetString(EnvMerchantName),
+		MerchantEmail:      viper.GetString(EnvMerchantEmail),
+		Address:            viper.GetString(EnvMerchantAddress),
+		PaymentExpiryHours: viper.GetInt(EnvPaymentExpiry),
 	}
 	return c
 }
@@ -97,7 +114,7 @@ func (c *Config) WithWallet() *Config {
 // WithMapi will setup Mapi settings.
 func (c *Config) WithMapi() *Config {
 	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
-	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
+	viper.SetDefault(EnvMAPIURL, "http://mapi:9014")
 	viper.SetDefault(EnvMAPIToken, "")
 	c.Mapi = &MApi{
 		MinerName: viper.GetString(EnvMAPIMinerName),

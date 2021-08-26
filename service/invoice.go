@@ -12,6 +12,13 @@ import (
 	"github.com/speps/go-hashids"
 )
 
+// invoice represents a purchase order system or other such system that a merchant would use
+// to receive orders from customers.
+// This could be a Pos system or online retailer etc.
+// The invoice system would create an invoice / PO and then the protocol
+// server would be sent this invoice for lookup.
+// This invoicing system is separate to the protocol server itself but added here
+// as a very basic example.
 type invoice struct {
 	store gopayd.InvoiceReaderWriter
 	cfg   *config.Server

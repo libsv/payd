@@ -33,8 +33,8 @@ func (s *sqliteStore) PrivateKey(ctx context.Context, args gopayd.KeyArgs) (*gop
 	return &resp, nil
 }
 
-// CreatePrivateKey will create and return a new key in the database.
-func (s *sqliteStore) CreatePrivateKey(ctx context.Context, req gopayd.PrivateKey) (*gopayd.PrivateKey, error) {
+// PrivateKeyCreate will create and return a new key in the database.
+func (s *sqliteStore) PrivateKeyCreate(ctx context.Context, req gopayd.PrivateKey) (*gopayd.PrivateKey, error) {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to begin tx when creating key")

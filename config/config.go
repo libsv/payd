@@ -10,28 +10,33 @@ import (
 
 // Environment variable constants.
 const (
-	EnvServerPort     = "server.port"
-	EnvServerHost     = "server.host"
-	EnvEnvironment    = "env.environment"
-	EnvMainNet        = "env.mainnet"
-	EnvRegion         = "env.region"
-	EnvVersion        = "env.version"
-	EnvCommit         = "env.commit"
-	EnvBuildDate      = "env.builddate"
-	EnvLogLevel       = "log.level"
-	EnvDb             = "db.type"
-	EnvDbSchema       = "db.schema.path"
-	EnvDbDsn          = "db.dsn"
-	EnvDbMigrate      = "db.migrate"
-	EnvPaymailEnabled = "paymail.enabled"
-	EnvPaymailIsBeta  = "paymail.isbeta"
-	EnvPaymailAddress = "paymail.address"
-	EnvNetwork        = "wallet.network"
-	EnvAvatarURL      = "wallet.avatarurl"
-	EnvMerchantName   = "wallet.merchantname"
-	EnvMAPIMinerName  = "mapi.minername"
-	EnvMAPIURL        = "mapi.minerurl"
-	EnvMAPIToken      = "mapi.token"
+	EnvServerPort      = "server.port"
+	EnvServerHost      = "server.host"
+	EnvEnvironment     = "env.environment"
+	EnvMainNet         = "env.mainnet"
+	EnvRegion          = "env.region"
+	EnvVersion         = "env.version"
+	EnvCommit          = "env.commit"
+	EnvBuildDate       = "env.builddate"
+	EnvLogLevel        = "log.level"
+	EnvDb              = "db.type"
+	EnvDbSchema        = "db.schema.path"
+	EnvDbDsn           = "db.dsn"
+	EnvDbMigrate       = "db.migrate"
+	EnvHeadersvAddress = "headersv.address"
+	EnvHeadersvTimeout = "headersv.timeout"
+	EnvPaymailEnabled  = "paymail.enabled"
+	EnvPaymailIsBeta   = "paymail.isbeta"
+	EnvPaymailAddress  = "paymail.address"
+	EnvNetwork         = "wallet.network"
+	EnvAvatarURL       = "wallet.avatarurl"
+	EnvMerchantName    = "wallet.merchantname"
+	EnvMerchantEmail   = "wallet.merchantemail"
+	EnvMerchantAddress = "wallet.merchantaddress"
+	EnvPaymentExpiry   = "wallet.paymentexpiry"
+	EnvMAPIMinerName   = "mapi.minername"
+	EnvMAPIURL         = "mapi.minerurl"
+	EnvMAPIToken       = "mapi.token"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -57,6 +62,7 @@ type Config struct {
 	Server     *Server
 	Deployment *Deployment
 	Db         *Db
+	Headersv   *Headersv
 	Paymail    *Paymail
 	Wallet     *Wallet
 	Mapi       *MApi
@@ -112,6 +118,12 @@ type Db struct {
 	MigrateDb  bool
 }
 
+// Headersv contains headersv information.
+type Headersv struct {
+	Address string
+	Timeout int
+}
+
 // Paymail settings relating to paymail.
 type Paymail struct {
 	UsePaymail bool
@@ -121,9 +133,12 @@ type Paymail struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network           string
-	MerchantAvatarURL string
-	MerchantName      string
+	Network            string
+	MerchantAvatarURL  string
+	MerchantName       string
+	MerchantEmail      string
+	Address            string
+	PaymentExpiryHours int
 }
 
 // MApi contains MAPI connection settings.

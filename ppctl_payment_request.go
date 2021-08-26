@@ -2,6 +2,8 @@ package gopayd
 
 import (
 	"context"
+
+	"github.com/libsv/go-bt/v2"
 )
 
 // PaymentRequest message used in BIP270.
@@ -34,34 +36,7 @@ type PaymentRequest struct {
 	MerchantData *MerchantData `json:"merchantData,omitempty"`
 	// FeeRate defines the amount of fees a users wallet should add to the payment
 	// when submitting their final payments.
-	FeeRate *FeeRate `json:"feeRate"`
-}
-
-// Output message used in BIP270.
-// See https://github.com/moneybutton/bips/blob/master/bip-0270.mediawiki#output
-type Output struct {
-	// Amount is the number of satoshis to be paid.
-	Amount uint64 `json:"amount"`
-	// Script is a locking script where payment should be sent, formatted as a hexadecimal string.
-	Script string `json:"script"`
-	// Description, an optional description such as "tip" or "sales tax". Maximum length is 100 chars.
-	Description string `json:"description"`
-}
-
-// FeeRate as described in BIP-274.
-// See https://github.com/moneybutton/bips/blob/master/bip-0274.mediawiki
-type FeeRate struct {
-	// SatoshisPerByte is a number indicating how many satoshis per byte
-	// each transaction in the Payment ought to pay to miners.
-	SatoshisPerByte uint64 `json:"satoshisPerByte"`
-}
-
-// MerchantData to be displayed to the user.
-type MerchantData struct {
-	// AvatarURL displays a canonical url to a merchants avatar.
-	AvatarURL string `json:"avatarUrl,omitempty"`
-	// MerchantName is a human readable string identifying the merchant.
-	MerchantName string `json:"merchantName,omitempty"`
+	FeeRate *bt.FeeQuote `json:"fee"`
 }
 
 // PaymentRequestArgs are request arguments that can be passed to the service.
@@ -74,17 +49,4 @@ type PaymentRequestArgs struct {
 // and process in order to fulfil a PaymentRequest.
 type PaymentRequestService interface {
 	CreatePaymentRequest(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
-}
-
-// PaymentRequestReaderWriter is used to read and write data from a data store
-// to provide data for creating ppctl payment requests for users.
-type PaymentRequestReaderWriter interface {
-	ScriptKeyWriter
-	InvoiceReader
-	DerivationPathReaderWriter
-}
-
-// PaymentRequestOutputer will create outputs that equal the amount of request satoshis.
-type PaymentRequestOutputer interface {
-	CreateOutputs(ctx context.Context, satoshis uint64, args PaymentRequestArgs) ([]*Output, error)
 }

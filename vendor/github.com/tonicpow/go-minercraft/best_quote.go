@@ -9,7 +9,7 @@ import (
 //
 // Note: this might return different results each time if miners have the same rates as
 // it's a race condition on which results come back first
-func (c *Client) BestQuote(feeCategory, feeType string) (*FeeQuoteResponse, error) {
+func (c *Client) BestQuote(ctx context.Context, feeCategory, feeType string) (*FeeQuoteResponse, error) {
 
 	// Best rate & quote
 	var bestRate uint64
@@ -17,10 +17,6 @@ func (c *Client) BestQuote(feeCategory, feeType string) (*FeeQuoteResponse, erro
 
 	// The channel for the internal results
 	resultsChannel := make(chan *internalResult, len(c.Miners))
-
-	// Create a context
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// Loop each miner (break into a Go routine for each quote request)
 	var wg sync.WaitGroup

@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/libsv/go-bk/bec"
 	"github.com/libsv/go-bk/bip32"
 )
 
@@ -30,16 +29,6 @@ type PrivateKeyService interface {
 	Create(ctx context.Context, keyName string) error
 	// PrivateKey will return a private key.
 	PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error)
-	// DeriveChildFromKey will create a private key derived from a parent key at the given derivationPath.
-	DeriveChildFromKey(startingKey *bip32.ExtendedKey, derivationPath string) (*bip32.ExtendedKey, error)
-	// PubFromXPrv will generate a public key from an extended private key.
-	PubFromXPrv(xprv *bip32.ExtendedKey) (*bec.PublicKey, error)
-}
-
-// PrivateKeyReaderWriter describes a data store that can be implemented to get and store private keys.
-type PrivateKeyReaderWriter interface {
-	PrivateKeyReader
-	PrivateKeyWriter
 }
 
 // PrivateKeyReader reads private info from a data store.
@@ -50,6 +39,12 @@ type PrivateKeyReader interface {
 
 // PrivateKeyWriter will add private key to the datastore.
 type PrivateKeyWriter interface {
-	// CreatePrivateKey will add a new private key to the data store.
-	CreatePrivateKey(ctx context.Context, req PrivateKey) (*PrivateKey, error)
+	// PrivateKeyCreate will add a new private key to the data store.
+	PrivateKeyCreate(ctx context.Context, req PrivateKey) (*PrivateKey, error)
+}
+
+// PrivateKeyReaderWriter describes a data store that can be implemented to get and store private keys.
+type PrivateKeyReaderWriter interface {
+	PrivateKeyReader
+	PrivateKeyWriter
 }

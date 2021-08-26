@@ -161,7 +161,7 @@ func (f *FeePayload) GetFee(feeType string) *bt.Fee {
 // The purpose of the envelope is to ensure strict consistency in the message content for the purpose of signing responses.
 //
 // Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#get-fee-quote
-func (c *Client) FeeQuote(miner *Miner) (*FeeQuoteResponse, error) {
+func (c *Client) FeeQuote(ctx context.Context, miner *Miner) (*FeeQuoteResponse, error) {
 
 	// Make sure we have a valid miner
 	if miner == nil {
@@ -169,7 +169,7 @@ func (c *Client) FeeQuote(miner *Miner) (*FeeQuoteResponse, error) {
 	}
 
 	// Make the HTTP request
-	result := getQuote(context.Background(), c, miner)
+	result := getQuote(ctx, c, miner)
 	if result.Response.Error != nil {
 		return nil, result.Response.Error
 	}

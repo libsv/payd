@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/libsv/go-bt"
-	"github.com/libsv/go-bt/crypto"
+	"github.com/libsv/go-bk/crypto"
+	"github.com/libsv/go-bt/v2"
 )
 
 func getHashes(txHashes []string) []string {

@@ -3,8 +3,8 @@ package bc
 import (
 	"encoding/hex"
 
-	"github.com/libsv/go-bt"
-	"github.com/libsv/go-bt/crypto"
+	"github.com/libsv/go-bk/crypto"
+	"github.com/libsv/go-bt/v2"
 )
 
 // MerkleTreeParentStr returns the Merkle Tree parent of two Merkle

@@ -6,20 +6,15 @@ const (
 		VALUES(:txid, :paymentID, :txhex)
 	`
 
-	sqlTxoCreate = `
-		INSERT INTO txos(outpoint, txid, vout, keyname, derivationpath, lockingscript, satoshis)
-		VALUES(:outpoint, :txid, :vout, :keyname, :derivationpath, :lockingscript, :satoshis)
-	`
-
 	sqlTransactionByID = `
-	SELECT txid, paymentID, txhex, createdAt
+	SELECT txid, paymentid, txhex, createdat
 	FROM transactions
 	WHERE txid = :txid
 	`
 
 	sqlTxosByTxID = `
 	SELECT outpoint, txid, vout, keyname, derivationpath, lockingscript, satoshis, 
-				spentat, spendingtxid, createdAt, modifiedAt 
+				spentat, spendingtxid, createdat, modifiedAt 
 	FROM txos
 	WHERE txid = :txid
 	`

@@ -32,7 +32,7 @@ func (s *sqliteStore) txCreateTransaction(tx db, req gopayd.CreateTransaction) (
 	if err := handleNamedExec(tx, sqlTransactionCreate, req); err != nil {
 		return nil, errors.Wrap(err, "failed to insert new transaction")
 	}
-	if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
+	if err := handleNamedExec(tx, sqlTxoUpdate, req.Outputs); err != nil {
 		return nil, errors.Wrap(err, "failed to insert transaction outputs")
 	}
 	var outTx gopayd.Transaction
