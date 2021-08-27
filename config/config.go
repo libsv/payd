@@ -10,33 +10,33 @@ import (
 
 // Environment variable constants.
 const (
-	EnvServerPort      = "server.port"
-	EnvServerHost      = "server.host"
-	EnvEnvironment     = "env.environment"
-	EnvMainNet         = "env.mainnet"
-	EnvRegion          = "env.region"
-	EnvVersion         = "env.version"
-	EnvCommit          = "env.commit"
-	EnvBuildDate       = "env.builddate"
-	EnvLogLevel        = "log.level"
-	EnvDb              = "db.type"
-	EnvDbSchema        = "db.schema.path"
-	EnvDbDsn           = "db.dsn"
-	EnvDbMigrate       = "db.migrate"
-	EnvHeadersvAddress = "headersv.address"
-	EnvHeadersvTimeout = "headersv.timeout"
-	EnvPaymailEnabled  = "paymail.enabled"
-	EnvPaymailIsBeta   = "paymail.isbeta"
-	EnvPaymailAddress  = "paymail.address"
-	EnvNetwork         = "wallet.network"
-	EnvAvatarURL       = "wallet.avatarurl"
-	EnvMerchantName    = "wallet.merchantname"
-	EnvMerchantEmail   = "wallet.merchantemail"
-	EnvMerchantAddress = "wallet.merchantaddress"
-	EnvPaymentExpiry   = "wallet.paymentexpiry"
-	EnvMAPIMinerName   = "mapi.minername"
-	EnvMAPIURL         = "mapi.minerurl"
-	EnvMAPIToken       = "mapi.token"
+	EnvServerPort          = "server.port"
+	EnvServerHost          = "server.host"
+	EnvEnvironment         = "env.environment"
+	EnvMainNet             = "env.mainnet"
+	EnvRegion              = "env.region"
+	EnvVersion             = "env.version"
+	EnvCommit              = "env.commit"
+	EnvBuildDate           = "env.builddate"
+	EnvLogLevel            = "log.level"
+	EnvDb                  = "db.type"
+	EnvDbSchema            = "db.schema.path"
+	EnvDbDsn               = "db.dsn"
+	EnvDbMigrate           = "db.migrate"
+	EnvHeaderClientAddress = "headerclient.address"
+	EnvHeaderClientTimeout = "headerclient.timeout"
+	EnvPaymailEnabled      = "paymail.enabled"
+	EnvPaymailIsBeta       = "paymail.isbeta"
+	EnvPaymailAddress      = "paymail.address"
+	EnvNetwork             = "wallet.network"
+	EnvAvatarURL           = "wallet.avatarurl"
+	EnvMerchantName        = "wallet.merchantname"
+	EnvMerchantEmail       = "wallet.merchantemail"
+	EnvMerchantAddress     = "wallet.merchantaddress"
+	EnvPaymentExpiry       = "wallet.paymentexpiry"
+	EnvMAPIMinerName       = "mapi.minername"
+	EnvMAPIURL             = "mapi.minerurl"
+	EnvMAPIToken           = "mapi.token"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -58,14 +58,14 @@ const (
 
 // Config returns strongly typed config values.
 type Config struct {
-	Logging    *Logging
-	Server     *Server
-	Deployment *Deployment
-	Db         *Db
-	Headersv   *Headersv
-	Paymail    *Paymail
-	Wallet     *Wallet
-	Mapi       *MApi
+	Logging       *Logging
+	Server        *Server
+	Deployment    *Deployment
+	Db            *Db
+	HeadersClient *HeadersClient
+	Paymail       *Paymail
+	Wallet        *Wallet
+	Mapi          *MApi
 }
 
 // Validate will ensure the config matches certain parameters.
@@ -118,8 +118,8 @@ type Db struct {
 	MigrateDb  bool
 }
 
-// Headersv contains headersv information.
-type Headersv struct {
+// HeadersClient contains HeadersClient information.
+type HeadersClient struct {
 	Address string
 	Timeout int
 }
@@ -157,4 +157,5 @@ type ConfigurationLoader interface {
 	WithLog() *Config
 	WithPaymail() *Config
 	WithWallet() *Config
+	WithHeaderClient() *Config
 }
