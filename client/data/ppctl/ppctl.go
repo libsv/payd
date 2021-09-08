@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path"
 
 	gopayd "github.com/libsv/payd"
 	"github.com/pkg/errors"
@@ -54,8 +56,13 @@ func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.Invoic
 
 // RequestPayment created a payment request.
 func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
-	endpoint := fmt.Sprintf("%s/api/v1/payment/%s", serverURL, args.PaymentID)
-	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	url, err := url.Parse(serverURL)
+	if err != nil {
+		return nil, err
+	}
+	url.Path = path.Join(url.Path, "/api/v1/payment/", args.PaymentID)
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating payment request request")
 	}
@@ -84,7 +91,12 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 		return nil, errors.Wrap(err, "error marshalling invoice request")
 	}
 
-	r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(data))
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating payment request request")
 	}
@@ -117,8 +129,14 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 
 // TxStatus retrieves the status of a tx.
 func (p *ppctl) TxStatus(ctx context.Context, serverURL, txID string) (*gopayd.TxStatus, error) {
-	endpoint := fmt.Sprintf("%s/api/v1/txstatus/%s", serverURL, txID)
-	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	url, err := url.Parse(serverURL)
+	if err != nil {
+		return nil, err
+	}
+
+	url.Path = path.Join(url.Path, "/api/v1/txstatus/", txID)
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating payment request request")
 	}
