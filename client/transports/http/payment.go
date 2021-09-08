@@ -12,6 +12,7 @@ type payment struct {
 	svc client.PaymentService
 }
 
+// NewPayment returns a new payment.
 func NewPayment(svc client.PaymentService) *payment {
 	return &payment{svc: svc}
 }

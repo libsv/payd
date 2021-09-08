@@ -124,6 +124,7 @@ func (c *Config) WithMapi() *Config {
 	return c
 }
 
+// WithRegtest will setup Regtest settings.
 func (c *Config) WithRegtest() *Config {
 	viper.SetDefault(EnvRegtestHost, "localhost")
 	viper.SetDefault(EnvRegtestPort, ":18332")

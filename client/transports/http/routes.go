@@ -1,5 +1,6 @@
 package http
 
+// Routes for the client api.
 const (
 	RouteCreatePayment   = "api/v1/payments"
 	RouteAddFund         = "api/v1/funds"

@@ -16,12 +16,14 @@ type ppctl struct {
 	c *http.Client
 }
 
+// NewPPCTL returns a new PPCTL.
 func NewPPCTL(c *http.Client) *ppctl {
 	return &ppctl{
 		c: c,
 	}
 }
 
+// Invoice creates an invoice.
 func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -38,7 +40,9 @@ func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.Invoic
 	if err != nil {
 		return nil, errors.Wrap(err, "error performing invoice create request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var invoice gopayd.Invoice
 	if err = json.NewDecoder(resp.Body).Decode(&invoice); err != nil {
@@ -48,6 +52,7 @@ func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.Invoic
 	return &invoice, nil
 }
 
+// RequestPayment created a payment request.
 func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
 	endpoint := fmt.Sprintf("%s/api/v1/payment/%s", serverURL, args.PaymentID)
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -60,7 +65,9 @@ func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopay
 	if err != nil {
 		return nil, errors.Wrap(err, "error performing payment request request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var paymentReq gopayd.PaymentRequest
 	if err = json.NewDecoder(resp.Body).Decode(&paymentReq); err != nil {
@@ -70,6 +77,7 @@ func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopay
 	return &paymentReq, nil
 }
 
+// SendPayment sends and completes a payment request.
 func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.CreatePayment) (*gopayd.PaymentACK, error) {
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -86,7 +94,9 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 	if err != nil {
 		return nil, errors.Wrap(err, "error performing payment request request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(resp.Body)
@@ -105,6 +115,7 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 	return &paymentAck, nil
 }
 
+// TxStatus retrieves the status of a tx.
 func (p *ppctl) TxStatus(ctx context.Context, serverURL, txID string) (*gopayd.TxStatus, error) {
 	endpoint := fmt.Sprintf("%s/api/v1/txstatus/%s", serverURL, txID)
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -117,7 +128,9 @@ func (p *ppctl) TxStatus(ctx context.Context, serverURL, txID string) (*gopayd.T
 	if err != nil {
 		return nil, errors.Wrap(err, "error performing payment request request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var txStatus gopayd.TxStatus
 	if err = json.NewDecoder(resp.Body).Decode(&txStatus); err != nil {

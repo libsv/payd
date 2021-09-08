@@ -154,6 +154,7 @@ type MApi struct {
 	Token     string
 }
 
+// Regtest contains regtest connection settings.
 type Regtest struct {
 	Host     string
 	Port     string

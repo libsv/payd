@@ -22,6 +22,7 @@ type payment struct {
 	fRwr  client.FundReaderWriter
 }
 
+// NewPayment returns a new service for payments.
 func NewPayment(ec spv.EnvelopeCreator, pc client.PaymentCreator, fSvc client.FundService, pkSvc gopayd.PrivateKeyService, fRwr client.FundReaderWriter) client.PaymentService {
 	return &payment{
 		ec:    ec,
@@ -63,7 +64,9 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 		if err != nil {
 			return nil, errors.Wrapf(err, "error parsing hex script %s", output.Script)
 		}
-		tx.AddP2PKHOutputFromScript(script, output.Amount)
+		if err = tx.AddP2PKHOutputFromScript(script, output.Amount); err != nil {
+			return nil, errors.Wrap(err, "error adding output from script")
+		}
 
 		totalOutput += output.Amount
 	}

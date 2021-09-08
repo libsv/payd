@@ -11,6 +11,7 @@ type fund struct {
 	svc client.FundService
 }
 
+// NewFund returns a new fund.
 func NewFund(svc client.FundService) *fund {
 	return &fund{svc: svc}
 }

@@ -11,6 +11,7 @@ type txstatus struct {
 	str client.TxStatusStore
 }
 
+// NewTxStatusService returns a new service for txstatus.
 func NewTxStatusService(str client.TxStatusStore) *txstatus {
 	return &txstatus{str: str}
 }

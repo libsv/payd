@@ -11,11 +11,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Default jsonrpc fields.
 const (
 	ID      = "spvclient"
 	JsonRpc = "1.0"
 )
 
+// Bitcoin node method constants.
 const (
 	RequestGetRawTx       = "getrawtransaction"
 	RequestGetMerkleProof = "getmerkleproof2"
@@ -28,6 +30,7 @@ type regtest struct {
 	c   *http.Client
 }
 
+// NewRegtest returns a new regtest.
 func NewRegtest(cfg *config.Regtest, c *http.Client) *regtest {
 	return &regtest{
 		cfg: cfg,
@@ -45,7 +48,9 @@ func (r *regtest) RawTransaction(ctx context.Context, txID string) (*models.RawT
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var rawTxResp models.RawTxResponse
 	if err = json.NewDecoder(resp.Body).Decode(&rawTxResp); err != nil {
@@ -68,7 +73,9 @@ func (r *regtest) RawTransaction1(ctx context.Context, txID string) (*models.Raw
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var rawTxResp models.RawTx1Response
 	if err = json.NewDecoder(resp.Body).Decode(&rawTxResp); err != nil {
@@ -91,7 +98,9 @@ func (r *regtest) MerkleProof(ctx context.Context, blockHash, txID string) (*mod
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var mpResp models.MerkleProofResponse
 	if err = json.NewDecoder(resp.Body).Decode(&mpResp); err != nil {
@@ -114,7 +123,9 @@ func (r *regtest) SendToAddress(ctx context.Context, address string, amount floa
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var staResp models.SendToAddressResponse
 	if err = json.NewDecoder(resp.Body).Decode(&staResp); err != nil {
@@ -136,7 +147,9 @@ func (r *regtest) Generate(ctx context.Context, amount uint64) (*models.Generate
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	var genResp models.GenerateResponse
 	if err = json.NewDecoder(resp.Body).Decode(&genResp); err != nil {

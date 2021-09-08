@@ -20,7 +20,7 @@ func (s *sqliteStore) StoreUtxos(ctx context.Context, req gopayd.CreateTransacti
 		return nil, errors.Wrap(err, "failed to create transaction and utxos")
 	}
 	return resp, errors.Wrapf(commit(ctx, tx),
-		"failed to commit transaction when adding tx and outputs for paymentID %s", req.PaymentID)
+		"failed to commit transaction when adding tx and outputs for paymentID %s", req.PaymentID.ValueOrZero())
 }
 
 // txCreateTransaction takes a db object / transaction and adds a transaction to the data store
@@ -37,11 +37,11 @@ func (s *sqliteStore) txCreateTransaction(tx db, req gopayd.CreateTransaction) (
 	}
 	var outTx gopayd.Transaction
 	if err := tx.Get(&outTx, sqlTransactionByID, req.TxID); err != nil {
-		return nil, errors.Wrapf(err, "failed to get stored transaction for paymentID %s", req.PaymentID)
+		return nil, errors.Wrapf(err, "failed to get stored transaction for paymentID %s", req.PaymentID.ValueOrZero())
 	}
 	var outTxos []gopayd.Txo
 	if err := tx.Select(&outTxos, sqlTxosByTxID, req.TxID); err != nil {
-		return nil, errors.Wrapf(err, "failed to get stored transaction outputs for paymentID %s", req.PaymentID)
+		return nil, errors.Wrapf(err, "failed to get stored transaction outputs for paymentID %s", req.PaymentID.ValueOrZero())
 	}
 	outTx.Outputs = outTxos
 	return &outTx, nil

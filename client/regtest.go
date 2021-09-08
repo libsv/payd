@@ -6,6 +6,7 @@ import (
 	"github.com/libsv/payd/client/data/regtest/models"
 )
 
+// Regtest interfaces with a regtest node.
 type Regtest interface {
 	RawTransaction(ctx context.Context, txID string) (*models.RawTxResponse, error)
 	RawTransaction1(ctx context.Context, txID string) (*models.RawTx1Response, error)

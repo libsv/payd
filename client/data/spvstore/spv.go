@@ -13,6 +13,7 @@ type spvstore struct {
 	rt client.Regtest
 }
 
+// NewSPVStore returns a new spv store.
 func NewSPVStore(rt client.Regtest) interface {
 	spv.TxStore
 	spv.MerkleProofStore

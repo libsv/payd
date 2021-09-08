@@ -11,14 +11,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-const keyname = `client`
-
 type fund struct {
 	rt    client.Regtest
 	fWtr  client.FundReaderWriter
 	pkSvc gopayd.PrivateKeyService
 }
 
+// NewFundService builds and returns a service for funds.
 func NewFundService(rt client.Regtest, fWtr client.FundReaderWriter, pkSvc gopayd.PrivateKeyService) *fund {
 	return &fund{
 		rt:    rt,

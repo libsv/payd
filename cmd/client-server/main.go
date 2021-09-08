@@ -37,7 +37,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to setup database: %s", err)
 	}
-	defer db.Close()
+	defer func() {
+		_ = db.Close()
+	}()
 
 	e := echo.New()
 	e.HideBanner = true
