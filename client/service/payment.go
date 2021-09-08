@@ -77,7 +77,8 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 	}
 
 	var totalInput uint64 = 0
-	for i := 0; i < len(funds) && totalInput < totalOutput; i++ {
+	var spentFunds []*client.Fund
+	for i := 0; i < len(funds) && totalInput <= totalOutput; i++ {
 		f := funds[i]
 
 		if err = tx.From(f.TxID, uint32(f.Vout), f.LockingScript, f.Satoshis); err != nil {
@@ -85,13 +86,10 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 		}
 
 		totalInput += f.Satoshis
+		spentFunds = append(spentFunds, f)
 	}
 
-	if tx.InputCount() < len(funds) {
-		funds = append(funds[:tx.InputCount()], funds[tx.InputCount()+1:]...)
-	}
-
-	if totalInput < totalOutput {
+	if totalInput <= totalOutput {
 		return nil, errs.NewErrUnprocessable(errcodes.ErrInsufficientFunds, fmt.Sprintf("insufficient funds: %d", totalInput))
 	}
 
@@ -102,6 +100,7 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 	if err = tx.Change(script, bt.NewFeeQuote()); err != nil {
 		return nil, err
 	}
+	fmt.Println(tx.OutputIdx(tx.OutputCount() - 1))
 
 	n, err := tx.SignAuto(ctx, &bt.LocalSigner{PrivateKey: pk})
 	if err != nil {
@@ -127,11 +126,11 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 	}
 
 	txID := tx.TxID()
-	for _, f := range funds {
-		f.SpendingTxID = txID
+	for _, sf := range spentFunds {
+		sf.SpendingTxID = txID
 	}
 
-	if err := p.fRwr.FundsSpend(ctx, funds); err != nil {
+	if err := p.fRwr.FundsSpend(ctx, spentFunds); err != nil {
 		return nil, errors.Wrap(err, "error marking fund as spent")
 	}
 
