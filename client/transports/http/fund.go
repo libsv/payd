@@ -16,6 +16,7 @@ func NewFund(svc client.FundService) *fund {
 }
 
 func (f *fund) RegisterRoutes(g *echo.Group) {
+	g.GET(RouteGetFundsUnspent, f.get)
 	g.POST(RouteAddFund, f.seed)
 }
 
@@ -29,4 +30,12 @@ func (f *fund) seed(e echo.Context) error {
 		return err
 	}
 	return e.JSON(http.StatusCreated, fund)
+}
+
+func (f *fund) get(e echo.Context) error {
+	resp, err := f.svc.FundsUnspent(e.Request().Context())
+	if err != nil {
+		return err
+	}
+	return e.JSON(http.StatusOK, resp)
 }

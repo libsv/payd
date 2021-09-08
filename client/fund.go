@@ -8,13 +8,18 @@ import (
 )
 
 type Fund struct {
-	Outpoint      string `db:"outpoint"`
-	KeyName       string `db:"keyname"`
-	TxID          string `db:"txid"`
-	Vout          int    `db:"vout"`
-	LockingScript string `db:"lockingscript"`
-	SpendingTxID  string `db:"spendingtxid"`
-	Satoshis      uint64 `db:"satoshis"`
+	Outpoint      string `db:"outpoint" json:"-"`
+	KeyName       string `db:"keyname" json:"-"`
+	TxID          string `db:"txid" json:"txId"`
+	Vout          int    `db:"vout" json:"vout"`
+	LockingScript string `db:"lockingscript" json:"lockingScript"`
+	SpendingTxID  string `db:"spendingtxid" json:"spendingTxId,omitempty"`
+	Satoshis      uint64 `db:"satoshis" json:"satoshis"`
+}
+
+type FundsUnspentResponse struct {
+	Balance uint64  `json:"balance"`
+	Funds   []*Fund `json:"funds"`
 }
 
 type FundArgs struct {
@@ -34,6 +39,7 @@ type FundsCreate struct {
 type FundService interface {
 	Seed(ctx context.Context, req FundSeed) (*gopayd.Transaction, error)
 	FundsCreate(ctx context.Context, tx *bt.Tx) (*gopayd.Transaction, error)
+	FundsUnspent(ctx context.Context) (*FundsUnspentResponse, error)
 }
 
 type FundReaderWriter interface {

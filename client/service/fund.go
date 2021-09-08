@@ -15,11 +15,11 @@ const keyname = `client`
 
 type fund struct {
 	rt    client.Regtest
-	fWtr  client.FundWriter
+	fWtr  client.FundReaderWriter
 	pkSvc gopayd.PrivateKeyService
 }
 
-func NewFundService(rt client.Regtest, fWtr client.FundWriter, pkSvc gopayd.PrivateKeyService) *fund {
+func NewFundService(rt client.Regtest, fWtr client.FundReaderWriter, pkSvc gopayd.PrivateKeyService) *fund {
 	return &fund{
 		rt:    rt,
 		fWtr:  fWtr,
@@ -82,4 +82,19 @@ func (f *fund) FundsCreate(ctx context.Context, tx *bt.Tx) (*gopayd.Transaction,
 		TxHex: tx.String(),
 		Funds: txos,
 	})
+}
+
+func (f *fund) FundsUnspent(ctx context.Context) (*client.FundsUnspentResponse, error) {
+	funds, err := f.fWtr.Funds(ctx, client.FundArgs{KeyName: "client"})
+	if err != nil {
+		return nil, err
+	}
+
+	resp := client.FundsUnspentResponse{Funds: make([]*client.Fund, 0)}
+	for _, f := range funds {
+		resp.Balance += f.Satoshis
+	}
+	resp.Funds = funds
+
+	return &resp, nil
 }
