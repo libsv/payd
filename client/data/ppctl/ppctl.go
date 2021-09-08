@@ -1,4 +1,4 @@
-package payd
+package ppctl
 
 import (
 	"bytes"
@@ -103,4 +103,26 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 	}
 
 	return &paymentAck, nil
+}
+
+func (p *ppctl) TxStatus(ctx context.Context, serverURL, txID string) (*gopayd.TxStatus, error) {
+	endpoint := fmt.Sprintf("%s/api/v1/txstatus/%s", serverURL, txID)
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating payment request request")
+	}
+	r.Header.Add("Content-Type", "application/json")
+
+	resp, err := p.c.Do(r)
+	if err != nil {
+		return nil, errors.Wrap(err, "error performing payment request request")
+	}
+	defer resp.Body.Close()
+
+	var txStatus gopayd.TxStatus
+	if err = json.NewDecoder(resp.Body).Decode(&txStatus); err != nil {
+		return nil, errors.Wrap(err, "error decoding payment request response")
+	}
+
+	return &txStatus, nil
 }

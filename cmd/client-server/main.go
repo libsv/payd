@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/libsv/go-bc/spv"
-	"github.com/libsv/payd/client/data/payd"
+	"github.com/libsv/payd/client/data/ppctl"
 	"github.com/libsv/payd/client/data/regtest"
 	"github.com/libsv/payd/client/data/spvstore"
 	"github.com/libsv/payd/client/service"
@@ -70,8 +70,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	chttp.NewPayment(service.NewPayment(spv, payd.NewPPCTL(&http.Client{Timeout: 30 * time.Second}), fSvc, pkSvc, sqlLiteStore)).RegisterRoutes(g)
+	ppctlSvc := ppctl.NewPPCTL(&http.Client{Timeout: 30 * time.Second})
+
+	chttp.NewPayment(service.NewPayment(spv, ppctlSvc, fSvc, pkSvc, sqlLiteStore)).RegisterRoutes(g)
 	chttp.NewFund(fSvc).RegisterRoutes(g)
+	chttp.NewTxStatus(service.NewTxStatusService(ppctlSvc)).RegisterRoutes(g)
 
 	e.Logger.Fatal(e.Start(cfg.Server.Port))
 }
