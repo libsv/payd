@@ -11,28 +11,37 @@ import (
 	"path"
 
 	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
 )
 
 type ppctl struct {
-	c *http.Client
+	c   *http.Client
+	cfg *config.Ppctl
 }
 
 // NewPPCTL returns a new PPCTL.
-func NewPPCTL(c *http.Client) *ppctl {
+func NewPPCTL(c *http.Client, cfg *config.Ppctl) *ppctl {
 	return &ppctl{
-		c: c,
+		c:   c,
+		cfg: cfg,
 	}
 }
 
 // Invoice creates an invoice.
-func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+func (p *ppctl) Invoice(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+	url, err := url.Parse(p.cfg.URL)
+	if err != nil {
+		return nil, err
+	}
+	url.Path = path.Join(url.Path, "/api/v1/invoices")
+
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error marshalling invoice request")
 	}
 
-	r, err := http.NewRequestWithContext(ctx, http.MethodPost, serverURL+"/api/v1/invoices", bytes.NewBuffer(data))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating invoice request")
 	}
@@ -55,8 +64,8 @@ func (p *ppctl) Invoice(ctx context.Context, serverURL string, req gopayd.Invoic
 }
 
 // RequestPayment created a payment request.
-func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
-	url, err := url.Parse(serverURL)
+func (p *ppctl) RequestPayment(ctx context.Context, args gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error) {
+	url, err := url.Parse(p.cfg.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -85,16 +94,17 @@ func (p *ppctl) RequestPayment(ctx context.Context, serverURL string, args gopay
 }
 
 // SendPayment sends and completes a payment request.
-func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.CreatePayment) (*gopayd.PaymentACK, error) {
+func (p *ppctl) SendPayment(ctx context.Context, paymentID string, req gopayd.CreatePayment) (*gopayd.PaymentACK, error) {
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error marshalling invoice request")
 	}
 
-	url, err := url.Parse(endpoint)
+	url, err := url.Parse(p.cfg.URL)
 	if err != nil {
 		return nil, err
 	}
+	url.Path = path.Join(url.Path, "/api/v1/payment/", paymentID)
 
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), bytes.NewBuffer(data))
 	if err != nil {
@@ -128,8 +138,8 @@ func (p *ppctl) SendPayment(ctx context.Context, endpoint string, req gopayd.Cre
 }
 
 // TxStatus retrieves the status of a tx.
-func (p *ppctl) TxStatus(ctx context.Context, serverURL, txID string) (*gopayd.TxStatus, error) {
-	url, err := url.Parse(serverURL)
+func (p *ppctl) TxStatus(ctx context.Context, txID string) (*gopayd.TxStatus, error) {
+	url, err := url.Parse(p.cfg.URL)
 	if err != nil {
 		return nil, err
 	}

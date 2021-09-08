@@ -16,6 +16,6 @@ func NewTxStatusService(str client.TxStatusStore) *txstatus {
 	return &txstatus{str: str}
 }
 
-func (t *txstatus) Status(ctx context.Context, req client.TxStatusReq, args client.TxStatusArgs) (*gopayd.TxStatus, error) {
-	return t.str.TxStatus(ctx, req.ServerURL, args.TxID)
+func (t *txstatus) Status(ctx context.Context, args client.TxStatusArgs) (*gopayd.TxStatus, error) {
+	return t.str.TxStatus(ctx, args.TxID)
 }

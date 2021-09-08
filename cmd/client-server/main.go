@@ -28,7 +28,8 @@ func main() {
 		WithDb().
 		WithDeployment(appname).
 		WithLog().
-		WithRegtest()
+		WithRegtest().
+		WithPpctl()
 	if err := cfg.Validate(); err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +73,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ppctlSvc := ppctl.NewPPCTL(&http.Client{Timeout: 30 * time.Second})
+	ppctlSvc := ppctl.NewPPCTL(&http.Client{Timeout: 30 * time.Second}, cfg.Ppctl)
 
 	chttp.NewPayment(service.NewPayment(spv, ppctlSvc, fSvc, pkSvc, sqlLiteStore)).RegisterRoutes(g)
 	chttp.NewFund(fSvc).RegisterRoutes(g)

@@ -140,3 +140,17 @@ func (c *Config) WithRegtest() *Config {
 
 	return c
 }
+
+// WithPpctl will setup ppctl settings.
+func (c *Config) WithPpctl() *Config {
+	viper.SetDefault(EnvPpctlHost, "localhost")
+	viper.SetDefault(EnvPpctlPort, "8443")
+	viper.SetDefault(EnvPpctlURL, "http://localhost:8443")
+	c.Ppctl = &Ppctl{
+		Host: viper.GetString(EnvPpctlHost),
+		Port: viper.GetString(EnvPpctlPort),
+		URL:  viper.GetString(EnvPpctlURL),
+	}
+
+	return c
+}

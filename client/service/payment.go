@@ -43,14 +43,14 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 		return nil, errors.Wrap(err, "error getting bec private key")
 	}
 
-	invoice, err := p.pc.Invoice(ctx, req.ServerURL, gopayd.InvoiceCreate{
+	invoice, err := p.pc.Invoice(ctx, gopayd.InvoiceCreate{
 		Satoshis: req.Satoshis,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating invoice")
 	}
 
-	payReq, err := p.pc.RequestPayment(ctx, req.ServerURL, gopayd.PaymentRequestArgs{
+	payReq, err := p.pc.RequestPayment(ctx, gopayd.PaymentRequestArgs{
 		PaymentID: invoice.PaymentID,
 	})
 	if err != nil {
@@ -115,7 +115,7 @@ func (p *payment) CreatePayment(ctx context.Context, req client.CreatePayment) (
 		return nil, err
 	}
 
-	ack, err := p.pc.SendPayment(ctx, payReq.PaymentURL, gopayd.CreatePayment{
+	ack, err := p.pc.SendPayment(ctx, invoice.PaymentID, gopayd.CreatePayment{
 		Transaction:  tx.String(),
 		Memo:         payReq.Memo,
 		MerchantData: *payReq.MerchantData,

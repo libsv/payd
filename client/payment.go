@@ -8,8 +8,7 @@ import (
 
 // CreatePayment defines the body for requesting to create a payment.
 type CreatePayment struct {
-	Satoshis  uint64 `json:"satoshis"`
-	ServerURL string `json:"serverUrl"`
+	Satoshis uint64 `json:"satoshis"`
 }
 
 // PaymentService interfaces with a payment service.
@@ -19,7 +18,7 @@ type PaymentService interface {
 
 // PaymentCreator interfaces creating a payment.
 type PaymentCreator interface {
-	Invoice(ctx context.Context, serverURL string, req gopayd.InvoiceCreate) (*gopayd.Invoice, error)
-	RequestPayment(ctx context.Context, serverURL string, req gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error)
-	SendPayment(ctx context.Context, endpoint string, req gopayd.CreatePayment) (*gopayd.PaymentACK, error)
+	Invoice(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error)
+	RequestPayment(ctx context.Context, req gopayd.PaymentRequestArgs) (*gopayd.PaymentRequest, error)
+	SendPayment(ctx context.Context, paymentID string, req gopayd.CreatePayment) (*gopayd.PaymentACK, error)
 }

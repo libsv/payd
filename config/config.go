@@ -42,6 +42,9 @@ const (
 	EnvRegtestUsername      = "regtest.username"
 	EnvRegtestPassword      = "regtest.password"
 	EnvRegtestWalletAddress = "regtest.wallet.address"
+	EnvPpctlHost            = "ppctl.host"
+	EnvPpctlPort            = "ppctl.port"
+	EnvPpctlURL             = "ppctl.url"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -72,6 +75,7 @@ type Config struct {
 	Wallet     *Wallet
 	Mapi       *MApi
 	Regtest    *Regtest
+	Ppctl      *Ppctl
 }
 
 // Validate will ensure the config matches certain parameters.
@@ -162,6 +166,13 @@ type Regtest struct {
 	Password string
 }
 
+// Ppctl contains the ppctl server connection settings.
+type Ppctl struct {
+	URL  string
+	Host string
+	Port string
+}
+
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
@@ -172,4 +183,5 @@ type ConfigurationLoader interface {
 	WithPaymail() *Config
 	WithWallet() *Config
 	WithRegtest() *Config
+	WithPpctl() *Config
 }
