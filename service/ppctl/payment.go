@@ -100,7 +100,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		}
 		// push new txo onto list for persistence later
 		txos = append(txos, &gopayd.UpdateTxo{
-			Outpoint:       fmt.Sprintf("%s%d", tx.TxID(), i),
+			Outpoint:       null.StringFrom(fmt.Sprintf("%s%d", tx.TxID(), i)),
 			TxID:           tx.TxID(),
 			Vout:           i,
 			KeyName:        null.StringFrom(keyname),
@@ -119,7 +119,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 	ctx = p.txrunner.WithTx(ctx)
 	// Store utxos and set invoice to paid.
 	if _, err = p.store.StoreUtxos(ctx, gopayd.CreateTransaction{
-		PaymentID: inv.PaymentID,
+		PaymentID: null.StringFrom(inv.PaymentID),
 		TxID:      tx.TxID(),
 		TxHex:     req.Transaction,
 		Outputs:   txos,

@@ -6,6 +6,9 @@ help:
 run-service:
 	@go run -race cmd/bip270-server/main.go server
 
+run-client:
+	@SERVER_PORT=:8444 SERVER_HOST=spv:8444 go run -race cmd/client-server/main.go
+
 run-all-tests: run-linter run-unit-tests
 
 pre-commit: vendor-deps run-all-tests

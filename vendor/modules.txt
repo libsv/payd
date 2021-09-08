@@ -76,7 +76,7 @@ github.com/labstack/gommon/log
 github.com/labstack/gommon/random
 # github.com/lib/pq v1.9.0
 ## explicit
-# github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
+# github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf => ../go-bc
 ## explicit
 github.com/libsv/go-bc
 github.com/libsv/go-bc/spv
@@ -93,10 +93,11 @@ github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
-# github.com/libsv/go-bt/v2 v2.0.0-beta.2
+# github.com/libsv/go-bt/v2 v2.0.0-beta.3.0.20210831131926-97f539453193
 ## explicit
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
+github.com/libsv/go-bt/v2/bscript/interpreter
 github.com/libsv/go-bt/v2/sighash
 # github.com/magiconair/properties v1.8.4
 ## explicit
@@ -195,6 +196,8 @@ golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/publicsuffix
+# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
@@ -219,3 +222,4 @@ gopkg.in/ini.v1
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 gopkg.in/yaml.v3
+# github.com/libsv/go-bc => ../go-bc

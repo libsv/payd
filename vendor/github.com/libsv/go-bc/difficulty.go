@@ -96,9 +96,8 @@ func DifficultyToHashrate(coin string, diff uint64, targetSeconds float64) float
 }
 
 // DifficultyFromBits returns the mining difficulty from the nBits field in the block header.
-func DifficultyFromBits(bits string) (float64, error) {
-	b, _ := hex.DecodeString(bits)
-	ib := binary.BigEndian.Uint32(b)
+func DifficultyFromBits(bits []byte) (float64, error) {
+	ib := binary.BigEndian.Uint32(bits)
 	return targetToDifficulty(toCompactSize(ib))
 }
 

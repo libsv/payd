@@ -8,16 +8,16 @@ import (
 
 // Transaction defines a single transaction.
 type Transaction struct {
-	PaymentID string    `db:"paymentid"`
-	TxID      string    `db:"txid"`
-	TxHex     string    `db:"txhex"`
-	CreatedAt time.Time `db:"createdat"`
-	Outputs   []Txo     `db:"-"`
+	PaymentID null.String `db:"paymentid"`
+	TxID      string      `db:"txid"`
+	TxHex     string      `db:"txhex"`
+	CreatedAt time.Time   `db:"createdat"`
+	Outputs   []Txo       `db:"-"`
 }
 
 // Txo defines a single txo and can be returned from the data store.
 type Txo struct {
-	Outpoint       string      `db:"outpoint"`
+	Outpoint       null.String `db:"outpoint"`
 	TxID           string      `db:"txid"`
 	Vout           int         `db:"vout"`
 	KeyName        null.String `db:"keyname"`
@@ -32,7 +32,7 @@ type Txo struct {
 
 // CreateTransaction is used to insert a tx into the data store.
 type CreateTransaction struct {
-	PaymentID string       `db:"paymentID"`
+	PaymentID null.String  `db:"paymentID"`
 	TxID      string       `db:"txid"`
 	TxHex     string       `db:"txhex"`
 	Outputs   []*UpdateTxo `db:"-"`
@@ -40,7 +40,7 @@ type CreateTransaction struct {
 
 // UpdateTxo is used to update a single txo in the data store.
 type UpdateTxo struct {
-	Outpoint       string      `db:"outpoint"`
+	Outpoint       null.String `db:"outpoint"`
 	TxID           string      `db:"txid"`
 	Vout           int         `db:"vout"`
 	KeyName        null.String `db:"keyname"`

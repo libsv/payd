@@ -21,7 +21,7 @@ CREATE TABLE invoices (
 
 CREATE TABLE transactions (
     txid            CHAR(64) NOT NULL PRIMARY KEY
-    ,paymentid      VARCHAR NOT NULL
+    ,paymentid      VARCHAR -- null for fund
     ,txhex          TEXT NOT NULL
     ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
@@ -59,6 +59,5 @@ CREATE TABLE proofs(
 );
 
 INSERT INTO keys(name, xprv)
-VALUES('keyname','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
-
-
+VALUES('keyname','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj'),
+('client', 'tprv8ZgxMBicQKsPfLGWCgh24MgovBADKbvqTmT9BUJ8zyXi2y541oSigK5SmWqq1wTKh4PnGgeEe7boGnocyXWwEjk88hjDdSgy8rvryyPdHzL');

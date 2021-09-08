@@ -36,6 +36,8 @@ func (h *headersv) BlockHeader(ctx context.Context, blockHash string) (*bc.Block
 		return nil, errors.Wrapf(err, "error creating request for chain/header/%s", blockHash)
 	}
 
+	req.Header.Set("Content-Type", "application/json")
+
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil, err

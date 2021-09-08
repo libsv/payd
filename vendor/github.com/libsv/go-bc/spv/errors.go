@@ -30,4 +30,8 @@ var (
 
 	// ErrInputRefsOutOfBoundsOutput returns if a transaction has no inputs
 	ErrInputRefsOutOfBoundsOutput = errors.New("tx input index into output is out of bounds")
+
+	// ErrScriptValidationFailed returns if a tx without a valid merkle proof fails script
+	// execution
+	ErrScriptValidationFailed = errors.New("failed to validate script")
 )

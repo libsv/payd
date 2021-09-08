@@ -70,7 +70,7 @@ func (c *Config) WithDb() *Config {
 
 // WithHeadersv sets up and returns Headersv configuration.
 func (c *Config) WithHeadersv() *Config {
-	viper.SetDefault(EnvHeadersvAddress, "headersv:8001")
+	viper.SetDefault(EnvHeadersvAddress, "http://headersv:8001")
 	viper.SetDefault(EnvHeadersvTimeout, 30)
 	c.Headersv = &Headersv{
 		Address: viper.GetString(EnvHeadersvAddress),
@@ -121,5 +121,21 @@ func (c *Config) WithMapi() *Config {
 		URL:       viper.GetString(EnvMAPIURL),
 		Token:     viper.GetString(EnvMAPIToken),
 	}
+	return c
+}
+
+func (c *Config) WithRegtest() *Config {
+	viper.SetDefault(EnvRegtestHost, "localhost")
+	viper.SetDefault(EnvRegtestPort, ":18332")
+	viper.SetDefault(EnvRegtestUsername, "bitcoin")
+	viper.SetDefault(EnvRegtestPassword, "bitcoin")
+	viper.SetDefault(EnvRegtestWalletAddress, "")
+	c.Regtest = &Regtest{
+		Host:     viper.GetString(EnvRegtestHost),
+		Port:     viper.GetString(EnvRegtestPort),
+		Username: viper.GetString(EnvRegtestUsername),
+		Password: viper.GetString(EnvRegtestPassword),
+	}
+
 	return c
 }

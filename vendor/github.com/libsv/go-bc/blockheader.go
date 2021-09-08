@@ -3,6 +3,7 @@ package bc
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"math/big"
 
@@ -29,6 +30,15 @@ type BlockHeader struct {
 	HashPrevBlock  []byte
 	HashMerkleRoot []byte
 	Bits           []byte
+}
+
+type bhJSON struct {
+	Version        uint32 `json:"version"`
+	Time           uint32 `json:"time"`
+	Nonce          uint32 `json:"nonce"`
+	HashPrevBlock  string `json:"hashPrevBlock"`
+	HashMerkleRoot string `json:"merkleRoot"`
+	Bits           string `json:"bits"`
 }
 
 // HashPrevBlockStr returns the Block Header encoded as hex string.
@@ -76,7 +86,7 @@ func (bh *BlockHeader) Valid() bool {
 	}
 
 	digest := bt.ReverseBytes(crypto.Sha256d(bh.Bytes()))
-	var bn *big.Int = big.NewInt(0)
+	bn := big.NewInt(0)
 	bn.SetBytes(digest)
 
 	return bn.Cmp(target) < 0
@@ -126,4 +136,48 @@ func ExtractMerkleRootFromBlockHeader(header string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bh.HashMerkleRoot), nil
+}
+
+// MarshalJSON marshals the receiving bc.BlockHeader into a JSON []byte
+func (bh *BlockHeader) MarshalJSON() ([]byte, error) {
+	return json.Marshal(bhJSON{
+		Version:        bh.Version,
+		Time:           bh.Time,
+		Nonce:          bh.Nonce,
+		Bits:           bh.BitsStr(),
+		HashMerkleRoot: bh.HashMerkleRootStr(),
+		HashPrevBlock:  bh.HashPrevBlockStr(),
+	})
+}
+
+// UnmarshalJSON unmarshals a JSON []byte into the receiving bc.BlockHeader
+func (bh *BlockHeader) UnmarshalJSON(b []byte) error {
+	var bhj bhJSON
+	if err := json.Unmarshal(b, &bhj); err != nil {
+		return err
+	}
+
+	bh.Version = bhj.Version
+	bh.Nonce = bhj.Nonce
+	bh.Time = bhj.Time
+
+	bits, err := hex.DecodeString(bhj.Bits)
+	if err != nil {
+		return err
+	}
+	bh.Bits = bits
+
+	hashPrevBlock, err := hex.DecodeString(bhj.HashPrevBlock)
+	if err != nil {
+		return err
+	}
+	bh.HashPrevBlock = hashPrevBlock
+
+	hashMerkleRoot, err := hex.DecodeString(bhj.HashMerkleRoot)
+	if err != nil {
+		return err
+	}
+	bh.HashMerkleRoot = hashMerkleRoot
+
+	return nil
 }

@@ -337,9 +337,9 @@ linters:
     - gosec
     - bodyclose
     - golint
+    - revive
     - unconvert
     - dupl
-    - maligned
     - misspell
     - dogsled
     - prealloc
@@ -355,6 +355,8 @@ linters:
     - whitespace
     - wsl
     - goerr113
+    - scopelint
+    - maligned
     - godot
     - testpackage
     - nestif
@@ -384,7 +386,9 @@ issues:
       linters:
         - gocyclo
         - errcheck
+        - goconst
         - dupl
+        - goconst
         - gosec
         - maligned
         - lll

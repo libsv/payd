@@ -53,6 +53,7 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 	}); err != nil {
 		return errors.Wrap(err, "failed to create private key")
 	}
+
 	return nil
 }
 

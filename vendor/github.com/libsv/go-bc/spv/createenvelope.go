@@ -29,31 +29,29 @@ func (c *creator) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, err
 			continue
 		}
 
-		// Check the store for a Merkle Proof for the current input.
-		mp, err := c.mpc.MerkleProof(ctx, pTxID)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to get merkle proof for tx %s", pTxID)
-		}
-		if mp != nil {
-			// If a Merkle Proof exists, build and return an spv.Envelope
-			envelope.Parents[pTxID] = &Envelope{
-				TxID:  pTxID,
-				Proof: mp,
-			}
-
-			// Skip getting the tx data as we have everything we need for verifying the current tx.
-			continue
-		}
-
-		// If no merkle proof was found for the input, build a *bt.Tx from its TxID and recursively
-		// call this function building envelopes for inputs without proofs, until a parent with a
-		// Merkle Proof is found.
+		// Build a *bt.Tx from its TxID and recursively call this function building
+		// for inputs without proofs, until a parent with a Merkle Proof is found.
 		pTx, err := c.txc.Tx(ctx, pTxID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get tx %s", pTxID)
 		}
 		if pTx == nil {
 			return nil, fmt.Errorf("could not find tx %s", pTxID)
+		}
+
+		// Check the store for a Merkle Proof for the current input.
+		mp, err := c.mpc.MerkleProof(ctx, pTxID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get merkle proof for tx %s", pTxID)
+		}
+		// If a Merkle Proof is found, create the envelope and skip any further recursion
+		if mp != nil {
+			envelope.Parents[pTxID] = &Envelope{
+				RawTx: pTx.String(),
+				TxID:  pTxID,
+				Proof: mp,
+			}
+			continue
 		}
 
 		pEnvelope, err := c.CreateEnvelope(ctx, pTx)

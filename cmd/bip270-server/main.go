@@ -13,6 +13,7 @@ import (
 	gopaymail "github.com/tonicpow/go-paymail"
 
 	"github.com/libsv/go-bc/spv"
+	"github.com/libsv/go-bt/v2/bscript/interpreter"
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config/databases"
 	phttp "github.com/libsv/payd/data/http"
@@ -110,7 +111,7 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: time.Duration(cfg.Headersv.Timeout) * time.Second}, cfg.Headersv.Address))
+	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: time.Duration(cfg.Headersv.Timeout) * time.Second}, cfg.Headersv.Address), interpreter.NewEngine())
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
