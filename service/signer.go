@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
+	"github.com/theflyingcodr/lathos/errs"
 
 	"github.com/libsv/go-bk/chaincfg"
 	"github.com/libsv/go-bt/v2"
@@ -66,7 +68,7 @@ func (s *signer) FundAndSignTx(ctx context.Context, req gopayd.FundAndSignTxRequ
 		}
 	}
 	if !feesPaid {
-		return nil, errors.New("not enough funds")
+		return nil, errs.NewErrUnprocessable("F01", "not enough funds")
 	}
 
 	if err := tx.ChangeToAddress(pk.Address(&chaincfg.Params{}), fq); err != nil {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	gopayd "github.com/libsv/payd"
@@ -36,6 +37,7 @@ func (s *signer) FundAndSign(ctx context.Context, req gopayd.FundAndSignTxReques
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(resp.StatusCode)
 	if err := checkError(resp, http.StatusOK); err != nil {
 		return nil, err
 	}
