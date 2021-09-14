@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -28,13 +29,43 @@ func (p *paymentHttp) Request(ctx context.Context, args models.PaymentRequestArg
 	}
 	defer resp.Body.Close()
 
+	if err := checkError(resp, http.StatusCreated); err != nil {
+		return nil, err
+	}
+
 	var response models.PaymentRequest
 	if json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
+
 	return &response, nil
 }
 
-func (p *paymentHttp) Submit(ctx context.Context) error {
-	return nil
+func (p *paymentHttp) Submit(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentAck, error) {
+	bb, err := json.Marshal(args)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, args.PaymentRequest.PaymentURL, bytes.NewBuffer(bb))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := p.c.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if err := checkError(resp, http.StatusCreated); err != nil {
+		return nil, err
+	}
+
+	var response models.PaymentAck
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }

@@ -68,7 +68,7 @@ func get(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		return printer.Print(inv)
+		return printer(inv)
 	}
 
 	inv, err := svc.Invoice(cmd.Context(), models.InvoiceGetArgs{
@@ -78,7 +78,7 @@ func get(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return printer.Print(inv)
+	return printer(inv)
 }
 
 func create(cmd *cobra.Command, args []string) error {
@@ -90,9 +90,7 @@ func create(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("invoice %s created.\n", inv.PaymentID)
-
-	return printer.Print(inv)
+	return printer(inv)
 }
 
 func remove(cmd *cobra.Command, args []string) error {

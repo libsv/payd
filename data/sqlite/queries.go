@@ -2,7 +2,7 @@ package sqlite
 
 const (
 	sqlTransactionCreate = `
-		INSERT INTO transactions(txid, paymentID, txhex)
+		INSERT OR IGNORE INTO transactions(txid, paymentID, txhex)
 		VALUES(:txid, :paymentID, :txhex)
 	`
 

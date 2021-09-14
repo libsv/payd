@@ -19,9 +19,9 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.9.0 // indirect
-	github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
+	github.com/libsv/go-bc v0.1.4-0.20210907115037-52f4ad4cf321
 	github.com/libsv/go-bk v0.1.4
-	github.com/libsv/go-bt/v2 v2.0.0-beta.2
+	github.com/libsv/go-bt/v2 v2.0.0-beta.5.0.20210914091338-7a05422ed660
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
@@ -51,4 +51,5 @@ require (
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/resty.v1 v1.12.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

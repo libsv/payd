@@ -3,31 +3,37 @@ package gopayd
 import (
 	"time"
 
+	"github.com/libsv/go-bt/v2"
 	"gopkg.in/guregu/null.v3"
 )
 
 // Transaction defines a single transaction.
 type Transaction struct {
-	PaymentID string    `db:"paymentid"`
-	TxID      string    `db:"txid"`
-	TxHex     string    `db:"txhex"`
-	CreatedAt time.Time `db:"createdat"`
-	Outputs   []Txo     `db:"-"`
+	PaymentID null.String `db:"paymentid"`
+	TxID      string      `db:"txid"`
+	TxHex     string      `db:"txhex"`
+	CreatedAt time.Time   `db:"createdat"`
+	Outputs   []Txo       `db:"-"`
+}
+
+type Fee struct {
+	Data     bt.Fee `json:"data"`
+	Standard bt.Fee `json:"standard"`
 }
 
 // Txo defines a single txo and can be returned from the data store.
 type Txo struct {
-	Outpoint       string      `db:"outpoint"`
-	TxID           string      `db:"txid"`
-	Vout           int         `db:"vout"`
-	KeyName        null.String `db:"keyname"`
-	DerivationPath null.String `db:"derivationpath"`
-	LockingScript  string      `db:"lockingscript"`
-	Satoshis       uint64      `db:"satoshis"`
-	SpentAt        null.Time   `db:"spentat"`
-	SpendingTxID   null.String `db:"spendingtxid"`
-	CreatedAt      time.Time   `db:"createdat"`
-	ModifiedAt     time.Time   `db:"modifiedat"`
+	Outpoint       string      `db:"outpoint" json:"-"`
+	TxID           string      `db:"txid" json:"txId"`
+	Vout           int         `db:"vout" json:"vout"`
+	KeyName        null.String `db:"keyname" json:"-"`
+	DerivationPath null.String `db:"derivationpath" json:"-"`
+	LockingScript  string      `db:"lockingscript" json:"lockingScript"`
+	Satoshis       uint64      `db:"satoshis" json:"satoshis"`
+	SpentAt        null.Time   `db:"spentat" json:"spentAt"`
+	SpendingTxID   null.String `db:"spendingtxid" json:"spendingTxId"`
+	CreatedAt      time.Time   `db:"createdat" json:"createdAt"`
+	ModifiedAt     time.Time   `db:"modifiedat" json:"modifiedAt"`
 }
 
 // CreateTransaction is used to insert a tx into the data store.

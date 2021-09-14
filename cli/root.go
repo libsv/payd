@@ -1,31 +1,39 @@
 package cli
 
 import (
-	"github.com/libsv/payd/cli/prnt"
+	"fmt"
+	"os"
+
+	"github.com/libsv/payd/cli/output"
 	"github.com/spf13/cobra"
 )
 
 var (
-	verbose bool
-	output  string
+	verbose      bool
+	outputFormat string
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "payctl",
-	Short: "Interface with payd",
-	Long:  "Interface with payd",
+	Use:           "payctl",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	Short:         "Interface with payd",
+	Long:          "Interface with payd",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		printer = prnt.NewPrinter(prnt.Format(output))
+		printer = output.NewPrinter(output.Format(outputFormat))
 	},
 }
 
-var printer prnt.Printer
+var printer output.PrintFunc
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "version", "v", false, "verbose printing")
-	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "output format")
+	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "table", "output format")
 }
 
 func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

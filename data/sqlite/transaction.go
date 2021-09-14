@@ -46,3 +46,49 @@ func (s *sqliteStore) txCreateTransaction(tx db, req gopayd.CreateTransaction) (
 	outTx.Outputs = outTxos
 	return &outTx, nil
 }
+
+func (s *sqliteStore) StoreFund(ctx context.Context, req gopayd.StoreFundRequest) error {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to start transaction when inserting transaction to db")
+	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
+	if err = handleNamedExec(tx, sqlTransactionCreate, req); err != nil {
+		return err
+	}
+	for _, txo := range req.Txos {
+		if err = handleNamedExec(tx, sqlTxoCreateAsFund, txo); err != nil {
+			return err
+		}
+	}
+	return errors.Wrap(commit(ctx, tx), "failed to commit tx when adding fund")
+}
+
+func (s *sqliteStore) SpendFunds(ctx context.Context, req *gopayd.FundsSpendReq, args gopayd.FundsSpendArgs) error {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to start transaction when spending fund")
+	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
+
+	for _, fund := range req.Txos {
+		if err = handleNamedExec(tx, sqlFundSpend, struct {
+			TxID         string `db:"txid"`
+			Vout         int    `db:"vout"`
+			KeyName      string `db:"keyname"`
+			SpendingTxID string `db:"spendingTxId"`
+		}{
+			TxID:         fund.TxID,
+			Vout:         fund.Vout,
+			KeyName:      "client",
+			SpendingTxID: req.SpendingTxID,
+		}); err != nil {
+			return errors.Wrap(err, "failed to set fund to spent")
+		}
+	}
+	return errors.Wrap(commit(ctx, tx), "failed to commit tx when updating funds")
+}

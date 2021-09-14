@@ -96,6 +96,7 @@ func main() {
 	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
 	// setup services
 	paymentSender := ppctl.NewPaymentMapiSender(mapiStore)
+	pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 	var paymentOutputter gopayd.PaymentRequestOutputer
 	if cfg.Paymail.UsePaymail {
 		pCli, err := gopaymail.NewClient(nil, nil, nil)
@@ -105,8 +106,6 @@ func main() {
 		paymailStore := paymail.NewPaymail(cfg.Paymail, pCli)
 		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore, sqlLiteStore)
 	} else {
-		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
-
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
@@ -128,6 +127,8 @@ func main() {
 		RegisterRoutes(g)
 	thttp.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
 		RegisterRoutes(g)
+	thttp.NewSignerHandler(service.NewSignerService(pkSvc, sqlLiteStore)).RegisterRoutes(g)
+	thttp.NewFundHandler(service.NewFundService(pkSvc, sqlLiteStore)).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

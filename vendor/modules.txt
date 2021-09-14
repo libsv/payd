@@ -92,7 +92,7 @@ github.com/labstack/gommon/log
 github.com/labstack/gommon/random
 # github.com/lib/pq v1.9.0
 ## explicit
-# github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
+# github.com/libsv/go-bc v0.1.4-0.20210907115037-52f4ad4cf321
 ## explicit
 github.com/libsv/go-bc
 github.com/libsv/go-bc/spv
@@ -109,7 +109,7 @@ github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
-# github.com/libsv/go-bt/v2 v2.0.0-beta.2
+# github.com/libsv/go-bt/v2 v2.0.0-beta.5.0.20210914091338-7a05422ed660
 ## explicit
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
@@ -247,4 +247,5 @@ gopkg.in/ini.v1
 ## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+## explicit
 gopkg.in/yaml.v3

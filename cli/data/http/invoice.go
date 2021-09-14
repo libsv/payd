@@ -33,6 +33,10 @@ func (i *invoice) Invoice(ctx context.Context, args models.InvoiceGetArgs) (*mod
 	}
 	defer resp.Body.Close()
 
+	if err := checkError(resp, http.StatusOK); err != nil {
+		return nil, err
+	}
+
 	var invResp models.Invoice
 	if err := json.NewDecoder(resp.Body).Decode(&invResp); err != nil {
 		return nil, err
@@ -52,6 +56,10 @@ func (i *invoice) Invoices(ctx context.Context) (models.Invoices, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if err := checkError(resp, http.StatusOK); err != nil {
+		return nil, err
+	}
 
 	var invResp []*models.Invoice
 	if err := json.NewDecoder(resp.Body).Decode(&invResp); err != nil {
@@ -78,6 +86,10 @@ func (i *invoice) Create(ctx context.Context, req models.InvoiceCreateRequest) (
 	}
 	defer resp.Body.Close()
 
+	if err := checkError(resp, http.StatusCreated); err != nil {
+		return nil, err
+	}
+
 	var createResp models.Invoice
 	if err := json.NewDecoder(resp.Body).Decode(&createResp); err != nil {
 		return nil, err
@@ -98,9 +110,5 @@ func (i *invoice) Delete(ctx context.Context, args models.InvoiceDeleteArgs) err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent {
-		return errors.New("failed to delete")
-	}
-
-	return nil
+	return checkError(resp, http.StatusNoContent)
 }

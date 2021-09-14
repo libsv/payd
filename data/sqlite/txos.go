@@ -27,6 +27,27 @@ const (
 	UPDATE txos SET outpoint = :outpoint, vout = :vout, txid = :txid, modifiedat = DATETIME('now')
 	WHERE outpoint IS NULL AND lockingscript = :lockingscript AND keyname = :keyname AND satoshis = :satoshis
 	`
+
+	sqlTxoCreateAsFund = `
+	INSERT INTO txos (keyname, derivationpath, lockingscript, satoshis, vout, txid)
+	VALUES(:keyname, :derivationpath, :lockingscript, :satoshis, :vout, :txid)
+	`
+
+	sqlFundGet = `
+	SELECT txid, vout, lockingscript, satoshis, keyname
+	FROM txos
+	WHERE spentat IS NULL
+	AND keyname = $1
+	ORDER BY createdAt ASC
+	`
+
+	sqlFundSpend = `
+	UPDATE txos
+	SET spentat = DATETIME('now'),
+		spendingTxId = :spendingTxId,
+		modifiedAt = DATETIME('now')
+	WHERE txid = :txid AND keyname = :keyname AND vout = :vout
+	`
 )
 
 // TxoCreate will store a txo created during payment requests.
@@ -63,4 +84,16 @@ func (s *sqliteStore) PartialTxo(ctx context.Context, args gopayd.UnspentTxoArgs
 		return nil, errors.Wrap(err, "failed to read partialTxo")
 	}
 	return &txo, nil
+}
+
+func (s *sqliteStore) Funds(ctx context.Context, args gopayd.FundsGetArgs) ([]gopayd.Txo, error) {
+	var txos []gopayd.Txo
+	if err := s.db.SelectContext(ctx, &txos, sqlFundGet, args.Account); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.NewErrNotFound("N104", "unable to find unspent funds")
+		}
+		return nil, errors.Wrap(err, "failed to read funds")
+	}
+
+	return txos, nil
 }

@@ -29,10 +29,10 @@ type InvoiceReaderWriter interface {
 }
 
 type Invoice struct {
-	PaymentID         string     `json:"paymentID"`
-	Satoshis          uint64     `json:"satoshis"`
-	PaymentReceivedAt *time.Time `json:"paymentReceivedAt"`
-	RefundTo          *string    `json:"refundTo"`
+	PaymentID         string     `json:"paymentID" yaml:"paymentID"`
+	Satoshis          uint64     `json:"satoshis" yaml:"satoshis"`
+	PaymentReceivedAt *time.Time `json:"paymentReceivedAt" yaml:"paymentReceivedAt"`
+	RefundTo          *string    `json:"refundTo" yaml:"refundTo"`
 }
 
 type Invoices []*Invoice
@@ -49,7 +49,7 @@ type InvoiceDeleteArgs struct {
 	ID string
 }
 
-func (i Invoices) Columns() []string {
+func (ii Invoices) Columns() []string {
 	return []string{"ID", "Satoshis", "ReceivedAt", "RefundTo"}
 }
 
@@ -66,7 +66,7 @@ func (ii Invoices) Rows() [][]string {
 }
 
 func (i *Invoice) Rows() [][]string {
-	return [][]string{i.Row()}
+	return Invoices{i}.Rows()
 }
 
 func (i *Invoice) Row() []string {

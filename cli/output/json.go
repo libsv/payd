@@ -1,17 +1,11 @@
-package prnt
+package output
 
 import (
 	"encoding/json"
 	"fmt"
 )
 
-type jsonPrint struct{}
-
-func NewJSONPrinter() Printer {
-	return &jsonPrint{}
-}
-
-func (j *jsonPrint) Print(v interface{}) error {
+func jsonPrint(v interface{}) error {
 	bb, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		return err
