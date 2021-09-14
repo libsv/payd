@@ -51,7 +51,7 @@ func main() {
 		WithDb().
 		WithDeployment(appname).
 		WithLog().
-		WithHeaderClient().
+		WithHeadersClient().
 		WithPaymail().
 		WithWallet().
 		WithMapi()
@@ -110,7 +110,7 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
-	spvv, err := spv.NewPaymentVerifier(phttp.NewSpvHeaders(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
+	spvv, err := spv.NewPaymentVerifier(phttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}

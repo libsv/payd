@@ -11,21 +11,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-type spvHeaders struct {
+type hsvConnection struct {
 	client HTTPClient
 	host   string
 }
 
-// NewSpvHeaders returns a bc.BlockHeaderChain using a header client.
-func NewSpvHeaders(client HTTPClient, host string) bc.BlockHeaderChain {
-	return &spvHeaders{
+// NewHeaderSVConnection returns a bc.BlockHeaderChain using a header client.
+func NewHeaderSVConnection(client HTTPClient, host string) bc.BlockHeaderChain {
+	return &hsvConnection{
 		client: client,
 		host:   host,
 	}
 }
 
 // BlockHeader returns the header for the provided blockhash.
-func (h *spvHeaders) BlockHeader(ctx context.Context, blockHash string) (*bc.BlockHeader, error) {
+func (h *hsvConnection) BlockHeader(ctx context.Context, blockHash string) (*bc.BlockHeader, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
