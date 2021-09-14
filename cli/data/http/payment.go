@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/libsv/payd/cli/models"
@@ -59,7 +58,6 @@ func (p *paymentHttp) Submit(ctx context.Context, args models.PaymentSendArgs) (
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(resp.StatusCode)
 	if err := checkError(resp, http.StatusCreated); err != nil {
 		return nil, err
 	}
