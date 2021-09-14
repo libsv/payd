@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"net/http"
 
 	chttp "github.com/libsv/payd/cli/data/http"
@@ -101,6 +100,5 @@ func remove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(args[0], "successfully deleted")
-	return nil
+	return printer(args[0] + " successfully deleted")
 }

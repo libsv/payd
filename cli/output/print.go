@@ -18,8 +18,8 @@ func NewPrinter(f Format) PrintFunc {
 	}
 
 	return func(v interface{}) error {
-		if err, ok := v.(error); ok {
-			fmt.Println(err.Error())
+		if s, ok := v.(string); ok {
+			fmt.Println(s)
 			return nil
 		}
 
