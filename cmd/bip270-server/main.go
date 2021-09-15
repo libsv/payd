@@ -7,6 +7,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
+	_ "github.com/libsv/payd/docs"
+
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
 	"github.com/tonicpow/go-minercraft"
@@ -44,6 +48,19 @@ const banner = `
 ====================================================================
 `
 
+// @title Payd
+// @version 0.0.1
+// @description Payd is a txo and key manager, with a common interface that can be implemented by wallets.
+// @termsOfService https://github.com/libsv/payd/blob/master/CODE_OF_CONDUCT.md
+
+// @license.name ISC
+// @license.url https://github.com/libsv/payd/blob/master/LICENSE
+
+// @host localhost:8443
+// @BasePath /api/v1
+// @schemes:
+//	- http
+//	- https
 func main() {
 	println("\033[32m" + banner + "\033[0m")
 	cfg := config.NewViperConfig(appname).
@@ -71,6 +88,7 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 	g := e.Group("/")
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	// Middleware
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())

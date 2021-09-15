@@ -26,6 +26,16 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 	g.POST(RouteProofs, p.create)
 }
 
+// create godoc
+// @Summary Create proof
+// @Description Creates a json envelope proof
+// @Tags Proofs
+// @Accept json
+// @Produce json
+// @Param txid path string true "Transaction ID"
+// @Param body body envelope.JSONEnvelope true "JSON Envelope"
+// @Success 201
+// @Router /proofs/{txid} [POST]
 func (p *proofs) create(c echo.Context) error {
 	var req envelope.JSONEnvelope
 	if err := c.Bind(&req); err != nil {

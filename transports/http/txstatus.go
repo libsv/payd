@@ -23,6 +23,15 @@ func (t *txStatusHandler) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteTxStatus, t.status)
 }
 
+// create godoc
+// @Summary Transaction Status
+// @Description Returns status of transaction
+// @Tags TxStatus
+// @Accept json
+// @Produce json
+// @Param txid path string true "Transaction ID"
+// @Success 200
+// @Router /txstatus/{txid} [GET]
 func (t *txStatusHandler) status(c echo.Context) error {
 	var args gopayd.TxStatusArgs
 	if err := c.Bind(&args); err != nil {
