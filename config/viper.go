@@ -68,13 +68,13 @@ func (c *Config) WithDb() *Config {
 	return c
 }
 
-// WithHeadersv sets up and returns Headersv configuration.
-func (c *Config) WithHeadersv() *Config {
-	viper.SetDefault(EnvHeadersvAddress, "headersv:8001")
-	viper.SetDefault(EnvHeadersvTimeout, 30)
-	c.Headersv = &Headersv{
-		Address: viper.GetString(EnvHeadersvAddress),
-		Timeout: viper.GetInt(EnvHeadersvTimeout),
+// WithHeadersClient sets up and returns headers client configuration.
+func (c *Config) WithHeadersClient() *Config {
+	viper.SetDefault(EnvHeadersClientAddress, "headersv:8001")
+	viper.SetDefault(EnvHeadersClientTimeout, 30)
+	c.HeadersClient = &HeadersClient{
+		Address: viper.GetString(EnvHeadersClientAddress),
+		Timeout: viper.GetInt(EnvHeadersClientTimeout),
 	}
 	return c
 }
