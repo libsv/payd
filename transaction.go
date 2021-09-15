@@ -16,6 +16,7 @@ type Transaction struct {
 	Outputs   []Txo       `db:"-"`
 }
 
+// Fee a fee quote.
 type Fee struct {
 	Data     bt.Fee `json:"data"`
 	Standard bt.Fee `json:"standard"`

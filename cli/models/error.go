@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// ServerError returns from server.
 type ServerError struct {
 	ID      string `json:"id"`
 	Code    string `json:"code"`

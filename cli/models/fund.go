@@ -4,27 +4,23 @@ import (
 	"context"
 	"strconv"
 	"time"
-
-	gopayd "github.com/libsv/payd"
 )
 
+// FundAddArgs the args for adding a fund.
 type FundAddArgs struct {
 	TxHex   string `json:"tx"`
 	Account string `json:"account"`
 }
 
+// FundGetArgs the args for getting a fund.
 type FundGetArgs struct {
-	Amount  uint64
 	Account string
 }
 
+// FundSpendArgs the args for spending a fund.
 type FundSpendArgs struct {
 	SpendingTx string `json:"spendingTx"`
 	Account    string `json:"-"`
-}
-
-type FundsRequest struct {
-	Fee Fee `json:"fee"`
 }
 
 // Fund a fund.
@@ -46,7 +42,6 @@ type Funds []Fund
 type FundService interface {
 	Add(ctx context.Context, args FundAddArgs) (Funds, error)
 	Get(ctx context.Context, args FundGetArgs) (Funds, error)
-	GetAmount(ctx context.Context, req FundsRequest, args FundGetArgs) (*gopayd.FundsGetResponse, error)
 	Spend(ctx context.Context, args FundSpendArgs) error
 }
 
@@ -54,7 +49,6 @@ type FundService interface {
 type FundStore interface {
 	Add(ctx context.Context, args FundAddArgs) (Funds, error)
 	Get(ctx context.Context, args FundGetArgs) (Funds, error)
-	GetAmount(ctx context.Context, req FundsRequest, args FundGetArgs) (*gopayd.FundsGetResponse, error)
 	Spend(ctx context.Context, args FundSpendArgs) error
 }
 

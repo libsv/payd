@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/cli/models"
 )
 
@@ -24,10 +23,6 @@ func (f *fundSvc) Add(ctx context.Context, args models.FundAddArgs) (models.Fund
 
 func (f *fundSvc) Get(ctx context.Context, args models.FundGetArgs) (models.Funds, error) {
 	return f.fStr.Get(ctx, args)
-}
-
-func (f *fundSvc) GetAmount(ctx context.Context, req models.FundsRequest, args models.FundGetArgs) (*gopayd.FundsGetResponse, error) {
-	return f.fStr.GetAmount(ctx, req, args)
 }
 
 func (f *fundSvc) Spend(ctx context.Context, args models.FundSpendArgs) error {

@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
@@ -16,6 +15,7 @@ type fund struct {
 	fStr gopayd.FundStore
 }
 
+// NewFundService returns a new fund service.
 func NewFundService(pk gopayd.PrivateKeyService, fStr gopayd.FundStore) gopayd.FundService {
 	return &fund{
 		pk:   pk,
@@ -72,34 +72,6 @@ func (f *fund) FundsAdd(ctx context.Context, req gopayd.FundAddRequest) ([]*gopa
 	}
 
 	return txos, nil
-}
-
-func (f *fund) FundsGetAmount(ctx context.Context, req gopayd.FundsRequest, args gopayd.FundsGetArgs) (*gopayd.FundsGetResponse, error) {
-	if args.Account == "" {
-		return nil, errors.New("account header needed")
-	}
-	txos, err := f.fStr.Funds(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-
-	var total uint64
-	funds := make([]gopayd.Txo, 0)
-	for i := 0; i < len(txos) && total < args.Amount; i++ {
-		txo := txos[i]
-
-		total += txo.Satoshis
-		funds = append(funds, txo)
-	}
-
-	if total < args.Amount {
-		return nil, fmt.Errorf("insufficient funds for amount. have %d, want %d", total, args.Amount)
-	}
-
-	return &gopayd.FundsGetResponse{
-		Surplus: total - args.Amount,
-		Funds:   funds,
-	}, nil
 }
 
 func (f *fund) FundsGet(ctx context.Context, args gopayd.FundsGetArgs) ([]gopayd.Txo, error) {

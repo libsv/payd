@@ -6,14 +6,17 @@ import (
 	"github.com/libsv/go-bc/spv"
 )
 
+// SPVEnvelope wraps an *spv.Envelope so we can apply our row functions.
 type SPVEnvelope struct {
 	*spv.Envelope
 }
 
+// Columns builds column headers.
 func (s SPVEnvelope) Columns() []string {
 	return []string{"TxID", "NumParents", "NumProofs"}
 }
 
+// Rows builds a series of rows.
 func (s SPVEnvelope) Rows() [][]string {
 	var numParents, numProofs uint64
 	s.stat(&numParents, &numProofs)
@@ -21,6 +24,11 @@ func (s SPVEnvelope) Rows() [][]string {
 	return [][]string{{
 		s.TxID, strconv.FormatUint(numParents, 10), strconv.FormatUint(numProofs, 10),
 	}}
+}
+
+// Unwrap unwraps our custom spv envelope.
+func (s SPVEnvelope) Unwrap() interface{} {
+	return s.Envelope
 }
 
 func (s *SPVEnvelope) stat(numParents, numProofs *uint64) {

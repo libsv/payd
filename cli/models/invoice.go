@@ -40,7 +40,7 @@ type Invoice struct {
 	RefundTo          *string    `json:"refundTo" yaml:"refundTo"`
 }
 
-// Invoices a slice of *model.Invoice
+// Invoices a slice of *model.Invoice.
 type Invoices []*Invoice
 
 // InvoiceGetArgs the args for getting an invoice.

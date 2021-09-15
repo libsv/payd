@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/cli/models"
 )
 
@@ -71,39 +69,6 @@ func (p *fundHttp) Get(ctx context.Context, args models.FundGetArgs) (models.Fun
 	}
 
 	var funds models.Funds
-	if err := json.NewDecoder(resp.Body).Decode(&funds); err != nil {
-		return nil, err
-	}
-
-	return funds, nil
-}
-
-func (p *fundHttp) GetAmount(ctx context.Context, req models.FundsRequest, args models.FundGetArgs) (*gopayd.FundsGetResponse, error) {
-	bb, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint := fmt.Sprintf("http://localhost:8443/api/v1/funds/%d", args.Amount)
-	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, bytes.NewBuffer(bb))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Add("X-Account", args.Account)
-
-	resp, err := p.c.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if err = checkError(resp, http.StatusOK); err != nil {
-		return nil, err
-	}
-
-	var funds *gopayd.FundsGetResponse
 	if err := json.NewDecoder(resp.Body).Decode(&funds); err != nil {
 		return nil, err
 	}

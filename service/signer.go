@@ -17,6 +17,7 @@ type signer struct {
 	pk   gopayd.PrivateKeyService
 }
 
+// NewSignerService returns a new signer service.
 func NewSignerService(pk gopayd.PrivateKeyService, fStr gopayd.FundStore) gopayd.SignerService {
 	return &signer{
 		pk:   pk,
