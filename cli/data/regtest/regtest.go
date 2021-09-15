@@ -37,7 +37,7 @@ func (r *regtest) RawTransaction(ctx context.Context, txID string) (*models.RawT
 	var resp models.RawTxResponse
 	if err := r.performRPC(ctx, RequestGetRawTx, &resp, txID); err != nil {
 		if resp.Error != nil {
-			return nil, errors.Wrap(err, err.Error())
+			return nil, errors.Wrap(resp.Error, err.Error())
 		}
 
 		return nil, err
@@ -50,7 +50,7 @@ func (r *regtest) RawTransaction1(ctx context.Context, txID string) (*models.Raw
 	var resp models.RawTx1Response
 	if err := r.performRPC(ctx, RequestGetRawTx, &resp, txID, 1); err != nil {
 		if resp.Error != nil {
-			return nil, errors.Wrap(err, err.Error())
+			return nil, errors.Wrap(resp.Error, err.Error())
 		}
 
 		return nil, err
@@ -63,7 +63,7 @@ func (r *regtest) MerkleProof(ctx context.Context, blockHash, txID string) (*mod
 	var resp models.MerkleProofResponse
 	if err := r.performRPC(ctx, RequestGetMerkleProof, &resp, blockHash, txID); err != nil {
 		if resp.Error != nil {
-			return nil, errors.Wrap(err, err.Error())
+			return nil, errors.Wrap(resp.Error, err.Error())
 		}
 
 		return nil, err
