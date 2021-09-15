@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
@@ -65,8 +64,6 @@ func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*mo
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(signedTxResp.SignedTx)
 
 	pAck, err := p.ps.Submit(ctx, models.PaymentSendArgs{
 		Transaction:    signedTxResp.SignedTx,
