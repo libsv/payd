@@ -14,6 +14,7 @@ type signer struct {
 	c models.HTTPClient
 }
 
+// NewSignerAPI returns a new signer api.
 func NewSignerAPI(c models.HTTPClient) models.Signer {
 	return &signer{c: c}
 }
@@ -34,7 +35,9 @@ func (s *signer) FundAndSign(ctx context.Context, req gopayd.FundAndSignTxReques
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusOK); err != nil {
 		return nil, err

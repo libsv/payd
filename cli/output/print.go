@@ -2,8 +2,10 @@ package output
 
 import "fmt"
 
+// PrintFunc defines a printer func.
 type PrintFunc func(v interface{}) error
 
+// NewPrinter returns a PrinterFunc.
 func NewPrinter(f Format) PrintFunc {
 	var fn PrintFunc
 	switch f {

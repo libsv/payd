@@ -12,6 +12,7 @@ type mpSvc struct {
 	rt models.Regtest
 }
 
+// NewMerkleProofStore returns a new merkle proof store.
 func NewMerkleProofStore(rt models.Regtest) spv.MerkleProofStore {
 	return &mpSvc{
 		rt: rt,

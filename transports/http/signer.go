@@ -11,12 +11,14 @@ type signer struct {
 	svc gopayd.SignerService
 }
 
+// NewSignerHandler returns a new signer handler.
 func NewSignerHandler(svc gopayd.SignerService) *signer {
 	return &signer{
 		svc: svc,
 	}
 }
 
+// RegisterRoutes registers the routes for this service.
 func (s *signer) RegisterRoutes(g *echo.Group) {
 	g.POST(RouteFundAndSign, s.sign)
 }

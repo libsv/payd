@@ -14,6 +14,7 @@ type invoice struct {
 	c models.HTTPClient
 }
 
+// NewInvoiceAPI returns a new invoice api.
 func NewInvoiceAPI(c models.HTTPClient) models.InvoiceReaderWriter {
 	return &invoice{
 		c: c,
@@ -31,7 +32,9 @@ func (i *invoice) Invoice(ctx context.Context, args models.InvoiceGetArgs) (*mod
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusOK); err != nil {
 		return nil, err
@@ -55,7 +58,9 @@ func (i *invoice) Invoices(ctx context.Context) (models.Invoices, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusOK); err != nil {
 		return nil, err
@@ -84,7 +89,9 @@ func (i *invoice) Create(ctx context.Context, req models.InvoiceCreateRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusCreated); err != nil {
 		return nil, err
@@ -108,7 +115,9 @@ func (i *invoice) Delete(ctx context.Context, args models.InvoiceDeleteArgs) err
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	return checkError(resp, http.StatusNoContent)
 }

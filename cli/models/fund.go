@@ -27,6 +27,7 @@ type FundsRequest struct {
 	Fee Fee `json:"fee"`
 }
 
+// Fund a fund.
 type Fund struct {
 	TxID          string     `json:"txId" yaml:"txId"`
 	Vout          int        `json:"vout" yaml:"vout"`
@@ -38,8 +39,10 @@ type Fund struct {
 	ModifiedAt    *time.Time `json:"modifiedAt" yaml:"modifiedAt"`
 }
 
+// Funds a slice of models.Fund.
 type Funds []Fund
 
+// FundService interfaces a fund service.
 type FundService interface {
 	Add(ctx context.Context, args FundAddArgs) (Funds, error)
 	Get(ctx context.Context, args FundGetArgs) (Funds, error)
@@ -47,6 +50,7 @@ type FundService interface {
 	Spend(ctx context.Context, args FundSpendArgs) error
 }
 
+// FundStore interfaces a fund store.
 type FundStore interface {
 	Add(ctx context.Context, args FundAddArgs) (Funds, error)
 	Get(ctx context.Context, args FundGetArgs) (Funds, error)
@@ -54,10 +58,12 @@ type FundStore interface {
 	Spend(ctx context.Context, args FundSpendArgs) error
 }
 
+// Columns builds column headers.
 func (ff Funds) Columns() []string {
 	return []string{"TxID", "Vout", "Satoshis", "Spent"}
 }
 
+// Rows builds a series of rows.
 func (ff Funds) Rows() [][]string {
 	rows := make([][]string, 0)
 	for _, f := range ff {
@@ -67,6 +73,7 @@ func (ff Funds) Rows() [][]string {
 	return rows
 }
 
+// Row builds a row.
 func (f Fund) Row() []string {
 	spent := "N"
 	if f.SpentAt != nil {

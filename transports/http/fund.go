@@ -12,6 +12,7 @@ type fund struct {
 	svc gopayd.FundService
 }
 
+// NewFundHandler returns a new funds handler.
 func NewFundHandler(svc gopayd.FundService) *fund {
 	return &fund{
 		svc: svc,

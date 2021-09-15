@@ -40,7 +40,7 @@ func envelopeCreate(cmd *cobra.Command, args []string) error {
 
 	spvEnvelopeBuilder, err := spv.NewEnvelopeCreator(txSvc, mpSvc)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	rawTx, err := rt.RawTransaction(ctx, args[0])

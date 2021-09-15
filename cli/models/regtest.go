@@ -7,6 +7,7 @@ import (
 	"github.com/libsv/go-bc"
 )
 
+// Regtest interfaces interactions with regtest.
 type Regtest interface {
 	SendRawTransaction(ctx context.Context, txHex string) (*SendRawTransactionResponse, error)
 	RawTransaction(ctx context.Context, txID string) (*RawTxResponse, error)

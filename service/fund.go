@@ -131,14 +131,14 @@ func (f *fund) FundsSpend(ctx context.Context, req gopayd.FundsSpendReq, args go
 	}
 
 	txID := tx.TxID()
-	var txos []gopayd.Txo
-	for _, input := range tx.Inputs {
-		txos = append(txos, gopayd.Txo{
+	txos := make([]gopayd.Txo, tx.InputCount())
+	for i, input := range tx.Inputs {
+		txos[i] = gopayd.Txo{
 			TxID:         input.PreviousTxIDStr(),
 			Vout:         int(input.PreviousTxOutIndex),
 			SpendingTxID: null.StringFrom(txID),
 			KeyName:      null.StringFrom(args.Account),
-		})
+		}
 	}
 	req.Txos = txos
 	req.SpendingTxID = txID

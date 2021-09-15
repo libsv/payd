@@ -9,20 +9,24 @@ import (
 	"github.com/libsv/go-bt/v2"
 )
 
+// PaymentService interfaces a service for payments.
 type PaymentService interface {
 	Request(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
 	Send(ctx context.Context, args PaymentSendArgs) (*PaymentAck, error)
 }
 
+// PaymentStore interfaces a store for payments.
 type PaymentStore interface {
 	Request(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
 	Submit(ctx context.Context, args PaymentSendArgs) (*PaymentAck, error)
 }
 
+// PaymentRequestArgs the args for requesting a payment.
 type PaymentRequestArgs struct {
 	ID string
 }
 
+// PaymentSendArgs the args for sending a payment.
 type PaymentSendArgs struct {
 	PaymentRequest PaymentRequest `json:"-" yaml:"-"`
 	Transaction    string         `json:"transaction" yaml:"transaction"`
@@ -31,12 +35,7 @@ type PaymentSendArgs struct {
 	SPVEnvelope    spv.Envelope   `json:"spvEnvelope" yaml:"spvEnvelope"`
 }
 
-type Output struct {
-	Amount      uint64 `json:"amount" yaml:"amount"`
-	Script      string `json:"script" yaml:"script"`
-	Description string `json:"description" yaml:"description"`
-}
-
+// MerchantData merchant data.
 type MerchantData struct {
 	Avatar           string                 `json:"avatar" yaml:"avatar"`
 	Name             string                 `json:"name" yaml:"name"`
@@ -46,14 +45,20 @@ type MerchantData struct {
 	ExtendedData     map[string]interface{} `json:"extendedData" yaml:"extendedData"`
 }
 
+// Fee transaction fee info.
 type Fee struct {
 	Data     bt.Fee `json:"data" yaml:"data"`
 	Standard bt.Fee `json:"standard" yaml:"standard"`
 }
 
+// PaymentRequest a payment request.
 type PaymentRequest struct {
-	Network      string       `json:"network" yaml:"network"`
-	Outputs      []Output     `json:"outputs" yaml:"outputs"`
+	Network string `json:"network" yaml:"network"`
+	Outputs []struct {
+		Amount      uint64 `json:"amount" yaml:"amount"`
+		Script      string `json:"script" yaml:"script"`
+		Description string `json:"description" yaml:"description"`
+	} `json:"outputs" yaml:"outputs"`
 	CreatedAt    int64        `json:"creationTimestamp" yaml:"createdAt"`
 	ExpiresAt    uint64       `json:"expirationTimestamp" yaml:"expiresAt"`
 	PaymentURL   string       `json:"paymentURL" yaml:"paymentURL"`
@@ -62,22 +67,26 @@ type PaymentRequest struct {
 	Fee          Fee          `json:"fee" yaml:"fee"`
 }
 
+// PaymentAck an acknowledgement of a payment.
 type PaymentAck struct {
 	Payment *PaymentSendArgs `json:"payment" yaml:"payment"`
 	Memo    *string          `json:"memo" yaml:"memo"`
 	Error   *int             `json:"error" yaml:"error"`
 }
 
+// Columns builds column headers.
 func (p PaymentRequest) Columns() []string {
 	return []string{
 		"Network", "Merchant", "PayToURL", "CreatedAt", "NumOutputs",
 	}
 }
 
+// Rows builds a series of rows.
 func (p PaymentRequest) Rows() [][]string {
 	return [][]string{p.Row()}
 }
 
+// Row builds a row.
 func (p PaymentRequest) Row() []string {
 	t := time.Unix(p.CreatedAt, 0)
 	return []string{
@@ -89,10 +98,12 @@ func (p PaymentRequest) Row() []string {
 	}
 }
 
+// Columns builds column headers.
 func (p PaymentAck) Columns() []string {
 	return []string{"TxID", "Merchant", "Payment Reference"}
 }
 
+// Rows builds a series of rows.
 func (p PaymentAck) Rows() [][]string {
 	tx, _ := bt.NewTxFromString(p.Payment.Transaction)
 	return [][]string{{

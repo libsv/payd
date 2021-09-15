@@ -11,6 +11,7 @@ type fundSvc struct {
 	fStr models.FundStore
 }
 
+// NewFundService returns a new fund service.
 func NewFundService(fStr models.FundStore) models.FundService {
 	return &fundSvc{
 		fStr: fStr,

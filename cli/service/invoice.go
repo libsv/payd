@@ -10,6 +10,7 @@ type invoiceSvc struct {
 	irw models.InvoiceReaderWriter
 }
 
+// NewInvoiceService returns a new invoice service.
 func NewInvoiceService(irw models.InvoiceReaderWriter) models.InvoiceService {
 	return &invoiceSvc{irw: irw}
 }

@@ -13,6 +13,7 @@ type paymentHttp struct {
 	c models.HTTPClient
 }
 
+// NewPaymentAPI returns a new payment api.
 func NewPaymentAPI(c models.HTTPClient) models.PaymentStore {
 	return &paymentHttp{c: c}
 }
@@ -27,14 +28,16 @@ func (p *paymentHttp) Request(ctx context.Context, args models.PaymentRequestArg
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusCreated); err != nil {
 		return nil, err
 	}
 
 	var response models.PaymentRequest
-	if json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
@@ -56,7 +59,9 @@ func (p *paymentHttp) Submit(ctx context.Context, args models.PaymentSendArgs) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err := checkError(resp, http.StatusCreated); err != nil {
 		return nil, err

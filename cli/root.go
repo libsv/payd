@@ -13,6 +13,8 @@ var (
 	outputFormat string
 )
 
+var printer output.PrintFunc
+
 var rootCmd = &cobra.Command{
 	Use:           "payctl",
 	SilenceErrors: true,
@@ -24,13 +26,12 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-var printer output.PrintFunc
-
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "version", "v", false, "verbose printing")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "table", "output format")
 }
 
+// Execute the command.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

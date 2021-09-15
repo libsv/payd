@@ -15,6 +15,7 @@ type fundHttp struct {
 	c models.HTTPClient
 }
 
+// NewFundAPI returns a new fund api.
 func NewFundAPI(c models.HTTPClient) models.FundStore {
 	return &fundHttp{c: c}
 }
@@ -25,13 +26,18 @@ func (p *fundHttp) Add(ctx context.Context, args models.FundAddArgs) (models.Fun
 		return nil, err
 	}
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://localhost:8443/api/v1/funds", bytes.NewBuffer(bb))
+	if err != nil {
+		return nil, err
+	}
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := p.c.Do(r)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err = checkError(resp, http.StatusCreated); err != nil {
 		return nil, err
@@ -56,7 +62,9 @@ func (p *fundHttp) Get(ctx context.Context, args models.FundGetArgs) (models.Fun
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err = checkError(resp, http.StatusOK); err != nil {
 		return nil, err
@@ -87,7 +95,9 @@ func (p *fundHttp) GetAmount(ctx context.Context, req models.FundsRequest, args 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err = checkError(resp, http.StatusOK); err != nil {
 		return nil, err
@@ -107,6 +117,9 @@ func (p *fundHttp) Spend(ctx context.Context, args models.FundSpendArgs) error {
 		return err
 	}
 	r, err := http.NewRequestWithContext(ctx, http.MethodPut, "http://localhost:8443/api/v1/funds/spend", bytes.NewBuffer(bb))
+	if err != nil {
+		return err
+	}
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("x-account", args.Account)
 
@@ -114,7 +127,9 @@ func (p *fundHttp) Spend(ctx context.Context, args models.FundSpendArgs) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if err = checkError(resp, http.StatusNoContent); err != nil {
 		return err

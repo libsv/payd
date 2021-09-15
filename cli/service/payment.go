@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
@@ -17,6 +18,7 @@ type paymentSvc struct {
 	spvb  spv.EnvelopeCreator
 }
 
+// NewPaymentService returns a new payment service.
 func NewPaymentService(ps models.PaymentStore, fSvc models.FundService, txSig models.Signer, spvb spv.EnvelopeCreator) models.PaymentService {
 	return &paymentSvc{
 		ps:    ps,
@@ -63,6 +65,8 @@ func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*mo
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(signedTxResp.SignedTx)
 
 	pAck, err := p.ps.Submit(ctx, models.PaymentSendArgs{
 		Transaction:    signedTxResp.SignedTx,

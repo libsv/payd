@@ -8,6 +8,7 @@ import (
 	"text/tabwriter"
 )
 
+// Tableable interfaces the creation of an table as output.
 type Tableable interface {
 	Columns() []string
 	Rows() [][]string

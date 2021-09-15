@@ -12,6 +12,7 @@ type txSvc struct {
 	rt models.Regtest
 }
 
+// NewTxService returns a tx service.
 func NewTxService(rt models.Regtest) spv.TxStore {
 	return &txSvc{
 		rt: rt,
