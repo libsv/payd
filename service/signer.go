@@ -2,13 +2,10 @@ package service
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos/errs"
+	"errors"
 
 	"github.com/libsv/go-bk/chaincfg"
 	"github.com/libsv/go-bt/v2"
-	"github.com/libsv/go-bt/v2/sighash"
 	gopayd "github.com/libsv/payd"
 )
 
@@ -26,6 +23,10 @@ func NewSignerService(pk gopayd.PrivateKeyService, fStr gopayd.FundStore) gopayd
 }
 
 func (s *signer) FundAndSignTx(ctx context.Context, req gopayd.FundAndSignTxRequest) (*gopayd.SignTxResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	tx, err := bt.NewTxFromString(req.TxHex)
 	if err != nil {
 		return nil, err
@@ -48,28 +49,19 @@ func (s *signer) FundAndSignTx(ctx context.Context, req gopayd.FundAndSignTxRequ
 		return nil, err
 	}
 
-	localSigner := &bt.LocalSigner{PrivateKey: epk}
-
-	feesPaid, err := tx.IsFeePaidEnough(fq)
-	if err != nil {
-		return nil, err
-	}
+	var feesPaid bool
 	for i := 0; !feesPaid && i < len(ff); i++ {
 		f := ff[i]
-		if err := tx.From(f.TxID, uint32(f.Vout), f.LockingScript, f.Satoshis); err != nil {
+		if err = tx.From(f.TxID, uint32(f.Vout), f.LockingScript, f.Satoshis); err != nil {
 			return nil, err
 		}
-		if err := tx.Sign(ctx, localSigner, uint32(len(tx.Inputs)-1), sighash.AllForkID); err != nil {
-			return nil, err
-		}
-
-		feesPaid, err = tx.IsFeePaidEnough(fq)
+		feesPaid, err = tx.EstimateIsFeePaidEnough(fq)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if !feesPaid {
-		return nil, errs.NewErrUnprocessable("F01", "not enough funds")
+		return nil, errors.New("insufficient funds")
 	}
 
 	if err := tx.ChangeToAddress(pk.Address(&chaincfg.Params{}), fq); err != nil {

@@ -21,7 +21,7 @@ require (
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/libsv/go-bc v0.1.4-0.20210907115037-52f4ad4cf321
 	github.com/libsv/go-bk v0.1.4
-	github.com/libsv/go-bt/v2 v2.0.0-beta.5.0.20210914091338-7a05422ed660
+	github.com/libsv/go-bt/v2 v2.0.0-beta.5.0.20210915144027-6e0ed1a6509f
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6

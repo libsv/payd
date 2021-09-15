@@ -7,15 +7,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Wrap interfaces a wrap data object.
-type Wrap interface {
+// Wrapped interfaces a wrapped data object.
+type Wrapped interface {
 	Unwrap() interface{}
 }
 
 func yamlPrint(v interface{}) error {
-	unwrapped, ok := reflect.ValueOf(v).Interface().(Wrap)
+	wrapped, ok := reflect.ValueOf(v).Interface().(Wrapped)
 	if ok {
-		v = unwrapped.Unwrap()
+		v = wrapped.Unwrap()
 	}
 
 	bb, err := yaml.Marshal(v)
