@@ -22,7 +22,7 @@ run-unit-tests-cover:
 	open file:///$(shell pwd)/cover.html
 
 run-linter:
-	@golangci-lint run --deadline=240s --skip-dirs=vendor --tests
+	@golangci-lint run --deadline=480s --skip-dirs=vendor --tests
 
 # make create-alias alias=some_alias
 create-alias:
