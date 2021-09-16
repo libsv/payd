@@ -31,7 +31,7 @@ func (t *txStatusHandler) RegisterRoutes(g *echo.Group) {
 // @Produce json
 // @Param txid path string true "Transaction ID"
 // @Success 200
-// @Router /txstatus/{txid} [GET]
+// @Router /txstatus/{txid} [GET].
 func (t *txStatusHandler) status(c echo.Context) error {
 	var args gopayd.TxStatusArgs
 	if err := c.Bind(&args); err != nil {

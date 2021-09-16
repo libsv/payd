@@ -25,7 +25,6 @@ func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
 	g.POST(RoutePayment, h.createPayment)
 }
 
-// createPayment godoc
 // @Summary Create payment
 // @Description Creates a payment based on a payment id (the identifier for an invoice).
 // @Tags Payment
@@ -34,7 +33,7 @@ func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
 // @Param paymentID path string 							true "Payment ID"
 // @Param body 			body gopayd.CreatePayment true "payment message used in BIP270"
 // @Success 201
-// @Router /payment/{paymentID} [post]
+// @Router /payment/{paymentID} [POST].
 func (h *paymentHandler) createPayment(e echo.Context) error {
 	args := go_payd.CreatePaymentArgs{
 		PaymentID: e.Param("paymentID"),

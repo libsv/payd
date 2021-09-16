@@ -33,7 +33,7 @@ func (h *paymentRequestHandler) RegisterRoutes(g *echo.Group) {
 // @Produce json
 // @Param paymentID path string true "Payment ID"
 // @Success 200
-// @Router /payment/{paymentID} [GET]
+// @Router /payment/{paymentID} [GET].
 func (h *paymentRequestHandler) createPaymentRequest(e echo.Context) error {
 	args := go_payd.PaymentRequestArgs{
 		PaymentID: e.Param("paymentID"),

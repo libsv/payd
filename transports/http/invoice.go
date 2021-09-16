@@ -33,7 +33,7 @@ func (i *invoice) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /invoices [get]
+// @Router /invoices [GET].
 func (i *invoice) invoices(e echo.Context) error {
 	ii, err := i.svc.Invoices(e.Request().Context())
 	if err != nil {
@@ -50,7 +50,7 @@ func (i *invoice) invoices(e echo.Context) error {
 // @Produce json
 // @Param paymentID path string true "Payment ID"
 // @Success 200
-// @Router /invoices/{paymentID} [GET]
+// @Router /invoices/{paymentID} [GET].
 func (i *invoice) invoice(e echo.Context) error {
 	var args gopayd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
@@ -71,7 +71,7 @@ func (i *invoice) invoice(e echo.Context) error {
 // @Produce json
 // @Param body body gopayd.InvoiceCreate true "PaymentID and Satoshis"
 // @Success 201
-// @Router /invoices [POST]
+// @Router /invoices [POST].
 func (i *invoice) create(e echo.Context) error {
 	var req gopayd.InvoiceCreate
 	if err := e.Bind(&req); err != nil {
@@ -92,7 +92,7 @@ func (i *invoice) create(e echo.Context) error {
 // @Produce json
 // @Param PaymentID path string true "PaymentID"
 // @Success 200
-// @Router /invoices [DELETE]
+// @Router /invoices [DELETE].
 func (i *invoice) delete(e echo.Context) error {
 	var args gopayd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
