@@ -25,7 +25,7 @@ func (h *paymentRequestHandler) RegisterRoutes(g *echo.Group) {
 	g.GET(RoutePaymentRequest, h.createPaymentRequest)
 }
 
-// create godoc
+// createPaymentRequest godoc
 // @Summary Create payment request
 // @Description Creates a payment request based on a payment id (the identifier for an invoice).
 // @Tags Payment

@@ -26,7 +26,7 @@ func (i *invoice) RegisterRoutes(g *echo.Group) {
 	g.DELETE(RouteInvoice, i.delete)
 }
 
-// create godoc
+// invoices godoc
 // @Summary Invoices
 // @Description Returns all invoices currently stored
 // @Tags Invoices
@@ -42,7 +42,7 @@ func (i *invoice) invoices(e echo.Context) error {
 	return e.JSON(http.StatusOK, ii)
 }
 
-// create godoc
+// invoice godoc
 // @Summary Invoices
 // @Description Returns invoice by payment id if exists
 // @Tags Invoices
@@ -84,7 +84,7 @@ func (i *invoice) create(e echo.Context) error {
 	return e.JSON(http.StatusCreated, inv)
 }
 
-// create godoc
+// delete godoc
 // @Summary Delete invoice
 // @Description Delete
 // @Tags Invoices

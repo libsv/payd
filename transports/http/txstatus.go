@@ -23,7 +23,7 @@ func (t *txStatusHandler) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteTxStatus, t.status)
 }
 
-// create godoc
+// status godoc
 // @Summary Transaction Status
 // @Description Returns status of transaction
 // @Tags TxStatus
