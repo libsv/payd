@@ -1,19 +1,17 @@
 package models
 
 import (
+	"github.com/libsv/go-bt/v2"
 	gopaymail "github.com/tonicpow/go-paymail"
-
-	gopayd "github.com/libsv/payd"
 )
 
 // OutputsToPayd will convert the paymail data type to a payd output.
-func OutputsToPayd(oo []*gopaymail.PaymentOutput) []*gopayd.Output {
-	out := make([]*gopayd.Output, 0)
+func OutputsToPayd(oo []*gopaymail.PaymentOutput) []*bt.Output {
+	out := make([]*bt.Output, 0)
 	for _, o := range oo {
-		out = append(out, &gopayd.Output{
-			Amount:      o.Satoshis,
-			Script:      o.Script,
-			Description: "",
+		out = append(out, &bt.Output{
+			Satoshis: o.Satoshis,
+			//LockingScript:    bscript.  o.Script,
 		})
 	}
 	return out

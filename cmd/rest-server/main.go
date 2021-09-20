@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,18 +11,10 @@ import (
 
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/viper"
-	"github.com/tonicpow/go-minercraft"
-	gopaymail "github.com/tonicpow/go-paymail"
 
-	"github.com/libsv/go-bc/spv"
-	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config/databases"
-	phttp "github.com/libsv/payd/data/http"
-	"github.com/libsv/payd/data/mapi"
-	"github.com/libsv/payd/data/paymail"
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/service"
-	"github.com/libsv/payd/service/ppctl"
 	thttp "github.com/libsv/payd/transports/http"
 
 	"github.com/libsv/payd/config"
@@ -100,7 +90,7 @@ func main() {
 
 	// setup stores
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
+	/*mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
 		{
 			Name:  cfg.Mapi.MinerName,
 			Token: cfg.Mapi.Token,
@@ -110,40 +100,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("error occurred: %s", err)
 	}
-	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+	//mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
 	// setup services
+	//pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
+
 	paymentSender := ppctl.NewPaymentMapiSender(mapiStore)
 	var paymentOutputter gopayd.PaymentRequestOutputer
-	if cfg.Paymail.UsePaymail {
-		pCli, err := gopaymail.NewClient(nil, nil, nil)
-		if err != nil {
-			log.Fatalf("unable to create paymail client %s: ", err)
-		}
-		paymailStore := paymail.NewPaymail(cfg.Paymail, pCli)
-		paymentOutputter = ppctl.NewPaymailOutputs(cfg.Paymail, paymailStore, sqlLiteStore)
-	} else {
-		pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
 
-		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
-	}
+	paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 
 	spvv, err := spv.NewPaymentVerifier(phttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
-	}
-	thttp.NewPaymentRequestHandler(
-		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore, mapiStore)).
-		RegisterRoutes(g)
-	thttp.NewPaymentHandler(
-		ppctl.NewPayment(cfg.Wallet, sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{}, spvv)).
-		RegisterRoutes(g)
+	}*/
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
 		RegisterRoutes(g)
 	thttp.NewBalance(service.NewBalance(sqlLiteStore)).
 		RegisterRoutes(g)
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).
-		RegisterRoutes(g)
-	thttp.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
 		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {

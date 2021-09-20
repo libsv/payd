@@ -95,7 +95,6 @@ github.com/labstack/gommon/random
 # github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
 ## explicit
 github.com/libsv/go-bc
-github.com/libsv/go-bc/spv
 # github.com/libsv/go-bk v0.1.4
 ## explicit
 github.com/libsv/go-bk/base58
@@ -122,9 +121,6 @@ github.com/magiconair/properties
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/matryer/is v1.4.0
-## explicit
-github.com/matryer/is
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.14

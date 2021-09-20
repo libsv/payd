@@ -6,8 +6,8 @@ before:
   #- go mod download
 builds:
   -
-    id: bip270-server
-    main: ./cmd/bip270-server
+    id: rest-server
+    main: ./cmd/rest-server
     env:
       - CGO_ENABLED=1
     goos:
