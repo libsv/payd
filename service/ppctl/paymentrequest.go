@@ -16,7 +16,7 @@ import (
 type paymentRequest struct {
 	walletCfg  *config.Wallet
 	envCfg     *config.Server
-	outputter  gopayd.PaymentRequestOutputer
+	dSvc       gopayd.DestinationService
 	invoiceRdr gopayd.InvoiceReader
 	feeRdr     gopayd.FeeReader
 }
@@ -25,14 +25,14 @@ type paymentRequest struct {
 // using the provided outputter which is defined in server config.
 func NewPaymentRequest(walletCfg *config.Wallet,
 	envCfg *config.Server,
-	outputter gopayd.PaymentRequestOutputer,
+	dSvc gopayd.DestinationService,
 	invoiceRdr gopayd.InvoiceReader,
 	feeRdr gopayd.FeeReader) *paymentRequest {
 	return &paymentRequest{
 		walletCfg:  walletCfg,
 		envCfg:     envCfg,
 		invoiceRdr: invoiceRdr,
-		outputter:  outputter,
+		dSvc:       dSvc,
 		feeRdr:     feeRdr,
 	}
 }
@@ -51,10 +51,7 @@ func (p *paymentRequest) CreatePaymentRequest(ctx context.Context, args gopayd.P
 	if !inv.PaymentReceivedAt.IsZero() {
 		return nil, errs.NewErrDuplicate("D103", fmt.Sprintf("payment already received for paymentId %s", args.PaymentID))
 	}
-	oo, err := p.outputter.CreateOutputs(ctx, gopayd.OutputsCreate{
-		Satoshis:     inv.Satoshis,
-		Denomination: 1000,
-	})
+	oo, err := p.dSvc.Destinations(ctx, gopayd.DestinationArgs{PaymentID: args.PaymentID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate outputs for paymentID %s", args.PaymentID)
 	}

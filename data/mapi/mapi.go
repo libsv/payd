@@ -2,6 +2,7 @@ package mapi
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/libsv/go-bt/v2"
@@ -27,6 +28,7 @@ func NewMapi(cfg *config.MApi, svrCfg *config.Server, client *minercraft.Client)
 // Broadcast will submit a transaction to mapi for inclusion in a block.
 // Any errors will be returned, no error denotes success.
 func (m *minercraftMapi) Send(ctx context.Context, args gopayd.SendTransactionArgs, req gopayd.CreatePayment) error {
+	fmt.Println("http://" + m.svrCfg.Hostname + "/api/v1/proofs/" + args.TxID)
 	resp, err := m.client.SubmitTransaction(ctx,
 		m.client.MinerByName(m.cfg.MinerName),
 		&minercraft.Transaction{

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"gopkg.in/guregu/null.v3"
 
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config"
@@ -20,15 +21,17 @@ import (
 // This invoicing system is separate to the protocol server itself but added here
 // as a very basic example.
 type invoice struct {
-	store gopayd.InvoiceReaderWriter
-	cfg   *config.Server
+	store     gopayd.InvoiceReaderWriter
+	outputter gopayd.PaymentRequestOutputer
+	cfg       *config.Server
 }
 
 // NewInvoice will setup and return a new invoice service.
-func NewInvoice(cfg *config.Server, store gopayd.InvoiceReaderWriter) *invoice {
+func NewInvoice(cfg *config.Server, outputter gopayd.PaymentRequestOutputer, store gopayd.InvoiceReaderWriter) *invoice {
 	return &invoice{
-		cfg:   cfg,
-		store: store}
+		cfg:       cfg,
+		outputter: outputter,
+		store:     store}
 }
 
 // Invoice will return an invoice by paymentID.
@@ -53,8 +56,11 @@ func (i *invoice) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 }
 
 // Create will add a new invoice to the system.
-func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate, args gopayd.InvoiceCreateArgs) (*gopayd.Invoice, error) {
 	if err := req.Validate().Err(); err != nil {
+		return nil, err
+	}
+	if err := args.Validate(); err != nil {
 		return nil, err
 	}
 	hd := hashids.NewData()
@@ -73,6 +79,14 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	i.outputter.CreateOutputs(ctx, gopayd.OutputsCreate{
+		PaymentID:    null.StringFrom(req.PaymentID),
+		KeyName:      args.Account,
+		Satoshis:     req.Satoshis,
+		Denomination: 1000,
+	})
+
 	return inv, nil
 }
 

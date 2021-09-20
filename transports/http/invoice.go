@@ -52,7 +52,10 @@ func (i *invoice) create(e echo.Context) error {
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to parse invoice create req")
 	}
-	inv, err := i.svc.Create(e.Request().Context(), req)
+	args := gopayd.InvoiceCreateArgs{
+		Account: e.Request().Header.Get("x-account"),
+	}
+	inv, err := i.svc.Create(e.Request().Context(), req, args)
 	if err != nil {
 		return errors.WithStack(err)
 	}

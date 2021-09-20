@@ -7,14 +7,15 @@ services:
     environment:
       DB_DSN: "file:data/wallet.db?cache=shared&_foreign_keys=true;"
       DB_SCHEMA_PATH: "migrations"
+      MAPI_MINERURL: "http://mapi:80"
     volumes:
       - ~/data/payd:/data
     ports:
       - "8443:8443"
     networks:
-      - regtest-network
+      - regtest-stack
 
 networks:
-  regtest-network:
+  regtest-stack:
     external: true
-    name: regtest-network
+    name: regtest-stack

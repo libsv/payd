@@ -67,6 +67,7 @@ type PaymentACK struct {
 // CreatePaymentArgs identifies the paymentID used for the payment.
 type CreatePaymentArgs struct {
 	PaymentID string
+	Account   string
 }
 
 // SendTransactionArgs contains params required when broadcasting a tx to the network.

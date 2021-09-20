@@ -28,6 +28,7 @@ func (h *paymentRequestHandler) RegisterRoutes(g *echo.Group) {
 func (h *paymentRequestHandler) createPaymentRequest(e echo.Context) error {
 	args := go_payd.PaymentRequestArgs{
 		PaymentID: e.Param("paymentID"),
+		Account:   e.Request().Header.Get("x-account"),
 	}
 	resp, err := h.svc.CreatePaymentRequest(e.Request().Context(), args)
 	if err != nil {

@@ -84,6 +84,7 @@ func (i *invoice) Create(ctx context.Context, req models.InvoiceCreateRequest) (
 		return nil, err
 	}
 	r.Header.Add("Content-Type", "application/json")
+	r.Header.Add("X-Account", req.Account)
 
 	resp, err := i.c.Do(r)
 	if err != nil {

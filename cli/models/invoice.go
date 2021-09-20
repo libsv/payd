@@ -36,6 +36,7 @@ type InvoiceReaderWriter interface {
 type Invoice struct {
 	PaymentID         string     `json:"paymentID" yaml:"paymentID"`
 	Satoshis          uint64     `json:"satoshis" yaml:"satoshis"`
+	Reference         *string    `json:"reference" yaml:"reference"`
 	PaymentReceivedAt *time.Time `json:"paymentReceivedAt" yaml:"paymentReceivedAt"`
 	RefundTo          *string    `json:"refundTo" yaml:"refundTo"`
 }
@@ -50,7 +51,9 @@ type InvoiceGetArgs struct {
 
 // InvoiceCreateRequest the request for creating an invoice.
 type InvoiceCreateRequest struct {
-	Satoshis uint64 `json:"satoshis"`
+	Account   string `json:"-"`
+	Satoshis  uint64 `json:"satoshis"`
+	Reference string `json:"reference"`
 }
 
 // InvoiceDeleteArgs the args for deleted an invoice.
@@ -60,7 +63,7 @@ type InvoiceDeleteArgs struct {
 
 // Columns builds column headers.
 func (ii Invoices) Columns() []string {
-	return []string{"ID", "Satoshis", "ReceivedAt", "RefundTo"}
+	return []string{"ID", "Satoshis", "ReceivedAt", "RefundTo", "Ref"}
 }
 
 // Columns builds column headers.
@@ -84,13 +87,20 @@ func (i *Invoice) Rows() [][]string {
 
 // Row builds a row.
 func (i *Invoice) Row() []string {
-	var t string
-	var r string
+	var pra string
+	var rt string
+	var ref string
 	if i.PaymentReceivedAt != nil {
-		t = i.PaymentReceivedAt.String()
+		pra = i.PaymentReceivedAt.String()
 	}
 	if i.RefundTo != nil {
-		r = *i.RefundTo
+		rt = *i.RefundTo
 	}
-	return []string{i.PaymentID, strconv.FormatUint(i.Satoshis, 10), t, r}
+	if i.Reference != nil {
+		ref = *i.Reference
+		if len(ref) > 50 {
+			ref = ref[:50] + "..."
+		}
+	}
+	return []string{i.PaymentID, strconv.FormatUint(i.Satoshis, 10), pra, rt, ref}
 }

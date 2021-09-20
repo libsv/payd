@@ -12,15 +12,25 @@ import (
 type Invoice struct {
 	PaymentID         string      `json:"paymentID" db:"paymentID"`
 	Satoshis          uint64      `json:"satoshis" db:"satoshis"`
+	Reference         string      `json:"reference" db:"reference"`
 	PaymentReceivedAt null.Time   `json:"paymentReceivedAt" db:"paymentReceivedAt"`
 	RefundTo          null.String `json:"refundTo" db:"refundTo"`
+}
+
+type InvoiceCreateArgs struct {
+	Account string
+}
+
+func (i InvoiceCreateArgs) Validate() error {
+	return validator.New().Validate("account", validator.NotEmpty(i.Account)).Err()
 }
 
 // InvoiceCreate is used to create a new invoice.
 type InvoiceCreate struct {
 	// PaymentID is the unique identifier for a payment.
-	PaymentID string `json:"-" db:"paymentID"`
-	Satoshis  uint64 `json:"satoshis" db:"satoshis"`
+	PaymentID string      `json:"-" db:"paymentID"`
+	Satoshis  uint64      `json:"satoshis" db:"satoshis"`
+	Reference null.String `json:"reference" db:"reference"`
 }
 
 // Validate will check that InvoiceCreate params match expectations.
@@ -54,7 +64,7 @@ func (i *InvoiceArgs) Validate() validator.ErrValidation {
 type InvoiceService interface {
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
 	Invoices(ctx context.Context) ([]Invoice, error)
-	Create(ctx context.Context, req InvoiceCreate) (*Invoice, error)
+	Create(ctx context.Context, req InvoiceCreate, args InvoiceCreateArgs) (*Invoice, error)
 	Delete(ctx context.Context, args InvoiceArgs) error
 }
 

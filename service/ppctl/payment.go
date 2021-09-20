@@ -84,7 +84,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 		sk, err := p.txoRdr.PartialTxo(ctx, gopayd.UnspentTxoArgs{
 			LockingScript: o.LockingScript.String(),
 			Satoshis:      o.Satoshis,
-			Keyname:       keyname,
+			Keyname:       args.Account,
 		})
 		if err != nil {
 			// script isn't known to us, could be a change utxo, skip and carry on
@@ -103,7 +103,7 @@ func (p *payment) CreatePayment(ctx context.Context, args gopayd.CreatePaymentAr
 			Outpoint:       fmt.Sprintf("%s%d", tx.TxID(), i),
 			TxID:           tx.TxID(),
 			Vout:           i,
-			KeyName:        null.StringFrom(keyname),
+			KeyName:        null.StringFrom(args.Account),
 			DerivationPath: null.StringFrom(sk.DerivationPath),
 			LockingScript:  sk.LockingScript,
 			Satoshis:       o.Satoshis,

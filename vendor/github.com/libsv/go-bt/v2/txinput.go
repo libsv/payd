@@ -2,13 +2,24 @@ package bt
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/libsv/go-bk/crypto"
 
 	"github.com/libsv/go-bt/v2/bscript"
 )
+
+// ErrNoInput signals the InputGetterFunc has reached the end of its input.
+var ErrNoInput = errors.New("no remainings inputs")
+
+// InputGetterFunc is used for FromInputs. It expects *bt.Input to be returned containing
+// relevant input information, and an err informing any retrieval errors.
+//
+// It is expected that bt.ErrNoInput will be returned once the input source is depleted.
+type InputGetterFunc func(ctx context.Context) (*Input, error)
 
 // NewInputFromBytes returns a transaction input from the bytes provided.
 func NewInputFromBytes(bytes []byte) (*Input, int, error) {
@@ -32,6 +43,28 @@ func NewInputFromBytes(bytes []byte) (*Input, int, error) {
 		SequenceNumber:     binary.LittleEndian.Uint32(bytes[offset+int(l):]),
 		UnlockingScript:    bscript.NewFromBytes(bytes[offset : offset+int(l)]),
 	}, totalLength, nil
+}
+
+// NewInputFrom builds and returns a new input from the specified UTXO fields, using the default
+// finalised sequence number (0xFFFFFFFF). If you want a different nSeq, change it manually
+// afterwards.
+func NewInputFrom(prevTxID string, vout uint32, prevTxLockingScript string, satoshis uint64) (*Input, error) {
+	pts, err := bscript.NewFromHexString(prevTxLockingScript)
+	if err != nil {
+		return nil, err
+	}
+
+	i := &Input{
+		PreviousTxOutIndex: vout,
+		PreviousTxSatoshis: satoshis,
+		PreviousTxScript:   pts,
+		SequenceNumber:     DefaultSequenceNumber, // use default finalised sequence number
+	}
+	if err := i.PreviousTxIDAddStr(prevTxID); err != nil {
+		return nil, err
+	}
+
+	return i, nil
 }
 
 // TotalInputSatoshis returns the total Satoshis inputted to the transaction.
@@ -69,21 +102,54 @@ func (tx *Tx) AddP2PKHInputsFromTx(pvsTx *Tx, matchPK []byte) error {
 // finalised sequence number (0xFFFFFFFF). If you want a different nSeq, change it manually
 // afterwards.
 func (tx *Tx) From(prevTxID string, vout uint32, prevTxLockingScript string, satoshis uint64) error {
-	pts, err := bscript.NewFromHexString(prevTxLockingScript)
+	i, err := NewInputFrom(prevTxID, vout, prevTxLockingScript, satoshis)
 	if err != nil {
 		return err
 	}
 
-	i := &Input{
-		PreviousTxOutIndex: vout,
-		PreviousTxSatoshis: satoshis,
-		PreviousTxScript:   pts,
-		SequenceNumber:     DefaultSequenceNumber, // use default finalised sequence number
-	}
-	if err := i.PreviousTxIDAddStr(prevTxID); err != nil {
-		return err
-	}
 	tx.addInput(i)
+	return nil
+}
+
+// FromInputs continuously calls the provided bt.InputGetterFunc, adding each returned input
+// as an input via tx.From(...), until it is estimated that inputs cover the outputs + fees.
+//
+// After completion, the receiver is ready for `Change(...)` to be called, and then be signed.
+// Note, this function works under the assumption that receiver *bt.Tx alread has all the outputs
+// which need covered.
+//
+// Example usage, for when working with a list:
+//    tx.FromInputs(ctx, bt.NewFeeQuote(), func() bt.InputGetterFunc {
+//        i := 0
+//        return func(ctx context.Context) (*bt.Input, error) {
+//            if i >= len(utxos) {
+//                return nil, bt.ErrNoInput
+//            }
+//            defer func() { i++ }()
+//            return bt.NewInputFrom(utxos[i].TxID, utxo[i].Vout, utxos[i].Script, utxos[i].Satoshis), true
+//        }
+//    }())
+func (tx *Tx) FromInputs(ctx context.Context, fq *FeeQuote, next InputGetterFunc) (err error) {
+	var feesPaid bool
+	for !feesPaid {
+		input, err := next(ctx)
+		if err != nil {
+			if errors.Is(err, ErrNoInput) {
+				break
+			}
+
+			return err
+		}
+		tx.addInput(input)
+
+		feesPaid, err = tx.EstimateIsFeePaidEnough(fq)
+		if err != nil {
+			return err
+		}
+	}
+	if !feesPaid {
+		return errors.New("insufficient inputs provided")
+	}
 
 	return nil
 }

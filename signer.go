@@ -15,9 +15,10 @@ type SignerService interface {
 
 // FundAndSignTxRequest the request for signing and funding a tx.
 type FundAndSignTxRequest struct {
-	TxHex   string `json:"tx"`
-	Account string `json:"account"`
-	Fee     Fee    `json:"fee"`
+	PaymentID string `json:"paymentId"`
+	TxHex     string `json:"tx"`
+	Account   string `json:"account"`
+	Fee       Fee    `json:"fee"`
 }
 
 // Validate validates.

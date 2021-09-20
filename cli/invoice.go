@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	satoshis uint64
+	satoshis         uint64
+	invoiceReference string
 )
 
 var invoiceCmd = &cobra.Command{
@@ -54,6 +55,7 @@ func init() {
 
 	// Create invoice
 	createInvoiceCmd.PersistentFlags().Uint64VarP(&satoshis, "satoshis", "s", 0, "invoice value")
+	createInvoiceCmd.Flags().StringVarP(&invoiceReference, "reference", "r", "", "invoice reference [optional]")
 	invoiceCmd.AddCommand(createInvoiceCmd)
 
 	// Delete invoice
@@ -83,7 +85,9 @@ func get(cmd *cobra.Command, args []string) error {
 func create(cmd *cobra.Command, args []string) error {
 	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}))
 	inv, err := svc.Create(cmd.Context(), models.InvoiceCreateRequest{
-		Satoshis: satoshis,
+		Satoshis:  satoshis,
+		Account:   account,
+		Reference: invoiceReference,
 	})
 	if err != nil {
 		return err

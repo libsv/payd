@@ -15,6 +15,7 @@ CREATE TABLE keys (
 CREATE TABLE invoices (
     paymentID           VARCHAR PRIMARY KEY
     ,satoshis           INTEGER NOT NULL
+    ,reference          TEXT
     ,paymentReceivedAt  TIMESTAMP
     ,refundTo           VARCHAR
 );
@@ -40,7 +41,11 @@ CREATE TABLE txos (
     ,spendingtxid   CHAR(64) -- the txid where you'd spent this output
     ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,modifiedat     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,paymentid      VARCHAR
+    ,reservedFor    VARCHAR
+    ,ackReceivedAt  TIMESTAMP
     ,FOREIGN KEY (txid) REFERENCES transactions(txid)
+    ,FOREIGN KEY (paymentid) REFERENCES invoices(paymentID)
     ,CONSTRAINT outpoint_key UNIQUE(outpoint)
  );
 

@@ -109,17 +109,19 @@ func main() {
 		paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
 	}
 
+	destSvc := service.NewDestinationService(sqlLiteStore)
+
 	spvv, err := spv.NewPaymentVerifier(phttp.NewHeadersv(&http.Client{Timeout: time.Duration(cfg.Headersv.Timeout) * time.Second}, cfg.Headersv.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv cient %w", err)
 	}
 	thttp.NewPaymentRequestHandler(
-		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, paymentOutputter, sqlLiteStore, mapiStore)).
+		ppctl.NewPaymentRequest(cfg.Wallet, cfg.Server, destSvc, sqlLiteStore, mapiStore)).
 		RegisterRoutes(g)
 	thttp.NewPaymentHandler(
 		ppctl.NewPayment(cfg.Wallet, sqlLiteStore, sqlLiteStore, sqlLiteStore, paymentSender, &paydSQL.Transacter{}, spvv)).
 		RegisterRoutes(g)
-	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
+	thttp.NewInvoice(service.NewInvoice(cfg.Server, paymentOutputter, sqlLiteStore)).
 		RegisterRoutes(g)
 	thttp.NewBalance(service.NewBalance(sqlLiteStore)).
 		RegisterRoutes(g)
@@ -127,8 +129,8 @@ func main() {
 		RegisterRoutes(g)
 	thttp.NewTxStatusHandler(ppctl.NewTxStatusService(mapiStore)).
 		RegisterRoutes(g)
+	thttp.NewDestinationHandler(destSvc).RegisterRoutes(g)
 	thttp.NewSignerHandler(service.NewSignerService(pkSvc, sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewFundHandler(service.NewFundService(pkSvc, sqlLiteStore)).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

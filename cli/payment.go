@@ -17,6 +17,7 @@ import (
 
 var (
 	requestJSON string
+	tx          string
 )
 
 var paymentCmd = &cobra.Command{
@@ -49,6 +50,7 @@ func init() {
 	paymentCmd.AddCommand(paymentRequestCmd)
 
 	paymentSendCmd.PersistentFlags().StringVarP(&requestJSON, "request", "r", "", "the payment to send")
+	paymentSendCmd.PersistentFlags().StringVarP(&tx, "tx", "t", "", "tx to send [optional]")
 	paymentCmd.AddCommand(paymentSendCmd)
 }
 
@@ -89,6 +91,8 @@ func paymentSend(cmd *cobra.Command, args []string) error {
 	)
 	resp, err := svc.Send(cmd.Context(), models.PaymentSendArgs{
 		PaymentRequest: payReq,
+		Account:        account,
+		Tx:             tx,
 	})
 	if err != nil {
 		return err

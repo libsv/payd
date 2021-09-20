@@ -28,6 +28,7 @@ func (h *paymentHandler) RegisterRoutes(g *echo.Group) {
 func (h *paymentHandler) createPayment(e echo.Context) error {
 	args := go_payd.CreatePaymentArgs{
 		PaymentID: e.Param("paymentID"),
+		Account:   e.Request().Header.Get("x-account"),
 	}
 	var req go_payd.CreatePayment
 	if err := Bind(e.Request().Body, &req); err != nil {
@@ -37,7 +38,7 @@ func (h *paymentHandler) createPayment(e echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if resp.Error > 0{
+	if resp.Error > 0 {
 		return e.JSON(http.StatusUnprocessableEntity, resp)
 	}
 	return e.JSON(http.StatusCreated, resp)

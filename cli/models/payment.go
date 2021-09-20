@@ -28,11 +28,14 @@ type PaymentRequestArgs struct {
 
 // PaymentSendArgs the args for sending a payment.
 type PaymentSendArgs struct {
+	Account        string         `json:"-" yaml:"-"`
 	PaymentRequest PaymentRequest `json:"-" yaml:"-"`
-	Transaction    string         `json:"transaction" yaml:"transaction"`
-	Memo           string         `json:"memo" yaml:"memo"`
-	MerchantData   MerchantData   `json:"merchantData" yaml:"merchantData"`
-	SPVEnvelope    spv.Envelope   `json:"spvEnvelope" yaml:"spvEnvelope"`
+	Tx             string         `json:"-" yaml:"-"`
+
+	Transaction  string       `json:"transaction" yaml:"transaction"`
+	Memo         string       `json:"memo" yaml:"memo"`
+	MerchantData MerchantData `json:"merchantData" yaml:"merchantData"`
+	SPVEnvelope  spv.Envelope `json:"spvEnvelope" yaml:"spvEnvelope"`
 }
 
 // MerchantData merchant data.

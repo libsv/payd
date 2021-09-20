@@ -11,6 +11,7 @@ import (
 var (
 	verbose      bool
 	outputFormat string
+	account      string
 )
 
 var printer output.PrintFunc
@@ -29,6 +30,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "version", "v", false, "verbose printing")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "table", "output format")
+	rootCmd.PersistentFlags().StringVarP(&account, "account", "a", "client", "account name")
 }
 
 // Execute the command.

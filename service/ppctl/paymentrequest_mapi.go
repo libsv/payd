@@ -15,10 +15,6 @@ import (
 	"github.com/libsv/payd/config"
 )
 
-const (
-	keyname = "keyname"
-)
-
 type mapiOutputs struct {
 	privKeySvc    gopayd.PrivateKeyService
 	txoWtr        gopayd.TxoWriter
@@ -40,14 +36,15 @@ func NewMapiOutputs(env *config.Server, privKeySvc gopayd.PrivateKeyService, txo
 // This is limited however, for full privacy you'd probably want a new TX per script.
 func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCreate) ([]*gopayd.Output, error) {
 	// get our master key
-	priv, err := p.privKeySvc.PrivateKey(ctx, keyname)
+	priv, err := p.privKeySvc.PrivateKey(ctx, args.KeyName)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	// 1 for now - we may decide to increase or split output in future so
 	// keeping the code here flexible
+
 	totOutputs := 1
-	txos := make([]*gopayd.TxoCreate, 0, totOutputs)
+	txos := make([]*gopayd.PartialTxoCreate, 0, totOutputs)
 	oo := make([]*gopayd.Output, 0, totOutputs)
 	for i := 0; i < totOutputs; i++ {
 		var path string
@@ -58,7 +55,7 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 			}
 			path = bip32.DerivePath(seed)
 			exists, err := p.derivationRdr.DerivationPathExists(ctx, gopayd.DerivationExistsArgs{
-				KeyName: keyname,
+				KeyName: args.KeyName,
 				Path:    path,
 			})
 			if err != nil {
@@ -83,8 +80,9 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 		} else {
 			sats = args.Denomination
 		}*/
-		txos = append(txos, &gopayd.TxoCreate{
-			KeyName:        keyname,
+		txos = append(txos, &gopayd.PartialTxoCreate{
+			PaymentID:      args.PaymentID,
+			KeyName:        args.KeyName,
 			DerivationPath: path,
 			LockingScript:  s.String(),
 			Satoshis:       args.Satoshis,
@@ -94,7 +92,7 @@ func (p *mapiOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsCrea
 			Script: s.String(),
 		})
 	}
-	if err := p.txoWtr.TxosCreate(ctx, txos); err != nil {
+	if err := p.txoWtr.PartialTxosCreate(ctx, txos); err != nil {
 		return nil, errors.Wrap(err, "failed to store outputs")
 	}
 	return oo, nil

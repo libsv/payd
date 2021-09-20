@@ -32,32 +32,42 @@ func (p *paymentSvc) Request(ctx context.Context, args models.PaymentRequestArgs
 }
 
 func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentAck, error) {
-	tx := bt.NewTx()
-	var totalOutputs uint64
-	for _, o := range args.PaymentRequest.Outputs {
-		script, err := bscript.NewFromHexString(o.Script)
+	var signedTx *bt.Tx
+	if args.Tx == "" {
+		tx := bt.NewTx()
+		var totalOutputs uint64
+		for _, o := range args.PaymentRequest.Outputs {
+			script, err := bscript.NewFromHexString(o.Script)
+			if err != nil {
+				return nil, err
+			}
+			if err = tx.AddP2PKHOutputFromScript(script, o.Amount); err != nil {
+				return nil, err
+			}
+
+			totalOutputs += o.Amount
+		}
+
+		signedTxResp, err := p.txSig.FundAndSign(ctx, gopayd.FundAndSignTxRequest{
+			TxHex:     tx.String(),
+			Account:   args.Account,
+			PaymentID: args.PaymentRequest.MerchantData.PaymentReference,
+			Fee:       gopayd.Fee(args.PaymentRequest.Fee),
+		})
 		if err != nil {
 			return nil, err
 		}
-		if err = tx.AddP2PKHOutputFromScript(script, o.Amount); err != nil {
+
+		signedTx, err = bt.NewTxFromString(signedTxResp.SignedTx)
+		if err != nil {
 			return nil, err
 		}
-
-		totalOutputs += o.Amount
-	}
-
-	signedTxResp, err := p.txSig.FundAndSign(ctx, gopayd.FundAndSignTxRequest{
-		TxHex:   tx.String(),
-		Account: "client",
-		Fee:     gopayd.Fee(args.PaymentRequest.Fee),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	signedTx, err := bt.NewTxFromString(signedTxResp.SignedTx)
-	if err != nil {
-		return nil, err
+	} else {
+		var err error
+		signedTx, err = bt.NewTxFromString(args.Tx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	spvEnvelope, err := p.spvb.CreateEnvelope(ctx, signedTx)
@@ -66,7 +76,8 @@ func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*mo
 	}
 
 	pAck, err := p.ps.Submit(ctx, models.PaymentSendArgs{
-		Transaction:    signedTxResp.SignedTx,
+		Account:        args.Account,
+		Transaction:    signedTx.String(),
 		PaymentRequest: args.PaymentRequest,
 		MerchantData:   args.PaymentRequest.MerchantData,
 		Memo:           args.PaymentRequest.Memo,
@@ -76,19 +87,19 @@ func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*mo
 		return nil, err
 	}
 
-	if err := p.fSvc.Spend(ctx, models.FundSpendArgs{
-		SpendingTx: signedTxResp.SignedTx,
-		Account:    "client",
-	}); err != nil {
-		return nil, err
-	}
+	//if err := p.fSvc.Spend(ctx, models.FundSpendArgs{
+	//	SpendingTx: signedTx.String(),
+	//	Account:    "client",
+	//}); err != nil {
+	//	return nil, err
+	//}
 
-	if _, err := p.fSvc.Add(ctx, models.FundAddArgs{
-		TxHex:   signedTxResp.SignedTx,
-		Account: "client",
-	}); err != nil {
-		return nil, err
-	}
+	//if _, err := p.fSvc.Add(ctx, models.FundAddArgs{
+	//	TxHex:   signedTx.String(),
+	//	Account: "client",
+	//}); err != nil {
+	//	return nil, err
+	//}
 
 	return pAck, nil
 }

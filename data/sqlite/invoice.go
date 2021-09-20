@@ -13,18 +13,18 @@ import (
 
 const (
 	sqlCreateInvoice = `
-	INSERT INTO invoices(paymentID, satoshis)
-	VALUES(:paymentID, :satoshis)
+	INSERT INTO invoices(paymentID, reference, satoshis)
+	VALUES(:paymentID, :reference, :satoshis)
 	`
 
 	sqlInvoiceByPayID = `
-	SELECT paymentId,satoshis,paymentReceivedAt
+	SELECT paymentId,satoshis,reference,paymentReceivedAt
 	FROM invoices
 	WHERE paymentId = :paymentID
 	`
 
 	sqlInvoices = `
-	SELECT paymentId,satoshis,paymentReceivedAt
+	SELECT paymentId,satoshis,reference,paymentReceivedAt
 	FROM invoices
 	`
 

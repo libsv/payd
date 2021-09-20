@@ -26,7 +26,7 @@ type Fee struct {
 type Txo struct {
 	Outpoint       string      `db:"outpoint" json:"-"`
 	TxID           string      `db:"txid" json:"txId"`
-	Vout           int         `db:"vout" json:"vout"`
+	Vout           uint32      `db:"vout" json:"vout"`
 	KeyName        null.String `db:"keyname" json:"-"`
 	DerivationPath null.String `db:"derivationpath" json:"-"`
 	LockingScript  string      `db:"lockingscript" json:"lockingScript"`

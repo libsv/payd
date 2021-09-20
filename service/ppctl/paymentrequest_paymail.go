@@ -42,14 +42,14 @@ func (p *paymailOutputs) CreateOutputs(ctx context.Context, args gopayd.OutputsC
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create outputs for Alias %s", addr.Alias)
 	}
-	txos := make([]*gopayd.TxoCreate, 0, len(oo))
+	txos := make([]*gopayd.PartialTxoCreate, 0, len(oo))
 	for _, o := range oo {
-		txos = append(txos, &gopayd.TxoCreate{
+		txos = append(txos, &gopayd.PartialTxoCreate{
 			KeyName:        p.cfg.Address,
 			DerivationPath: "paymail",
 			LockingScript:  o.Script,
 			Satoshis:       args.Satoshis,
 		})
 	}
-	return oo, errors.Wrap(p.txoWtr.TxosCreate(ctx, txos), "failed to store paymail outputs")
+	return oo, errors.Wrap(p.txoWtr.PartialTxosCreate(ctx, txos), "failed to store paymail outputs")
 }

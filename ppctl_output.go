@@ -2,12 +2,16 @@ package gopayd
 
 import (
 	"context"
+
+	"gopkg.in/guregu/null.v3"
 )
 
 // OutputsCreate will be used to create n outputs that match
 // the required satoshis and are split into the set denomination.
 // Each output should have a different locking script.
 type OutputsCreate struct {
+	PaymentID    null.String
+	KeyName      string
 	Satoshis     uint64
 	Denomination uint64
 }

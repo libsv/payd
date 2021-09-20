@@ -43,6 +43,7 @@ type PaymentRequest struct {
 type PaymentRequestArgs struct {
 	// PaymentID is an identifier for an invoice.
 	PaymentID string
+	Account   string
 }
 
 // PaymentRequestService can be implemented to enforce business rules
