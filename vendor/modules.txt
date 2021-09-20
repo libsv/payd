@@ -104,6 +104,7 @@ github.com/libsv/go-bk/chaincfg
 github.com/libsv/go-bk/crypto
 github.com/libsv/go-bk/envelope
 # github.com/libsv/go-bt v1.0.0
+## explicit
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
