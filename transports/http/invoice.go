@@ -69,7 +69,7 @@ func (i *invoice) invoice(e echo.Context) error {
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param body body gopayd.InvoiceCreate true "PaymentID and Satoshis"
+// @Param body body gopayd.InvoiceCreate true "PaymentReference and Satoshis"
 // @Success 201
 // @Router /invoices [POST].
 func (i *invoice) create(e echo.Context) error {
@@ -90,7 +90,7 @@ func (i *invoice) create(e echo.Context) error {
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param PaymentID path string true "PaymentID"
+// @Param PaymentReference path string true "PaymentReference"
 // @Success 200
 // @Router /invoices [DELETE].
 func (i *invoice) delete(e echo.Context) error {

@@ -81,7 +81,7 @@ var doc = `{
                 "summary": "Create invoice",
                 "parameters": [
                     {
-                        "description": "PaymentID and Satoshis",
+                        "description": "PaymentReference and Satoshis",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -111,8 +111,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "PaymentID",
-                        "name": "PaymentID",
+                        "description": "PaymentReference",
+                        "name": "PaymentReference",
                         "in": "path",
                         "required": true
                     }

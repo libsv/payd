@@ -27,7 +27,7 @@ func (i *invoice) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*gopayd
 // Create will persist a new Invoice in the data store.
 func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	return &gopayd.Invoice{
-		PaymentID: req.PaymentID,
+		PaymentID: req.PaymentReference,
 		Satoshis:  req.Satoshis,
 	}, nil
 }

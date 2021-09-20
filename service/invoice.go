@@ -68,7 +68,7 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	req.PaymentID = id
+	req.PaymentReference = id
 	inv, err := i.store.Create(ctx, req)
 	if err != nil {
 		return nil, errors.WithStack(err)

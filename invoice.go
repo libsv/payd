@@ -4,29 +4,54 @@ import (
 	"context"
 	"time"
 
+	"github.com/libsv/go-bt"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
 )
 
-// Invoice stores information related to a payment.
+// Invoice identifies a single payment request from this payd wallet,
+// it states the amount, id and optional refund address. This indicate
+// we are requesting n satoshis in payment.
 type Invoice struct {
-	PaymentID         string      `json:"paymentID" db:"paymentID"`
-	Satoshis          uint64      `json:"satoshis" db:"satoshis"`
-	PaymentReceivedAt null.Time   `json:"paymentReceivedAt" db:"paymentReceivedAt"`
-	RefundTo          null.String `json:"refundTo" db:"refundTo"`
+	// InvoiceID is a unique identifier for an invoice and can be used
+	// to lookup a single invoice.
+	InvoiceID string `json:"invoiceID" db:"invoice_id"`
+	// PaymentReference is an identifier that can be used to link the
+	// PayD invoice with an external system.
+	PaymentReference null.String `json:"paymentReference" db:"payment_reference"`
+	// Description is an optional text field that can have some further info
+	// like 'invoice for oranges'.
+	Description null.String `json:"description" db:"description"`
+	// Satoshis is the total amount this invoice is to pay.
+	Satoshis uint64 `json:"satoshis" db:"satoshis"`
+	// PaymentReceivedAt will be set when this invoice has been paid and
+	// states when the payment was received in UTC time.
+	PaymentReceivedAt null.Time `json:"paymentReceivedAt" db:"payment_received_at"`
+	// RefundTo is an optional paymail address that can be used to refund the
+	// customer if required.
+	RefundTo null.String `json:"refundTo" db:"refund_to"`
 }
 
 // InvoiceCreate is used to create a new invoice.
 type InvoiceCreate struct {
-	// PaymentID is the unique identifier for a payment.
-	PaymentID string `json:"-" db:"paymentID"`
-	Satoshis  uint64 `json:"satoshis" db:"satoshis"`
+	// Satoshis is the total amount this invoice is to pay.
+	Satoshis uint64 `json:"satoshis" db:"satoshis"`
+	// PaymentReference is an identifier that can be used to link the
+	// payd invoice with an external system.
+	// MaxLength is 32 characters.
+	PaymentReference null.String `json:"paymentReference" db:"payment_reference"`
+	// Description is an optional text field that can have some further info
+	// like 'invoice for oranges'.
+	// MaxLength is 1024 characters.
+	Description null.String `json:"description" db:"description"`
 }
 
 // Validate will check that InvoiceCreate params match expectations.
 func (i InvoiceCreate) Validate() validator.ErrValidation {
 	return validator.New().
-		Validate("satoshis", validator.MinUInt64(i.Satoshis, 546))
+		Validate("satoshis", validator.MinUInt64(i.Satoshis, bt.DustLimit)).
+		Validate("description", validator.Length(i.Description.ValueOrZero(), 0, 1024)).
+		Validate("paymentReference", validator.Length(i.PaymentReference.ValueOrZero(), 0, 32))
 }
 
 // InvoiceUpdate can be used to update an invoice after it has been created.

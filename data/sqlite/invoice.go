@@ -68,7 +68,7 @@ func (s *sqliteStore) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create new invoice with paymentID %s", req.PaymentID)
+		return nil, errors.Wrapf(err, "failed to create new invoice with paymentID %s", req.PaymentReference)
 	}
 	defer func() {
 		_ = rollback(ctx, tx)
@@ -77,11 +77,11 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*go
 		return nil, errors.Wrap(err, "failed to insert invoice for ")
 	}
 	var resp gopayd.Invoice
-	if err := tx.Get(&resp, sqlInvoiceByPayID, req.PaymentID); err != nil {
-		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentID)
+	if err := tx.Get(&resp, sqlInvoiceByPayID, req.PaymentReference); err != nil {
+		return nil, errors.Wrapf(err, "failed to get new invoice with paymentID %s after creation", req.PaymentReference)
 	}
 	if err := commit(ctx, tx); err != nil {
-		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentID)
+		return nil, errors.Wrapf(err, "failed to commit transaction when creating invoice with paymentID %s", req.PaymentReference)
 	}
 	return &resp, nil
 }
