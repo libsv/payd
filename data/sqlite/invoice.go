@@ -33,12 +33,13 @@ const (
 	sqlInvoiceUpdate = `
 		UPDATE invoices 
 		SET paymentReceivedAt = :paymentReceivedAt, refundTo = :refundTo
-		WHERE paymentID = :paymentID
+		WHERE invoice_id = :invoice_id
 	`
 
 	sqlInvoiceDelete = `
-	DELETE FROM invoices 
-	WHERE paymentID = :paymentID
+	UPDATE invoices
+	SET deleted_at = :deleted_at, state = 'deleted'
+	WHERE invoice_id = :invoice_id
 	`
 )
 
@@ -119,14 +120,22 @@ func (s *sqliteStore) Delete(ctx context.Context, args gopayd.InvoiceArgs) error
 	if _, err := s.Invoice(ctx, args); err != nil {
 		return errors.WithMessagef(err, "failed to find key with id %s to delete", args.InvoiceID)
 	}
-	if err := handleNamedExec(tx, sqlInvoiceDelete, args); err != nil {
+	// invoice delete DTO
+	delInv := struct {
+		DeletedAt time.Time `db:"deleted_at"`
+		InvoiceID string    `db:"invoice_id"`
+	}{
+		DeletedAt: time.Now().UTC(),
+		InvoiceID: args.InvoiceID,
+	}
+	if err := handleNamedExec(tx, sqlInvoiceDelete, delInv); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return lathos.NewErrNotFound("N0003", fmt.Sprintf("invoice with ID %s not found", args.InvoiceID))
 		}
-		return errors.Wrapf(err, "failed to delete invoice for paymentID %s", args.InvoiceID)
+		return errors.Wrapf(err, "failed to delete invoice for invoiceID %s", args.InvoiceID)
 	}
 	if err := commit(ctx, tx); err != nil {
-		return errors.Wrapf(err, "failed to commit transaction when deleting invoice with paymentID %s", args.InvoiceID)
+		return errors.Wrapf(err, "failed to commit transaction when deleting invoice with invoiceID %s", args.InvoiceID)
 	}
 	return nil
 }
