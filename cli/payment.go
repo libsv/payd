@@ -55,7 +55,7 @@ func init() {
 }
 
 func paymentRequest(cmd *cobra.Command, args []string) error {
-	svc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil, nil, nil)
+	svc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil, nil)
 	req, err := svc.Request(cmd.Context(), models.PaymentRequestArgs{
 		ID: args[0],
 	})
@@ -85,7 +85,6 @@ func paymentSend(cmd *cobra.Command, args []string) error {
 
 	svc := service.NewPaymentService(
 		chttp.NewPaymentAPI(&http.Client{}),
-		service.NewFundService(chttp.NewFundAPI(&http.Client{})),
 		chttp.NewSignerAPI(&http.Client{}),
 		spvb,
 	)

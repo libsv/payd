@@ -12,16 +12,14 @@ import (
 
 type paymentSvc struct {
 	ps    models.PaymentStore
-	fSvc  models.FundService
 	txSig models.Signer
 	spvb  spv.EnvelopeCreator
 }
 
 // NewPaymentService returns a new payment service.
-func NewPaymentService(ps models.PaymentStore, fSvc models.FundService, txSig models.Signer, spvb spv.EnvelopeCreator) models.PaymentService {
+func NewPaymentService(ps models.PaymentStore, txSig models.Signer, spvb spv.EnvelopeCreator) models.PaymentService {
 	return &paymentSvc{
 		ps:    ps,
-		fSvc:  fSvc,
 		txSig: txSig,
 		spvb:  spvb,
 	}
@@ -86,20 +84,6 @@ func (p *paymentSvc) Send(ctx context.Context, args models.PaymentSendArgs) (*mo
 	if err != nil {
 		return nil, err
 	}
-
-	//if err := p.fSvc.Spend(ctx, models.FundSpendArgs{
-	//	SpendingTx: signedTx.String(),
-	//	Account:    "client",
-	//}); err != nil {
-	//	return nil, err
-	//}
-
-	//if _, err := p.fSvc.Add(ctx, models.FundAddArgs{
-	//	TxHex:   signedTx.String(),
-	//	Account: "client",
-	//}); err != nil {
-	//	return nil, err
-	//}
 
 	return pAck, nil
 }
