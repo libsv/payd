@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -38,7 +39,7 @@ func (i *invoice) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*gopayd
 	}
 	inv, err := i.store.Invoice(ctx, args)
 	if err != nil {
-		return nil, errors.WithMessagef(err, "failed to get invoice with id %s", args.PaymentID)
+		return nil, errors.WithMessagef(err, "failed to get invoice with id %s", args.InvoiceID)
 	}
 	return inv, err
 }
@@ -59,7 +60,7 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 	}
 	hd := hashids.NewData()
 	hd.Alphabet = hashids.DefaultAlphabet
-	hd.Salt = i.cfg.Hostname
+	hd.Salt = fmt.Sprintf("%s:%d:%s:%s", i.cfg.Hostname, req.Satoshis, req.Reference.ValueOrZero(), req.ExpiresAt.ValueOrZero())
 	h, err := hashids.NewWithData(hd)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -68,7 +69,7 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	req.PaymentID = id
+	req.InvoiceID = id
 	inv, err := i.store.Create(ctx, req)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -82,5 +83,5 @@ func (i *invoice) Delete(ctx context.Context, args gopayd.InvoiceArgs) error {
 		return err
 	}
 	return errors.WithMessagef(i.store.Delete(ctx, args),
-		"failed to delete invoice with ID %s", args.PaymentID)
+		"failed to delete invoice with ID %s", args.InvoiceID)
 }

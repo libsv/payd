@@ -81,7 +81,7 @@ var doc = `{
                 "summary": "Create invoice",
                 "parameters": [
                     {
-                        "description": "PaymentID and Satoshis",
+                        "description": "Reference and Satoshis",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -111,8 +111,8 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "PaymentID",
-                        "name": "PaymentID",
+                        "description": "Reference",
+                        "name": "Reference",
                         "in": "path",
                         "required": true
                     }
@@ -423,7 +423,7 @@ var doc = `{
                     "type": "string"
                 },
                 "paymentReference": {
-                    "description": "PaymentReference can be sent to link this request with a specific payment id.",
+                    "description": "Reference can be sent to link this request with a specific payment id.",
                     "type": "string"
                 }
             }

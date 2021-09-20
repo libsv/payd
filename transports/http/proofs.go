@@ -23,7 +23,7 @@ func NewProofs(svc gopayd.ProofsService) *proofs {
 
 // RegisterRoutes will setup all proof routes with the supplied echo group.
 func (p *proofs) RegisterRoutes(g *echo.Group) {
-	g.POST(RouteProofs, p.create)
+	g.POST(RouteV1Proofs, p.create)
 }
 
 // create godoc

@@ -2,13 +2,9 @@ package http
 
 // Routes used in the http handlers.
 const (
-	RoutePaymentRequest = "api/v1/payment/:paymentID"
-	RoutePayment        = "api/v1/payment/:paymentID"
+	RouteV1Invoice  = "api/v1/invoices/:invoiceID"
+	RouteV1Invoices = "api/v1/invoices"
+	RouteV1Balance  = "api/v1/balance"
 
-	RouteInvoice  = "api/v1/invoices/:paymentID"
-	RouteInvoices = "api/v1/invoices"
-	RouteBalance  = "api/v1/balance"
-
-	RouteProofs   = "api/v1/proofs/:txid"
-	RouteTxStatus = "api/v1/txstatus/:txid"
+	RouteV1Proofs = "api/v1/proofs/:txid"
 )

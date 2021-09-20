@@ -20,10 +20,10 @@ func NewInvoice(svc gopayd.InvoiceService) *invoice {
 
 // RegisterRoutes will hook up the routes to the echo group.
 func (i *invoice) RegisterRoutes(g *echo.Group) {
-	g.GET(RouteInvoices, i.invoices)
-	g.GET(RouteInvoice, i.invoice)
-	g.POST(RouteInvoices, i.create)
-	g.DELETE(RouteInvoice, i.delete)
+	g.GET(RouteV1Invoices, i.invoices)
+	g.GET(RouteV1Invoice, i.invoice)
+	g.POST(RouteV1Invoices, i.create)
+	g.DELETE(RouteV1Invoice, i.delete)
 }
 
 // invoices godoc
@@ -33,7 +33,7 @@ func (i *invoice) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /invoices [GET].
+// @Router v1/invoices [GET].
 func (i *invoice) invoices(e echo.Context) error {
 	ii, err := i.svc.Invoices(e.Request().Context())
 	if err != nil {
@@ -44,13 +44,13 @@ func (i *invoice) invoices(e echo.Context) error {
 
 // invoice godoc
 // @Summary Invoices
-// @Description Returns invoice by payment id if exists
+// @Description Returns invoice by invoice id if exists
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param paymentID path string true "Payment ID"
+// @Param invoiceID path string true "Invoice ID"
 // @Success 200
-// @Router /invoices/{paymentID} [GET].
+// @Router v1/invoices/{invoiceID} [GET].
 func (i *invoice) invoice(e echo.Context) error {
 	var args gopayd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
@@ -63,15 +63,15 @@ func (i *invoice) invoice(e echo.Context) error {
 	return e.JSON(http.StatusOK, inv)
 }
 
-// create godoc
+// create will validate and persist a new invoice.
 // @Summary Create invoice
-// @Description Creates an invoice with payment id and satoshis
+// @Description Creates an invoice with invoiceID and satoshis
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param body body gopayd.InvoiceCreate true "PaymentID and Satoshis"
+// @Param body body gopayd.InvoiceCreate true "Reference and Satoshis"
 // @Success 201
-// @Router /invoices [POST].
+// @Router v1/invoices [POST].
 func (i *invoice) create(e echo.Context) error {
 	var req gopayd.InvoiceCreate
 	if err := e.Bind(&req); err != nil {
@@ -90,13 +90,13 @@ func (i *invoice) create(e echo.Context) error {
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param PaymentID path string true "PaymentID"
+// @Param invoiceID path string true "invoiceID we want to remove"
 // @Success 200
-// @Router /invoices [DELETE].
+// @Router v1/invoices/{invoiceID} [DELETE].
 func (i *invoice) delete(e echo.Context) error {
 	var args gopayd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
-		return errors.Wrap(err, "failed to parse invoice args")
+		return errors.Wrap(err, "failed to parse invoice delete args")
 	}
 	if err := i.svc.Delete(e.Request().Context(), args); err != nil {
 		return errors.WithStack(err)
