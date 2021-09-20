@@ -46,7 +46,7 @@ const banner = `
 // @license.name ISC
 // @license.url https://github.com/libsv/payd/blob/master/LICENSE
 // @host localhost:8443
-// @BasePath /api/v1
+// @BasePath /api/
 // @schemes:
 //	- http
 //	- https

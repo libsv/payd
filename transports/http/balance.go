@@ -20,7 +20,7 @@ func NewBalance(svc gopayd.BalanceService) *balance {
 
 // RegisterRoutes will hook up the routes to the echo group.
 func (b *balance) RegisterRoutes(g *echo.Group) {
-	g.GET(RouteBalance, b.balance)
+	g.GET(RouteV1Balance, b.balance)
 }
 
 // balance godoc

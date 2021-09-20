@@ -13,12 +13,18 @@ CREATE TABLE keys (
 
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
-    invoice_id           VARCHAR PRIMARY KEY
-    ,payment_reference VARCHAR(32)
-    ,description VARCHAR(1024)
-    ,satoshis           INTEGER NOT NULL
-    ,payment_received_at  TIMESTAMP
-    ,refund_to           VARCHAR
+    invoice_id              VARCHAR PRIMARY KEY
+    ,satoshis               INTEGER NOT NULL
+    ,payment_reference      VARCHAR(32)
+    ,description            VARCHAR(1024)
+    ,expires_at             TIMESTAMP
+    ,payment_received_at    TIMESTAMP
+    ,refund_to              VARCHAR
+    ,refunded_at            TIMESTAMP
+    ,state                  VARCHAR(10)
+    ,created_at             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,updated_at             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,deleted_at             TIMESTAMP
 );
 
 CREATE INDEX invoices_payment_reference ON invoices (payment_reference);
