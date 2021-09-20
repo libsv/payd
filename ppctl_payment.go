@@ -25,7 +25,7 @@ type CreatePayment struct {
 	MerchantData MerchantData `json:"merchantData"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
-	RefundTo null.String `json:"refundTo"`
+	RefundTo null.String `json:"refundTo" swaggertype:"string"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo"`
 	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.

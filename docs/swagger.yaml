@@ -1,0 +1,313 @@
+basePath: /api/v1
+definitions:
+  bc.MapiCallback:
+    properties:
+      apiVersion:
+        type: string
+      blockHash:
+        type: string
+      blockHeight:
+        type: integer
+      callbackPayload:
+        type: string
+      callbackReason:
+        type: string
+      callbackTxId:
+        type: string
+      minerId:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  bc.MerkleProof:
+    properties:
+      composite:
+        type: boolean
+      index:
+        type: integer
+      nodes:
+        items:
+          type: string
+        type: array
+      proofType:
+        type: string
+      target:
+        type: string
+      targetType:
+        type: string
+      txOrId:
+        type: string
+    type: object
+  envelope.JSONEnvelope:
+    properties:
+      encoding:
+        type: string
+      mimetype:
+        type: string
+      payload:
+        type: string
+      publicKey:
+        type: string
+      signature:
+        type: string
+    type: object
+  gopayd.CreatePayment:
+    properties:
+      memo:
+        description: Memo is a plain-text note from the customer to the payment host.
+        type: string
+      merchantData:
+        $ref: '#/definitions/gopayd.MerchantData'
+        description: |-
+          MerchantData is copied from PaymentDetails.merchantData.
+          Payment hosts may use invoice numbers or any other data they require to match Payments to PaymentRequests.
+          Note that malicious clients may modify the merchantData, so should be authenticated
+          in some way (for example, signed with a payment host-only key).
+          Maximum length is 10000 characters.
+      refundTo:
+        description: |-
+          RefundTo is a paymail to send a refund to should a refund be necessary.
+          Maximum length is 100 characters
+        type: string
+      spvEnvelope:
+        $ref: '#/definitions/spv.Envelope'
+        description: |-
+          SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
+          See https://tsc.bitcoinassociation.net/standards/spv-envelope/
+      transaction:
+        description: |-
+          Transaction is a valid, signed Bitcoin transaction that fully
+          pays the PaymentRequest.
+          The transaction is hex-encoded and must NOT be prefixed with "0x".
+        type: string
+    type: object
+  gopayd.InvoiceCreate:
+    properties:
+      satoshis:
+        type: integer
+    type: object
+  gopayd.MerchantData:
+    properties:
+      address:
+        description: Address is the merchants store / head office address.
+        type: string
+      avatar:
+        description: AvatarURL displays a canonical url to a merchants avatar.
+        type: string
+      email:
+        description: Email can be sued to contact the merchant about this transaction.
+        type: string
+      extendedData:
+        additionalProperties: true
+        description: ExtendedData can be supplied if the merchant wishes to send some
+          arbitrary data back to the wallet.
+        type: object
+      name:
+        description: MerchantName is a human readable string identifying the merchant.
+        type: string
+      paymentReference:
+        description: PaymentReference can be sent to link this request with a specific
+          payment id.
+        type: string
+    type: object
+  spv.Envelope:
+    properties:
+      mapiResponses:
+        items:
+          $ref: '#/definitions/bc.MapiCallback'
+        type: array
+      parents:
+        additionalProperties:
+          $ref: '#/definitions/spv.Envelope'
+        type: object
+      proof:
+        $ref: '#/definitions/bc.MerkleProof'
+      rawTx:
+        type: string
+      txid:
+        type: string
+    type: object
+host: localhost:8443
+info:
+  contact: {}
+  description: Payd is a txo and key manager, with a common interface that can be
+    implemented by wallets.
+  license:
+    name: ISC
+    url: https://github.com/libsv/payd/blob/master/LICENSE
+  termsOfService: https://github.com/libsv/payd/blob/master/CODE_OF_CONDUCT.md
+  title: Payd
+  version: 0.0.1
+paths:
+  /balance:
+    get:
+      consumes:
+      - application/json
+      description: Returns current balance, which is a sum of unspent txos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Balance
+      tags:
+      - Balance
+  /invoices:
+    delete:
+      consumes:
+      - application/json
+      description: Delete
+      parameters:
+      - description: PaymentID
+        in: path
+        name: PaymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Delete invoice
+      tags:
+      - Invoices
+    get:
+      consumes:
+      - application/json
+      description: Returns all invoices currently stored
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Invoices
+      tags:
+      - Invoices
+    post:
+      consumes:
+      - application/json
+      description: Creates an invoice with payment id and satoshis
+      parameters:
+      - description: PaymentID and Satoshis
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/gopayd.InvoiceCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+      summary: Create invoice
+      tags:
+      - Invoices
+  /invoices/{paymentID}:
+    get:
+      consumes:
+      - application/json
+      description: Returns invoice by payment id if exists
+      parameters:
+      - description: Payment ID
+        in: path
+        name: paymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Invoices
+      tags:
+      - Invoices
+  /payment/{paymentID}:
+    get:
+      consumes:
+      - application/json
+      description: Creates a payment request based on a payment id (the identifier
+        for an invoice).
+      parameters:
+      - description: Payment ID
+        in: path
+        name: paymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Create payment request
+      tags:
+      - Payment
+    post:
+      consumes:
+      - application/json
+      description: Creates a payment based on a payment id (the identifier for an
+        invoice).
+      parameters:
+      - description: Payment ID
+        in: path
+        name: paymentID
+        required: true
+        type: string
+      - description: payment message used in BIP270
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/gopayd.CreatePayment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+      summary: Create payment
+      tags:
+      - Payment
+  /proofs/{txid}:
+    post:
+      consumes:
+      - application/json
+      description: Creates a json envelope proof
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: txid
+        required: true
+        type: string
+      - description: JSON Envelope
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/envelope.JSONEnvelope'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+      summary: Create proof
+      tags:
+      - Proofs
+  /txstatus/{txid}:
+    get:
+      consumes:
+      - application/json
+      description: Returns status of transaction
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: txid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Transaction Status
+      tags:
+      - TxStatus
+swagger: "2.0"

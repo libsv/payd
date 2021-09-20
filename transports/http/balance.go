@@ -23,6 +23,14 @@ func (b *balance) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteBalance, b.balance)
 }
 
+// balance godoc
+// @Summary Balance
+// @Description Returns current balance, which is a sum of unspent txos
+// @Tags Balance
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /balance [GET].
 func (b *balance) balance(e echo.Context) error {
 	resp, err := b.svc.Balance(e.Request().Context())
 	if err != nil {

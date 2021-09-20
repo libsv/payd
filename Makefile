@@ -22,7 +22,7 @@ run-unit-tests-cover:
 	open file:///$(shell pwd)/cover.html
 
 run-linter:
-	@golangci-lint run --deadline=240s --skip-dirs=vendor --tests
+	@golangci-lint run --deadline=480s --skip-dirs=vendor --tests
 
 # make create-alias alias=some_alias
 create-alias:
@@ -30,6 +30,12 @@ create-alias:
 
 install-linter:
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
+
+install-swagger-gen:
+	@go get github.com/swaggo/swag/cmd/swag
+
+generate-swagger:
+	@swag init --parseVendor -g ./cmd/bip270-server/main.go
 
 go-doc-mac:
 	@open http://localhost:6060 && \
