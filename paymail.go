@@ -2,6 +2,8 @@ package gopayd
 
 import (
 	"context"
+
+	"github.com/libsv/go-bt/v2"
 )
 
 // P2PTransactionArgs is used to get a transaction.
@@ -35,7 +37,7 @@ type P2PCapabilityArgs struct {
 	BrfcID string
 }
 
-// P2POutputCreateArgs is used to locate a signer when sending a p2p payment.
+// P2POutputCreateArgs is used to locate a `signer when sending a p2p payment.
 type P2POutputCreateArgs struct {
 	Domain string
 	Alias  string
@@ -53,7 +55,7 @@ type PaymailReader interface {
 
 // PaymailWriter writes to a paymail datastore.
 type PaymailWriter interface {
-	OutputsCreate(ctx context.Context, args P2POutputCreateArgs, req P2PPayment) ([]*Output, error)
+	OutputsCreate(ctx context.Context, args P2POutputCreateArgs, req P2PPayment) ([]*bt.Output, error)
 }
 
 // PaymailReaderWriter combines the reader and writer interfaces.

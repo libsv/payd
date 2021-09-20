@@ -11,6 +11,7 @@ import (
 	lathos "github.com/theflyingcodr/lathos/errs"
 	gopaymail "github.com/tonicpow/go-paymail"
 
+	"github.com/libsv/go-bt/v2"
 	gopayd "github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/data/paymail/models"
@@ -74,7 +75,7 @@ func (p *paymail) Capability(ctx context.Context, args gopayd.P2PCapabilityArgs)
 
 // OutputsCreate will create outputs for the provided payment information. Args are used to gather capability information
 // a lathos.NotFound error may be returned if the paymail or brfc doesn't exist.
-func (p *paymail) OutputsCreate(ctx context.Context, args gopayd.P2POutputCreateArgs, req gopayd.P2PPayment) ([]*gopayd.Output, error) {
+func (p *paymail) OutputsCreate(ctx context.Context, args gopayd.P2POutputCreateArgs, req gopayd.P2PPayment) ([]*bt.Output, error) {
 	url, err := p.Capability(ctx, gopayd.P2PCapabilityArgs{
 		Domain: args.Domain,
 		BrfcID: gopaymail.BRFCP2PPaymentDestination,
