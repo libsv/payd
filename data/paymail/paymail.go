@@ -81,7 +81,7 @@ func (p *paymail) OutputsCreate(ctx context.Context, args gopayd.P2POutputCreate
 		BrfcID: gopaymail.BRFCP2PPaymentDestination,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get BRFCP2P Payment Destination for domain %s", args.Domain)
+		return nil, errors.Wrapf(err, "failed to get BRFCP2P Payment Output for domain %s", args.Domain)
 	}
 	resp, err := p.cli.GetP2PPaymentDestination(url, args.Alias, args.Domain, &gopaymail.PaymentRequest{Satoshis: req.Satoshis})
 	if err != nil {

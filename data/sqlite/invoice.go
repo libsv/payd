@@ -68,7 +68,7 @@ func (s *sqliteStore) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 }
 
 // Create will persist a new Invoice in the data store.
-func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+func (s *sqliteStore) InvoiceCreate(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new invoice with invoiceID %s", req.InvoiceID)
@@ -90,7 +90,7 @@ func (s *sqliteStore) Create(ctx context.Context, req gopayd.InvoiceCreate) (*go
 }
 
 // Update will update an invoice to mark it paid and return the result.
-func (s *sqliteStore) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdatePaid) (*gopayd.Invoice, error) {
+func (s *sqliteStore) InvoiceUpdate(ctx context.Context, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdatePaid) (*gopayd.Invoice, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice with invoiceID %s", args.InvoiceID)
@@ -109,7 +109,7 @@ func (s *sqliteStore) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs,
 	return resp, nil
 }
 
-func (s *sqliteStore) Delete(ctx context.Context, args gopayd.InvoiceArgs) error {
+func (s *sqliteStore) InvoiceDelete(ctx context.Context, args gopayd.InvoiceArgs) error {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete invoice with paymentID %s", args.InvoiceID)

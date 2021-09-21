@@ -12,9 +12,8 @@ services:
     ports:
       - "8443:8443"
     networks:
-      - regtest-network
+      - regtest-stack
 
 networks:
-  regtest-network:
-    external: true
-    name: regtest-network
+  regtest-stack:
+    name: regtest-stack

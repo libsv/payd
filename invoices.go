@@ -38,12 +38,7 @@ type Invoice struct {
 	RefundedAt null.Time `json:"refundedAt" db:"refunded_at"`
 	// State is the current status of the invoice.
 	State string `json:"state" db:"state" enums:"pending,paid,refunded,deleted"`
-	// CreatedAt is the UTC time the invoice was created.
-	CreatedAt time.Time `json:"createdAt" db:"created_at"`
-	// UpdatedAt is the UTC time the invoice was updated.
-	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
-	// DeletedAt is the date the invoice was removed.
-	DeletedAt null.Time `json:"deletedAt,omitempty" db:"deleted_at"`
+	MetaData
 }
 
 // InvoiceCreate is used to create a new invoice.
@@ -65,11 +60,12 @@ type InvoiceCreate struct {
 }
 
 // Validate will check that InvoiceCreate params match expectations.
-func (i InvoiceCreate) Validate() validator.ErrValidation {
+func (i InvoiceCreate) Validate() error {
 	return validator.New().
 		Validate("satoshis", validator.MinUInt64(i.Satoshis, bt.DustLimit)).
 		Validate("description", validator.Length(i.Description.ValueOrZero(), 0, 1024)).
-		Validate("paymentReference", validator.Length(i.Reference.ValueOrZero(), 0, 32))
+		Validate("paymentReference", validator.Length(i.Reference.ValueOrZero(), 0, 32)).
+		Err()
 }
 
 // InvoiceUpdatePaid can be used to update an invoice after it has been created.
@@ -97,8 +93,10 @@ type InvoiceArgs struct {
 }
 
 // Validate will check that invoice arguments match expectations.
-func (i *InvoiceArgs) Validate() validator.ErrValidation {
-	return validator.New().Validate("invoiceID", validator.Length(i.InvoiceID, 1, 30))
+func (i *InvoiceArgs) Validate() error {
+	return validator.New().
+		Validate("invoiceID", validator.Length(i.InvoiceID, 1, 30)).
+		Err()
 }
 
 // InvoiceService defines a service for managing invoices.
@@ -118,12 +116,12 @@ type InvoiceReaderWriter interface {
 // InvoiceWriter defines a data store used to write invoice data.
 type InvoiceWriter interface {
 	// Create will persist a new Invoice in the data store.
-	Create(ctx context.Context, req InvoiceCreate) (*Invoice, error)
+	InvoiceCreate(ctx context.Context, req InvoiceCreate) (*Invoice, error)
 	// Update will update an invoice matching the provided args with the requested changes.
-	Update(ctx context.Context, args InvoiceUpdateArgs, req InvoiceUpdatePaid) (*Invoice, error)
+	InvoiceUpdate(ctx context.Context, args InvoiceUpdateArgs, req InvoiceUpdatePaid) (*Invoice, error)
 	// Delete will remove an invoice from the data store, depending on implementation this could
 	// be a hard or soft delete.
-	Delete(ctx context.Context, args InvoiceArgs) error
+	InvoiceDelete(ctx context.Context, args InvoiceArgs) error
 }
 
 // InvoiceReader defines a data store used to read invoice data.
