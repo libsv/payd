@@ -8,7 +8,6 @@ import (
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
-	"github.com/theflyingcodr/lathos/errs"
 
 	gopayd "github.com/libsv/payd"
 )
@@ -20,16 +19,16 @@ const (
 
 type destinations struct {
 	privKeySvc gopayd.PrivateKeyService
-	destWtr    gopayd.DestinationsWriter
+	destRdrWtr gopayd.DestinationsReaderWriter
 	derivRdr   gopayd.DerivationReader
 	feeRdr     gopayd.FeeReader
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(privKeySvc gopayd.PrivateKeyService, destWtr gopayd.DestinationsWriter, derivRdr gopayd.DerivationReader, feeRdr gopayd.FeeReader) *destinations {
+func NewDestinationsService(privKeySvc gopayd.PrivateKeyService, destRdrWtr gopayd.DestinationsReaderWriter, derivRdr gopayd.DerivationReader, feeRdr gopayd.FeeReader) *destinations {
 	return &destinations{
 		privKeySvc: privKeySvc,
-		destWtr:    destWtr,
+		destRdrWtr: destRdrWtr,
 		derivRdr:   derivRdr,
 		feeRdr:     feeRdr,
 	}
@@ -93,7 +92,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 			Satoshis:       req.Satoshis,
 		})
 	}
-	oo, err := d.destWtr.DestinationsCreate(ctx, gopayd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)
+	oo, err := d.destRdrWtr.DestinationsCreate(ctx, gopayd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to store destinations")
 	}
@@ -110,8 +109,22 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 
 // Destinations given the args, will return a set of Destinations.
 func (d *destinations) Destinations(ctx context.Context, args gopayd.DestinationsArgs) (*gopayd.Destination, error) {
-	// TODO - implement this
-	return nil, errs.NewErrUnprocessable("U01", "not implemented")
+	if err := args.Validate(); err != nil {
+		return nil, err
+	}
+	oo, err := d.destRdrWtr.Destinations(ctx, args)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read destinations for invoiceID '%s'", args.InvoiceID)
+	}
+	// GET Fees
+	fees, err := d.feeRdr.Fees(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get fees when creating destinations")
+	}
+	return &gopayd.Destination{
+		Outputs: oo,
+		Fees:    fees,
+	}, nil
 }
 
 func randUint64() (uint64, error) {
