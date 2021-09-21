@@ -8,7 +8,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-// DestinationsCreate will create new destinations
+// DestinationsCreate will create new destinations.
 type DestinationsCreate struct {
 	InvoiceID     null.String
 	Satoshis      uint64
@@ -47,7 +47,7 @@ type Output struct {
 	Satoshis      uint64 `json:"satoshis" db:"satoshis"`
 	// DerivationPath is the deterministic path for this destination.
 	DerivationPath string `json:"-" db:"derivation_path"`
-	// State will indicate if this destination is still waiting on a tx to fulfill it (pending)
+	// State will indicate if this destination is still waiting on a tx to fulfil it (pending)
 	// has been paid to in a tx (received) or has been deleted.
 	State string `json:"-" db:"state"  enums:"pending,received,deleted"`
 }
@@ -72,6 +72,7 @@ type DestinationsCreateArgs struct {
 	InvoiceID null.String `db:"invoice_id"`
 }
 
+// DestinationsService enforces business rules and validation for Destinations.
 type DestinationsService interface {
 	// InvoiceCreate will split satoshis into multiple denominations and store
 	// as denominations waiting to be fulfilled in a tx.

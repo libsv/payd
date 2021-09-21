@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	// TODO - this will need changed
+	// TODO - this will need changed.
 	keyname = "masterkey"
 )
 

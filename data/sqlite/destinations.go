@@ -53,8 +53,14 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.Destin
 	rows, err := tx.Query(query, sqlArgs...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("N0004", fmt.Sprintf("destinations not found, did the create fail?"))
+			return nil, lathos.NewErrNotFound("N0004", "destinations not found, did the create fail?")
 		}
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "failed to scan destination rows")
 	}
 	fmt.Println(sqlArgs)
 	var dd []gopayd.Output

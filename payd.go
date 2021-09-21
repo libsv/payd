@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// Dustlimit is the minimum amount a miner will accept from an output.
+	// DustLimit is the minimum amount a miner will accept from an output.
 	DustLimit = 136
 )
 
