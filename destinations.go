@@ -86,3 +86,15 @@ type DestinationsWriter interface {
 	// DestinationsCreate will add a set of destinations to a data store.
 	DestinationsCreate(ctx context.Context, args DestinationsCreateArgs, req []DestinationCreate) ([]Output, error)
 }
+
+// DestinationsReader will return destination outputs.
+type DestinationsReader interface {
+	// Destinations will return destination outputs.
+	Destinations(ctx context.Context, args DestinationsArgs) ([]Output, error)
+}
+
+// DestinationsReaderWriter combines the reader and writer interfaces for convenience.
+type DestinationsReaderWriter interface {
+	DestinationsReader
+	DestinationsWriter
+}

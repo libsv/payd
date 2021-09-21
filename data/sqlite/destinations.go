@@ -28,6 +28,12 @@ const (
 	FROM destinations
 	WHERE locking_script IN(?)
 	`
+
+	sqlDestinationsByInvoiceID = `
+	SELECT d.destination_id, d.locking_script, d.derivation_path, d.satoshis, d.state
+	FROM destinations as d INNER JOIN destination_invoice as di ON d.destination_id = di.destination_id
+	WHERE di.invoice_id = :invoice_id 
+	`
 )
 
 func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.DestinationsCreateArgs, req []gopayd.DestinationCreate) ([]gopayd.Output, error) {
@@ -107,4 +113,19 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.Destin
 		return nil, errors.Wrapf(err, "failed to insert payment destinations for invoiceID '%s'", args.InvoiceID.ValueOrZero())
 	}
 	return dd, errors.Wrapf(commit(ctx, tx), "failed to commit transaction when creating payment destinations")
+}
+
+// Destinations will return a set of destination outputs for a specific invoiceID.
+func (s *sqliteStore) Destinations(ctx context.Context, args gopayd.DestinationsArgs) ([]gopayd.Output, error) {
+	var oo []gopayd.Output
+	if err := s.db.SelectContext(ctx, &oo, sqlDestinationsByInvoiceID, args.InvoiceID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
+		}
+		return nil, errors.Wrapf(err, "failed to get destinations with invoiceID %s", args.InvoiceID)
+	}
+	if len(oo) == 0 {
+		return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
+	}
+	return oo, nil
 }

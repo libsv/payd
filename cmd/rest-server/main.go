@@ -114,6 +114,7 @@ func main() {
 		RegisterRoutes(g)
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).
 		RegisterRoutes(g)
+	thttp.NewDestinations(destSvc).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)
