@@ -7,8 +7,8 @@ import (
 // DerivationExistsArgs are used to check a derivation path exists for a specific
 // master key and path.
 type DerivationExistsArgs struct {
-	KeyName string `db:"keyName"`
-	Path    string `db:"derivationPath"`
+	KeyName string `db:"key_name"`
+	Path    string `db:"derivation_path"`
 }
 
 // DerivationReader can be used to read derivation path data from a data store.

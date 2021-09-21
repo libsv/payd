@@ -33,7 +33,7 @@ func (i *invoice) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 }
 
 // Create will persist a new Invoice in the data store.
-func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+func (i *invoice) InvoiceCreate(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
 	return &gopayd.Invoice{
 		ID:       req.Reference.ValueOrZero(),
 		Satoshis: req.Satoshis,
@@ -41,7 +41,7 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 }
 
 // Update will update an invoice and return the result.
-func (i *invoice) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdatePaid) (*gopayd.Invoice, error) {
+func (i *invoice) InvoiceUpdate(ctx context.Context, args gopayd.InvoiceUpdateArgs, req gopayd.InvoiceUpdatePaid) (*gopayd.Invoice, error) {
 	return &gopayd.Invoice{
 		ID:                args.InvoiceID,
 		Satoshis:          10000,
@@ -50,6 +50,6 @@ func (i *invoice) Update(ctx context.Context, args gopayd.InvoiceUpdateArgs, req
 }
 
 // Delete does nothing.
-func (i *invoice) Delete(ctx context.Context, args gopayd.InvoiceArgs) error {
+func (i *invoice) InvoiceDelete(ctx context.Context, args gopayd.InvoiceArgs) error {
 	return nil
 }

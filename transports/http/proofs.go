@@ -27,7 +27,7 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 }
 
 // create godoc
-// @Summary Create proof
+// @Summary InvoiceCreate proof
 // @Description Creates a json envelope proof
 // @Tags Proofs
 // @Accept json

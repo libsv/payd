@@ -6,7 +6,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
+	"github.com/tonicpow/go-minercraft"
 
+	"github.com/libsv/payd/data/mapi"
 	_ "github.com/libsv/payd/docs"
 
 	"github.com/labstack/gommon/log"
@@ -89,8 +91,7 @@ func main() {
 	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
 
 	// setup stores
-	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	/*mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
+	mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
 		{
 			Name:  cfg.Mapi.MinerName,
 			Token: cfg.Mapi.Token,
@@ -98,22 +99,16 @@ func main() {
 		},
 	})
 	if err != nil {
-		log.Fatalf("error occurred: %s", err)
+		log.Fatal(mapiCli)
 	}
-	//mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+	sqlLiteStore := paydSQL.NewSQLiteStore(db)
+	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+
 	// setup services
-	//pkSvc := service.NewPrivateKeys(sqlLiteStore, cfg.Deployment.MainNet)
+	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
+	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, mapiStore)
 
-	paymentSender := ppctl.NewPaymentMapiSender(mapiStore)
-	var paymentOutputter gopayd.PaymentRequestOutputer
-
-	paymentOutputter = ppctl.NewMapiOutputs(cfg.Server, pkSvc, sqlLiteStore, sqlLiteStore)
-
-	spvv, err := spv.NewPaymentVerifier(phttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
-	if err != nil {
-		log.Fatalf("failed to create spv cient %w", err)
-	}*/
-	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore)).
+	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
 		RegisterRoutes(g)
 	thttp.NewBalance(service.NewBalance(sqlLiteStore)).
 		RegisterRoutes(g)

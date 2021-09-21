@@ -11,7 +11,7 @@ import (
 const (
 	sqlDerivationPathExists = `
 	SELECT EXISTS(
-	    SELECT derivationpath FROM txos WHERE derivationpath = $1 AND keyname = $2 
+	    SELECT derivation_path FROM destinations WHERE derivation_path = $1 AND key_name = $2 
 	    )
 	`
 )

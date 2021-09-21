@@ -78,7 +78,7 @@ var doc = `{
                 "tags": [
                     "Invoices"
                 ],
-                "summary": "Create invoice",
+                "summary": "InvoiceCreate invoice",
                 "parameters": [
                     {
                         "description": "Reference and Satoshis",
@@ -97,7 +97,7 @@ var doc = `{
                 }
             },
             "delete": {
-                "description": "Delete",
+                "description": "InvoiceDelete",
                 "consumes": [
                     "application/json"
                 ],
@@ -107,7 +107,7 @@ var doc = `{
                 "tags": [
                     "Invoices"
                 ],
-                "summary": "Delete invoice",
+                "summary": "InvoiceDelete invoice",
                 "parameters": [
                     {
                         "type": "string",
@@ -165,7 +165,7 @@ var doc = `{
                 "tags": [
                     "Payment"
                 ],
-                "summary": "Create payment request",
+                "summary": "InvoiceCreate payment request",
                 "parameters": [
                     {
                         "type": "string",
@@ -192,7 +192,7 @@ var doc = `{
                 "tags": [
                     "Payment"
                 ],
-                "summary": "Create payment",
+                "summary": "InvoiceCreate payment",
                 "parameters": [
                     {
                         "type": "string",
@@ -230,7 +230,7 @@ var doc = `{
                 "tags": [
                     "Proofs"
                 ],
-                "summary": "Create proof",
+                "summary": "InvoiceCreate proof",
                 "parameters": [
                     {
                         "type": "string",

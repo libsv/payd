@@ -27,36 +27,55 @@ CREATE TABLE invoices (
     ,deleted_at             TIMESTAMP
 );
 
-CREATE INDEX invoices_payment_reference ON invoices (payment_reference);
+CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
 CREATE TABLE transactions (
     txid            CHAR(64) NOT NULL PRIMARY KEY
-    ,paymentid      VARCHAR NOT NULL
-    ,txhex          TEXT NOT NULL
-    ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,FOREIGN KEY (paymentID) REFERENCES invoices(paymentID)
+    ,invoice_id      VARCHAR NOT NULL
+    ,tx_hex          TEXT NOT NULL
+    ,created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
+);
+
+CREATE TABLE destinations(
+    destination_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    locking_script VARCHAR(50) NOT NULL,
+    satoshis       BIGINT NOT NULL,
+    derivation_path TEXT NOT NULL,
+    key_name VARCHAR NOT NULL,
+    state VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
+    FOREIGN KEY (key_name) REFERENCES keys(name),
+    CONSTRAINT destinations_locking_script UNIQUE(locking_script)
+);
+
+CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
+CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
+
+CREATE TABLE destination_invoice(
+    destination_id INTEGER,
+    invoice_id VARCHAR,
+    FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
+    FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );
 
 -- store unspent transactions
 CREATE TABLE txos (
-    outpoint        VARCHAR
-    ,txid           CHAR(64)
-    ,vout		    BIGINT CHECK (vout >= 0 AND vout < 4294967296)
-    ,keyname		TEXT -- can be null on paymail payments
-    ,derivationpath TEXT  -- can be null on paymail payments
-    ,lockingscript  TEXT NOT NULL
-    ,satoshis       BIGINT NOT NULL CHECK (satoshis >= 0)
-    ,spentat        INTEGER(4) -- this is the date when YOU use the funds
-    ,spendingtxid   CHAR(64) -- the txid where you'd spent this output
-    ,createdat      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,modifiedat     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,FOREIGN KEY (txid) REFERENCES transactions(txid)
-    ,CONSTRAINT outpoint_key UNIQUE(outpoint)
+    outpoint        VARCHAR,
+    destination_id INTEGER,
+    txid           CHAR(64),
+    vout		   BIGINT,
+    spent_at        TIMESTAMP, -- this is the date when YOU use the funds
+    spending_txid   CHAR(64), -- the txid where you'd spent this output
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (txid) REFERENCES transactions(txid),
+    FOREIGN KEY (spending_txid) REFERENCES transactions(txid),
+    FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
+    CONSTRAINT outpoint_key UNIQUE(outpoint)
  );
-
-CREATE INDEX txos_keyname ON txos (keyname);
-CREATE INDEX txos_derivationpath ON txos (derivationpath);
-CREATE INDEX txos_lockingscript ON txos (lockingscript);
 
 CREATE TABLE proofs(
     blockhash VARCHAR(255) NOT NULL
@@ -69,6 +88,6 @@ CREATE TABLE proofs(
 );
 
 INSERT INTO keys(name, xprv)
-VALUES('keyname','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
+VALUES('masterkey','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
 
 

@@ -64,7 +64,7 @@ func (i *invoice) invoice(e echo.Context) error {
 }
 
 // create will validate and persist a new invoice.
-// @Summary Create invoice
+// @Summary InvoiceCreate invoice
 // @Description Creates an invoice with invoiceID and satoshis
 // @Tags Invoices
 // @Accept json
@@ -85,8 +85,8 @@ func (i *invoice) create(e echo.Context) error {
 }
 
 // delete godoc
-// @Summary Delete invoice
-// @Description Delete
+// @Summary InvoiceDelete invoice
+// @Description InvoiceDelete
 // @Tags Invoices
 // @Accept json
 // @Produce json
