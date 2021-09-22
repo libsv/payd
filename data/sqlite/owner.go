@@ -18,15 +18,11 @@ const (
 )
 
 func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.Owner, error) {
-	tx, err := s.newTx(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create transaction when retrieving owner")
-	}
 	owner := gopayd.Owner{
 		ExtendedData: make(map[string]string),
 	}
 
-	if err := tx.GetContext(ctx, &owner, sqlOwnerGet); err != nil {
+	if err := s.db.GetContext(ctx, &owner, sqlOwnerGet); err != nil {
 		return nil, errors.Wrap(err, "failed to get owner")
 	}
 
@@ -34,7 +30,7 @@ func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.Owner, error) {
 		Key   string `db:"key"`
 		Value string `db:"value"`
 	}{}
-	if err := tx.SelectContext(ctx, &meta, sqlOwnerMetaGet, owner.Name); err != nil {
+	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, owner.Name); err != nil {
 		return nil, errors.Wrap(err, "failed to get owner extended info")
 	}
 
