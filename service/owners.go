@@ -10,7 +10,8 @@ type owner struct {
 	str gopayd.OwnerStore
 }
 
-func NewOwnerService(str gopayd.OwnerStore) *owner {
+// NewOwnerService returns a new owner service.
+func NewOwnerService(str gopayd.OwnerStore) gopayd.OwnerService {
 	return &owner{
 		str: str,
 	}

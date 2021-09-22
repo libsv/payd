@@ -1,4 +1,4 @@
-package http
+package http //nolint:dupl // simple service
 
 import (
 	"net/http"
@@ -12,6 +12,7 @@ type owners struct {
 	svc gopayd.OwnerService
 }
 
+// NewOwnersHandler returns a new handler for owner endpoints.
 func NewOwnersHandler(svc gopayd.OwnerService) *owners {
 	return &owners{
 		svc: svc,
@@ -22,6 +23,14 @@ func (o *owners) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteV1Owner, o.owner)
 }
 
+// owner godoc
+// @Summary Owner
+// @Description Returns information about the wallet owner
+// @Tags Owner
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /owner [GET].
 func (o *owners) owner(c echo.Context) error {
 	owner, err := o.svc.Owner(c.Request().Context())
 	if err != nil {
