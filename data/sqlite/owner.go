@@ -13,7 +13,7 @@ const (
 	FROM owners
 	`
 	sqlOwnerMetaGet = `
-	SELECT key, name FROM owner_meta where owner_name = $1
+	SELECT key, value FROM owner_meta where owner_name = $1
 	`
 )
 
@@ -31,15 +31,15 @@ func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.Owner, error) {
 	}
 
 	meta := []struct {
-		key   string `db:"key"`
-		value string `db:"value"`
+		Key   string `db:"key"`
+		Value string `db:"value"`
 	}{}
 	if err := tx.SelectContext(ctx, &meta, sqlOwnerMetaGet, owner.Name); err != nil {
 		return nil, errors.Wrap(err, "failed to get owner extended info")
 	}
 
 	for _, m := range meta {
-		owner.ExtendedData[m.key] = m.value
+		owner.ExtendedData[m.Key] = m.Value
 	}
 
 	return &owner, nil
