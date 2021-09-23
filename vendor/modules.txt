@@ -25,8 +25,7 @@ github.com/boombuler/barcode/qr
 github.com/boombuler/barcode/utils
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/fsnotify/fsnotify v1.4.9
-## explicit
+# github.com/fsnotify/fsnotify v1.5.1
 github.com/fsnotify/fsnotify
 # github.com/go-openapi/jsonpointer v0.19.5
 github.com/go-openapi/jsonpointer
@@ -114,8 +113,7 @@ github.com/libsv/go-bt/sighash
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
 github.com/libsv/go-bt/v2/sighash
-# github.com/magiconair/properties v1.8.4
-## explicit
+# github.com/magiconair/properties v1.8.5
 github.com/magiconair/properties
 # github.com/mailru/easyjson v0.7.7
 ## explicit
@@ -131,15 +129,13 @@ github.com/mattn/go-isatty
 github.com/mattn/go-sqlite3
 # github.com/miekg/dns v1.1.43
 github.com/miekg/dns
-# github.com/mitchellh/mapstructure v1.4.0
-## explicit
+# github.com/mitchellh/mapstructure v1.4.2
 github.com/mitchellh/mapstructure
 # github.com/mrz1836/go-sanitize v1.1.5
 github.com/mrz1836/go-sanitize
 # github.com/mrz1836/go-validate v0.2.0
 github.com/mrz1836/go-validate
-# github.com/pelletier/go-toml v1.8.1
-## explicit
+# github.com/pelletier/go-toml v1.9.4
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
 ## explicit
@@ -149,22 +145,23 @@ github.com/pmezard/go-difflib/difflib
 # github.com/speps/go-hashids v2.0.0+incompatible
 ## explicit
 github.com/speps/go-hashids
-# github.com/spf13/afero v1.5.1
-## explicit
+# github.com/spf13/afero v1.6.0
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.3.1
-## explicit
+# github.com/spf13/cast v1.4.1
 github.com/spf13/cast
 # github.com/spf13/jwalterweatherman v1.1.0
-## explicit
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
-## explicit
 github.com/spf13/pflag
-# github.com/spf13/viper v1.7.1
+# github.com/spf13/viper v1.9.0
 ## explicit
 github.com/spf13/viper
+github.com/spf13/viper/internal/encoding
+github.com/spf13/viper/internal/encoding/hcl
+github.com/spf13/viper/internal/encoding/json
+github.com/spf13/viper/internal/encoding/toml
+github.com/spf13/viper/internal/encoding/yaml
 # github.com/stretchr/objx v0.3.0
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.7.0
@@ -241,8 +238,7 @@ golang.org/x/tools/internal/typeparams
 # gopkg.in/guregu/null.v3 v3.5.0
 ## explicit
 gopkg.in/guregu/null.v3
-# gopkg.in/ini.v1 v1.62.0
-## explicit
+# gopkg.in/ini.v1 v1.63.2
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
