@@ -17,6 +17,7 @@ func NewOwnerService(str gopayd.OwnerStore) gopayd.OwnerService {
 	}
 }
 
-func (o *owner) Owner(ctx context.Context) (*gopayd.Owner, error) {
+// Owner will return the current owner of the wallet.
+func (o *owner) Owner(ctx context.Context) (*gopayd.User, error) {
 	return o.str.Owner(ctx)
 }

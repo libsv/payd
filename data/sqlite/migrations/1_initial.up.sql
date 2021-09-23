@@ -11,20 +11,22 @@ CREATE TABLE keys (
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE owners(
-    name            VARCHAR NOT NULL PRIMARY KEY
-    ,avatar         VARCHAR NOT NULL
+CREATE TABLE users(
+    user_id         INTEGER PRIMARY KEY AUTOINCREMENT
+    ,is_owner       BOOLEAN NOT NULL DEFAULT 0
+    ,name           VARCHAR NOT NULL
+    ,avatar_url     VARCHAR
     ,email          VARCHAR NOT NULL
-    ,address        VARCHAR NOT NULL
-    ,phoneNumber    VARCHAR NOT NULL
+    ,address        VARCHAR
+    ,phone_number   VARCHAR
 );
 
-CREATE TABLE owner_meta(
-    owner_name      VARCHAR NOT NULL
+CREATE TABLE users_meta(
+    user_id      INTEGER NOT NULL
     ,key            VARCHAR NOT NULL
     ,value          VARCHAR NOT NULL
-    ,FOREIGN KEY (owner_name) REFERENCES owners(name)
-    ,CONSTRAINT owner_key UNIQUE(owner_name, key)
+    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
+    ,CONSTRAINT users_key UNIQUE(user_id, key)
 );
 
 -- TODO - we will maybe need a payments table as an invoice can have many payments
@@ -120,9 +122,9 @@ CREATE TABLE proof_callbacks(
 INSERT INTO keys(name, xprv)
 VALUES('masterkey','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
 
-INSERT INTO owners(name, avatar, email, address, phoneNumber)
-VALUES('Merchant Name', 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
+INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
+VALUES('Merchant Name',1, 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
 
-INSERT INTO owner_meta(owner_name, key, value)
-VALUES('Merchant Name', 'likes', 'walks in the park at night'),
-      ('Merchant Name', 'dislikes', 'trying to think up placeholder data');
+INSERT INTO users_meta(user_id, key, value)
+VALUES(1, 'likes', 'walks in the park at night'),
+      (1, 'dislikes', 'trying to think up placeholder data');

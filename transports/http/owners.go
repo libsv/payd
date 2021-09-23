@@ -19,18 +19,19 @@ func NewOwnersHandler(svc gopayd.OwnerService) *owners {
 	}
 }
 
+// RegisterRoutes will setup the http handler with the echo group.
 func (o *owners) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteV1Owner, o.owner)
 }
 
-// owner godoc
-// @Summary Owner
+// owner will return information on the current wallet owner.
+// @Summary Wallet owner information.
 // @Description Returns information about the wallet owner
-// @Tags Owner
+// @Tags Users
 // @Accept json
 // @Produce json
-// @Success 200
-// @Router /owner [GET].
+// @Success 200 {object} gopayd.User "Current wallet owner"
+// @Router v1/owner [GET].
 func (o *owners) owner(c echo.Context) error {
 	owner, err := o.svc.Owner(c.Request().Context())
 	if err != nil {
