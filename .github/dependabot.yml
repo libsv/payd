@@ -3,7 +3,7 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    target-branch: "main"
+    target-branch: "master"
     directory: "/"
     schedule:
       interval: "daily"

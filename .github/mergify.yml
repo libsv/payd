@@ -8,18 +8,14 @@ pull_request_rules:
     conditions:
       - -draft
       - author~=^dependabot(|-preview)\[bot\]$
-      - check-success='build (1.15.x, ubuntu-latest)'
+      - check-success='build (1.17.x, ubuntu-latest)'
       - check-success='build (1.16.x, ubuntu-latest)'
-      - check-success='build (1.15.x, macos-latest)'
+      - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.15.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
-      - check-success='lint (1.15.x, ubuntu-latest)'
+      - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
-      - check-success='lint (1.15.x, macos-latest)'
+      - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.15.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
@@ -27,22 +23,18 @@ pull_request_rules:
         type: APPROVE
         message: Automatically approving dependabot pull request
       merge:
-        method: merge
+        method: squash
   - name: Alert on major version detection
     conditions:
       - author~=^dependabot(|-preview)\[bot\]$
-      - check-success='build (1.15.x, ubuntu-latest)'
+      - check-success='build (1.17.x, ubuntu-latest)'
       - check-success='build (1.16.x, ubuntu-latest)'
-      - check-success='build (1.15.x, macos-latest)'
+      - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.15.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
-      - check-success='lint (1.15.x, ubuntu-latest)'
+      - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
-      - check-success='lint (1.15.x, macos-latest)'
+      - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.15.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - -title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
@@ -57,24 +49,20 @@ pull_request_rules:
   - name: Automatic Merge ⬇️ on Approval ✔
     conditions:
       - "#approved-reviews-by>=1"
-      - check-success='build (1.15.x, ubuntu-latest)'
+      - check-success='build (1.17.x, ubuntu-latest)'
       - check-success='build (1.16.x, ubuntu-latest)'
-      - check-success='build (1.15.x, macos-latest)'
+      - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.15.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
-      - check-success='lint (1.15.x, ubuntu-latest)'
+      - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
-      - check-success='lint (1.15.x, macos-latest)'
+      - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.15.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - label!=work-in-progress
       - -draft
     actions:
       merge:
-        method: merge
+        method: squash
 
   # ===============================================================================
   # AUTHOR

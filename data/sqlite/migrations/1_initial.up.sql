@@ -46,10 +46,13 @@ CREATE TABLE invoices (
 CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
 CREATE TABLE transactions (
-    txid            CHAR(64) NOT NULL PRIMARY KEY
-    ,invoice_id      VARCHAR NOT NULL
-    ,tx_hex          TEXT NOT NULL
-    ,created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    tx_id               CHAR(64) NOT NULL PRIMARY KEY
+    ,invoice_id         VARCHAR(30) NOT NULL
+    ,tx_hex             TEXT NOT NULL
+    ,state VARCHAR(10)  NOT NULL DEFAULT 'pending'
+    ,created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,deleted_at         TIMESTAMP
     ,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );
 
@@ -79,28 +82,39 @@ CREATE TABLE destination_invoice(
 
 -- store unspent transactions
 CREATE TABLE txos (
-    outpoint        VARCHAR,
+    outpoint        VARCHAR PRIMARY KEY,
     destination_id INTEGER,
-    txid           CHAR(64),
+    tx_id           CHAR(64),
     vout		   BIGINT,
     spent_at        TIMESTAMP, -- this is the date when YOU use the funds
     spending_txid   CHAR(64), -- the txid where you'd spent this output
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    modified_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (txid) REFERENCES transactions(txid),
-    FOREIGN KEY (spending_txid) REFERENCES transactions(txid),
-    FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
-    CONSTRAINT outpoint_key UNIQUE(outpoint)
+    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tx_id) REFERENCES transactions(tx_id),
+    FOREIGN KEY (spending_txid) REFERENCES transactions(tx_id),
+    FOREIGN KEY (destination_id) REFERENCES destinations(destination_id)
  );
 
 CREATE TABLE proofs(
-    blockhash VARCHAR(255) NOT NULL
-    ,txid  VARCHAR(64) NOT NULL
-    ,data TEXT NOT NULL
-    ,createdAt      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,modifiedAt     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,PRIMARY KEY(blockhash, txid)
-    ,FOREIGN KEY (txid) REFERENCES transactions(txid)
+    blockhash           VARCHAR(255) NOT NULL
+    ,tx_id              VARCHAR(64) NOT NULL
+    ,data               TEXT NOT NULL
+    ,created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,PRIMARY KEY(blockhash, tx_id)
+    ,FOREIGN KEY (tx_id) REFERENCES transactions(tx_id)
+);
+
+CREATE TABLE proof_callbacks(
+    invoice_id                          VARCHAR NOT NULL,
+    url                                 VARCHAR NOT NULL,
+    token                               VARCHAR,
+    state                               VARCHAR NOT NULL,
+    attempts                            INTEGER NOT NULL DEFAULT 0,
+    created_at                          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at                          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id)            REFERENCES invoices(invoice_id),
+    PRIMARY KEY(invoice_id,url)
 );
 
 INSERT INTO keys(name, xprv)

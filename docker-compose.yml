@@ -17,3 +17,4 @@ services:
 networks:
   regtest-stack:
     name: regtest-stack
+    external: true

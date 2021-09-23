@@ -13,10 +13,10 @@ require (
 	github.com/labstack/echo/v4 v4.5.0
 	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.9.0 // indirect
-	github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
+	github.com/libsv/go-bc v0.1.4
 	github.com/libsv/go-bk v0.1.4
 	github.com/libsv/go-bt v1.0.0
-	github.com/libsv/go-bt/v2 v2.0.0-beta.2
+	github.com/libsv/go-bt/v2 v2.0.0-beta.6
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -34,15 +34,16 @@ require (
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect
 	github.com/swaggo/swag v1.7.1
-	github.com/theflyingcodr/govalidator v0.0.1
+	github.com/theflyingcodr/govalidator v0.0.2
 	github.com/theflyingcodr/lathos v0.0.3
 	github.com/tonicpow/go-minercraft v0.3.0
 	github.com/tonicpow/go-paymail v0.1.6
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools v0.1.6 // indirect
 	gopkg.in/guregu/null.v3 v3.5.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

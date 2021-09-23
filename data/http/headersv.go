@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -35,7 +34,7 @@ func (h *hsvConnection) BlockHeader(ctx context.Context, blockHash string) (*bc.
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating request for chain/header/%s", blockHash)
 	}
-
+	req.Header.Add("Content-Type", "application/octet-stream")
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -53,10 +52,13 @@ func (h *hsvConnection) BlockHeader(ctx context.Context, blockHash string) (*bc.
 		return nil, fmt.Errorf("block header request: unexpected status code %d\nresponse body:\n%s", resp.StatusCode, body)
 	}
 
-	var bh *bc.BlockHeader
-	if err = json.NewDecoder(resp.Body).Decode(&bh); err != nil {
+	headerBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
-
+	bh, err := bc.NewBlockHeaderFromBytes(headerBytes)
+	if err != nil {
+		return nil, err
+	}
 	return bh, nil
 }

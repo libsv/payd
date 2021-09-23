@@ -28,7 +28,7 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req gopayd.ProofWrapper) 
 	}
 	dbProof := struct {
 		Blockhash string `db:"blockhash"`
-		TxID      string `db:"txid"`
+		TxID      string `db:"tx_id"`
 		Data      string `db:"data"`
 	}{
 		Blockhash: req.BlockHash,
