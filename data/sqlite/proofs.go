@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 )
 
 // ProofsCreate will insert a proof to the database.
-func (s *sqliteStore) ProofCreate(ctx context.Context, req gopayd.ProofWrapper) error {
+func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) error {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return errors.WithStack(err)

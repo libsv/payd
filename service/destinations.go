@@ -9,7 +9,7 @@ import (
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -18,14 +18,14 @@ const (
 )
 
 type destinations struct {
-	privKeySvc gopayd.PrivateKeyService
-	destRdrWtr gopayd.DestinationsReaderWriter
-	derivRdr   gopayd.DerivationReader
-	feeRdr     gopayd.FeeReader
+	privKeySvc payd.PrivateKeyService
+	destRdrWtr payd.DestinationsReaderWriter
+	derivRdr   payd.DerivationReader
+	feeRdr     payd.FeeReader
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(privKeySvc gopayd.PrivateKeyService, destRdrWtr gopayd.DestinationsReaderWriter, derivRdr gopayd.DerivationReader, feeRdr gopayd.FeeReader) *destinations {
+func NewDestinationsService(privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, feeRdr payd.FeeReader) *destinations {
 	return &destinations{
 		privKeySvc: privKeySvc,
 		destRdrWtr: destRdrWtr,
@@ -36,7 +36,7 @@ func NewDestinationsService(privKeySvc gopayd.PrivateKeyService, destRdrWtr gopa
 
 // Create will split satoshis into multiple denominations and store
 // as denominations waiting to be fulfilled in a tx.
-func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.DestinationsCreate) (*gopayd.Destination, error) {
+func (d *destinations) DestinationsCreate(ctx context.Context, req payd.DestinationsCreate) (*payd.Destination, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 	// 1 for now - we may decide to increase or split output in future so
 	// keeping the code here flexible
 	totOutputs := 1
-	destinations := make([]gopayd.DestinationCreate, 0, totOutputs)
+	destinations := make([]payd.DestinationCreate, 0, totOutputs)
 	for i := 0; i < totOutputs; i++ {
 		// TODO - run in a go routine when we start splitting
 		var path string
@@ -59,7 +59,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 				return nil, errors.New("failed to create seed for derivation path")
 			}
 			path = bip32.DerivePath(seed)
-			exists, err := d.derivRdr.DerivationPathExists(ctx, gopayd.DerivationExistsArgs{
+			exists, err := d.derivRdr.DerivationPathExists(ctx, payd.DerivationExistsArgs{
 				KeyName: keyname,
 				Path:    path,
 			})
@@ -85,14 +85,14 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 		} else {
 			sats = args.Denomination
 		}*/
-		destinations = append(destinations, gopayd.DestinationCreate{
+		destinations = append(destinations, payd.DestinationCreate{
 			Keyname:        keyname,
 			DerivationPath: path,
 			Script:         s.String(),
 			Satoshis:       req.Satoshis,
 		})
 	}
-	oo, err := d.destRdrWtr.DestinationsCreate(ctx, gopayd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)
+	oo, err := d.destRdrWtr.DestinationsCreate(ctx, payd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to store destinations")
 	}
@@ -101,14 +101,14 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req gopayd.Destin
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get fees when creating destinations")
 	}
-	return &gopayd.Destination{
+	return &payd.Destination{
 		Outputs: oo,
 		Fees:    fees,
 	}, nil
 }
 
 // Destinations given the args, will return a set of Destinations.
-func (d *destinations) Destinations(ctx context.Context, args gopayd.DestinationsArgs) (*gopayd.Destination, error) {
+func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsArgs) (*payd.Destination, error) {
 	if err := args.Validate(); err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (d *destinations) Destinations(ctx context.Context, args gopayd.Destination
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get fees when creating destinations")
 	}
-	return &gopayd.Destination{
+	return &payd.Destination{
 		Outputs: oo,
 		Fees:    fees,
 	}, nil

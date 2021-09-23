@@ -7,17 +7,17 @@ import (
 	"github.com/libsv/go-bk/envelope"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 // proofs is used to accept merkle proofs from transactions
 // submitted by the payment protocol server.
 type proofs struct {
-	svc gopayd.ProofsService
+	svc payd.ProofsService
 }
 
 // NewProofs will setup and return a new proofs http handler.
-func NewProofs(svc gopayd.ProofsService) *proofs {
+func NewProofs(svc payd.ProofsService) *proofs {
 	return &proofs{svc: svc}
 }
 
@@ -41,7 +41,7 @@ func (p *proofs) create(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return errors.WithStack(err)
 	}
-	args := gopayd.ProofCreateArgs{TxID: c.Param("txid")}
+	args := payd.ProofCreateArgs{TxID: c.Param("txid")}
 	if err := p.svc.Create(c.Request().Context(), args, req); err != nil {
 		return errors.WithStack(err)
 	}

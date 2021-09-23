@@ -8,15 +8,15 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type proofs struct {
-	wtr gopayd.ProofsWriter
+	wtr payd.ProofsWriter
 }
 
 // NewProofsService will setup and return a new merkle proof service.
-func NewProofsService(wtr gopayd.ProofsWriter) *proofs {
+func NewProofsService(wtr payd.ProofsWriter) *proofs {
 	return &proofs{
 		wtr: wtr,
 	}
@@ -24,8 +24,8 @@ func NewProofsService(wtr gopayd.ProofsWriter) *proofs {
 
 // Create will add a merkle proof to a data store for persistent storage once it has
 // been validated.
-func (p *proofs) Create(ctx context.Context, args gopayd.ProofCreateArgs, req envelope.JSONEnvelope) error {
-	var proof *gopayd.ProofWrapper
+func (p *proofs) Create(ctx context.Context, args payd.ProofCreateArgs, req envelope.JSONEnvelope) error {
+	var proof *payd.ProofWrapper
 	if err := json.Unmarshal([]byte(req.Payload), &proof); err != nil {
 		return errors.Wrap(err, "failed to unmarshall JSONEnvelope")
 	}

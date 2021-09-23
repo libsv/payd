@@ -86,7 +86,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gopayd.InvoiceCreate"
+                            "$ref": "#/definitions/payd.InvoiceCreate"
                         }
                     }
                 ],
@@ -207,7 +207,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gopayd.CreatePayment"
+                            "$ref": "#/definitions/payd.CreatePayment"
                         }
                     }
                 ],
@@ -365,7 +365,7 @@ var doc = `{
                 }
             }
         },
-        "gopayd.CreatePayment": {
+        "payd.CreatePayment": {
             "type": "object",
             "properties": {
                 "memo": {
@@ -374,7 +374,7 @@ var doc = `{
                 },
                 "merchantData": {
                     "description": "MerchantData is copied from PaymentDetails.merchantData.\nPayment hosts may use invoice numbers or any other data they require to match Payments to PaymentRequests.\nNote that malicious clients may modify the merchantData, so should be authenticated\nin some way (for example, signed with a payment host-only key).\nMaximum length is 10000 characters.",
-                    "$ref": "#/definitions/gopayd.MerchantData"
+                    "$ref": "#/definitions/payd.MerchantData"
                 },
                 "refundTo": {
                     "description": "RefundTo is a paymail to send a refund to should a refund be necessary.\nMaximum length is 100 characters",
@@ -390,7 +390,7 @@ var doc = `{
                 }
             }
         },
-        "gopayd.InvoiceCreate": {
+        "payd.InvoiceCreate": {
             "type": "object",
             "properties": {
                 "satoshis": {
@@ -398,7 +398,7 @@ var doc = `{
                 }
             }
         },
-        "gopayd.MerchantData": {
+        "payd.MerchantData": {
             "type": "object",
             "properties": {
                 "address": {

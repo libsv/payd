@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type invoices struct {
-	svc gopayd.InvoiceService
+	svc payd.InvoiceService
 }
 
 // NewInvoice will setup and return a new invoices handler.
-func NewInvoice(svc gopayd.InvoiceService) *invoices {
+func NewInvoice(svc payd.InvoiceService) *invoices {
 	return &invoices{svc: svc}
 }
 
@@ -52,7 +52,7 @@ func (i *invoices) invoices(e echo.Context) error {
 // @Success 200
 // @Router v1/invoices/{invoiceID} [GET].
 func (i *invoices) invoice(e echo.Context) error {
-	var args gopayd.InvoiceArgs
+	var args payd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
 		return errors.Wrap(err, "failed to parse invoices args")
 	}
@@ -69,11 +69,11 @@ func (i *invoices) invoice(e echo.Context) error {
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param body body gopayd.InvoiceCreate true "Reference and Satoshis"
+// @Param body body payd.InvoiceCreate true "Reference and Satoshis"
 // @Success 201
 // @Router v1/invoices [POST].
 func (i *invoices) create(e echo.Context) error {
-	var req gopayd.InvoiceCreate
+	var req payd.InvoiceCreate
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to parse invoices create req")
 	}
@@ -92,10 +92,10 @@ func (i *invoices) create(e echo.Context) error {
 // @Produce json
 // @Param invoiceID path string true "invoiceID we want to remove"
 // @Success 200
-// @Failure 404 {object} gopayd.ClientError "returned if the paymentID has not been found"
+// @Failure 404 {object} payd.ClientError "returned if the paymentID has not been found"
 // @Router v1/invoices/{invoiceID} [DELETE].
 func (i *invoices) delete(e echo.Context) error {
-	var args gopayd.InvoiceArgs
+	var args payd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
 		return errors.Wrap(err, "failed to parse invoices delete args")
 	}

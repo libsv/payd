@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
@@ -44,7 +44,7 @@ const (
 )
 
 // TransactionCreate will store a transaction and its txos in the data base.
-func (s *sqliteStore) TransactionCreate(ctx context.Context, req gopayd.TransactionCreate) error {
+func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.TransactionCreate) error {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction when inserting transaction to db")
@@ -103,7 +103,7 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req gopayd.Transact
 }
 
 // TransactionUpdateState will update a transactions internal state.
-func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args gopayd.TransactionArgs, req gopayd.TransactionStateUpdate) error {
+func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.TransactionArgs, req payd.TransactionStateUpdate) error {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction when updating transaction state")

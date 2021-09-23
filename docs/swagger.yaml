@@ -51,13 +51,13 @@ definitions:
       signature:
         type: string
     type: object
-  gopayd.CreatePayment:
+  payd.CreatePayment:
     properties:
       memo:
         description: Memo is a plain-text note from the customer to the payment host.
         type: string
       merchantData:
-        $ref: '#/definitions/gopayd.MerchantData'
+        $ref: '#/definitions/payd.MerchantData'
         description: |-
           MerchantData is copied from PaymentDetails.merchantData.
           Payment hosts may use invoice numbers or any other data they require to match Payments to PaymentRequests.
@@ -81,12 +81,12 @@ definitions:
           The transaction is hex-encoded and must NOT be prefixed with "0x".
         type: string
     type: object
-  gopayd.InvoiceCreate:
+  payd.InvoiceCreate:
     properties:
       satoshis:
         type: integer
     type: object
-  gopayd.MerchantData:
+  payd.MerchantData:
     properties:
       address:
         description: Address is the merchants store / head office address.
@@ -193,7 +193,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/gopayd.InvoiceCreate'
+          $ref: '#/definitions/payd.InvoiceCreate'
       produces:
       - application/json
       responses:
@@ -257,7 +257,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/gopayd.CreatePayment'
+          $ref: '#/definitions/payd.CreatePayment'
       produces:
       - application/json
       responses:
