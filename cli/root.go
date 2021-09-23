@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -15,12 +16,17 @@ import (
 var (
 	verbose      bool
 	outputFormat string
-	account      string
+	useContext   string
 )
 
 var (
 	printer output.PrintFunc
-	cfg     *config.Config = config.NewConfig()
+	cfg     *config.Config
+)
+
+var (
+	// ErrContextNotFound when context doesn't exist.
+	ErrContextNotFound = errors.New("context not found")
 )
 
 var rootCmd = &cobra.Command{
@@ -29,8 +35,15 @@ var rootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	Short:         "Interface with payd",
 	Long:          "Interface with payd",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		printer = output.NewPrinter(output.Format(outputFormat))
+		if useContext != "" {
+			if ok := cfg.LoadContext(useContext); !ok {
+				return ErrContextNotFound
+			}
+		}
+
+		return nil
 	},
 }
 
@@ -38,8 +51,8 @@ func init() {
 	initConfig()
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose printing")
-	rootCmd.PersistentFlags().StringVarP(&account, "account", "a", "", "account name")
 	rootCmd.PersistentFlags().StringVarP(&outputFormat, "output", "o", "table", "output format")
+	rootCmd.PersistentFlags().StringVar(&useContext, "use-context", "", "output format")
 }
 
 func initConfig() {
@@ -50,12 +63,14 @@ func initConfig() {
 	viper.SetConfigName(".payctl")
 	viper.SetConfigType("yml")
 
-	viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 
-	cfg.WithWallet().
-		WithAccount()
+	cfg = config.NewConfig().
+		WithWallet().
+		WithAccount().
+		WithContexts()
 
-	viper.SafeWriteConfig()
+	_ = viper.SafeWriteConfig()
 }
 
 // Execute the command.

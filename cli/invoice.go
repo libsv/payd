@@ -88,7 +88,6 @@ func invoiceCreate(cmd *cobra.Command, args []string) error {
 	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Wallet))
 	inv, err := svc.Create(cmd.Context(), models.InvoiceCreateRequest{
 		Satoshis:    satoshis,
-		Account:     account,
 		Reference:   &invoiceReference,
 		Description: &invoiceDescription,
 	})

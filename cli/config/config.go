@@ -11,6 +11,7 @@ import (
 type ContextKey string
 
 const (
+	CfgContexts                  = "contexts"
 	CfgCurrentContext            = "current.context"
 	CfgWalletHost     ContextKey = "wallet.host"
 	CfgWalletPort     ContextKey = "wallet.port"
@@ -21,9 +22,14 @@ func (c ContextKey) Key() string {
 	return fmt.Sprintf("contexts.%s.%s", viper.GetString(CfgCurrentContext), c)
 }
 
+func (c ContextKey) KeyFor(name string) string {
+	return fmt.Sprintf("contexts.%s.%s", name, c)
+}
+
 type Config struct {
+	CurrentContext string
 	*Context
-	Contexts []*Context
+	Contexts map[string]*Context
 }
 
 type Context struct {
@@ -33,8 +39,9 @@ type Context struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Context:  &Context{},
-		Contexts: make([]*Context, 0),
+		CurrentContext: viper.GetString(CfgCurrentContext),
+		Context:        &Context{},
+		Contexts:       make(map[string]*Context),
 	}
 }
 
@@ -44,11 +51,11 @@ type Wallet struct {
 }
 
 func (c *Config) WithWallet() *Config {
-	viper.SetDefault(CfgWalletHost.Key(), "http://payd:8443")
-	viper.SetDefault(CfgWalletPort.Key(), ":8443")
+	viper.SetDefault(CfgWalletHost.KeyFor(c.CurrentContext), "http://payd:8443")
+	viper.SetDefault(CfgWalletPort.KeyFor(c.CurrentContext), ":8443")
 	c.Wallet = &Wallet{
-		host: viper.GetString(CfgWalletHost.Key()),
-		port: viper.GetString(CfgWalletPort.Key()),
+		host: viper.GetString(CfgWalletHost.KeyFor(c.CurrentContext)),
+		port: viper.GetString(CfgWalletPort.KeyFor(c.CurrentContext)),
 	}
 	return c
 }
@@ -69,10 +76,35 @@ type Account struct {
 }
 
 func (c *Config) WithAccount() *Config {
-	viper.SetDefault(CfgAccountName.Key(), "me")
+	viper.SetDefault(CfgAccountName.KeyFor(c.CurrentContext), "me")
 	c.Account = &Account{
-		Name: viper.GetString(CfgAccountName.Key()),
+		Name: viper.GetString(CfgAccountName.KeyFor(c.CurrentContext)),
 	}
 
 	return c
+}
+
+func (c *Config) WithContexts() *Config {
+	mm := viper.Get(CfgContexts).(map[string]interface{})
+	for k := range mm {
+		cfg := NewConfig()
+		cfg.CurrentContext = k
+
+		cfg.WithWallet().WithAccount()
+
+		c.Contexts[k] = cfg.Context
+	}
+
+	return c
+}
+
+func (c *Config) LoadContext(name string) bool {
+	for k := range c.Contexts {
+		if name == k {
+			c.CurrentContext = name
+			c.Context = c.Contexts[name]
+			return true
+		}
+	}
+	return false
 }

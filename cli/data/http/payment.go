@@ -56,7 +56,7 @@ func (p *paymentHttp) Submit(ctx context.Context, args models.PaymentSendArgs) (
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Add("x-account", args.Account)
+	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := p.c.Do(r)
 	if err != nil {

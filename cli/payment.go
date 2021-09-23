@@ -93,7 +93,6 @@ func paymentSend(cmd *cobra.Command, args []string) error {
 	)
 	resp, err := svc.Send(cmd.Context(), models.PaymentSendArgs{
 		PaymentRequest: payReq,
-		Account:        account,
 		Tx:             tx,
 	})
 	if err != nil {

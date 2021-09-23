@@ -393,6 +393,11 @@ issues:
         - goconst
         - lll
 
+    # Exclude some linters from running on cli files.
+    - path: cli/
+      linters:
+        - gochecknoglobals
+
     # Exclude known linters from partially hard-vendored code,
     # which is impossible to exclude via "nolint" comments.
     - path: internal/hmac/

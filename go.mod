@@ -22,7 +22,7 @@ require (
 	github.com/libsv/go-bc v0.1.2-0.20210824135914-5608544d22bf
 	github.com/libsv/go-bk v0.1.4
 	github.com/libsv/go-bt v1.0.0
-	github.com/libsv/go-bt/v2 v2.0.0-beta.2
+	github.com/libsv/go-bt/v2 v2.0.0-beta.7
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
@@ -56,3 +56,5 @@ require (
 	gopkg.in/resty.v1 v1.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
+
+replace github.com/libsv/go-bt/v2 => ../go-bt
