@@ -24,24 +24,16 @@ func NewFundService(rt models.Regtest, ps models.PaymentStore, sec spv.EnvelopeC
 }
 
 func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.PaymentAck, error) {
-	opts := make(map[string]float64)
+	tx := bt.NewTx()
 	for _, o := range payReq.Outputs {
 		s, err := bscript.NewFromHexString(o.Script)
 		if err != nil {
 			return nil, err
 		}
 
-		pkh, err := s.PublicKeyHash()
-		if err != nil {
+		if err := tx.AddP2PKHOutputFromScript(s, o.Amount); err != nil {
 			return nil, err
 		}
-
-		addr, err := bscript.NewAddressFromPublicKeyHash(pkh, false)
-		if err != nil {
-			return nil, err
-		}
-
-		opts[addr.AddressString] = float64(o.Amount) / 1000000000
 	}
 
 	resp, err := f.rt.ListUnspent(ctx)
@@ -49,7 +41,6 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 		return nil, err
 	}
 
-	tx := bt.NewTx()
 	if err := tx.Fund(ctx, payReq.Fee, func() bt.UTXOGetterFunc {
 		idx := 0
 		utxos := resp.Result
@@ -66,7 +57,12 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 	}()); err != nil {
 		return nil, err
 	}
-	if err := tx.ChangeToAddress("mk4aGx8uGR2U5Qku2zzngdEC9VH8zBqQ9K", payReq.Fee); err != nil {
+
+	addressResp, err := f.rt.GetNewAddress(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.ChangeToAddress(*addressResp.Result, payReq.Fee); err != nil {
 		return nil, err
 	}
 

@@ -12,8 +12,8 @@ import (
 type Regtest interface {
 	RawTransaction(ctx context.Context, txID string) (*RawTxResponse, error)
 	RawTransaction1(ctx context.Context, txID string) (*RawTx1Response, error)
-	CreateRawTransaction(ctx context.Context, utxos []*bt.UTXO, outputs map[string]float64) (*CreateRawTxResponse, error)
 	ListUnspent(ctx context.Context) (*ListUnspentResponse, error)
+	GetNewAddress(ctx context.Context) (*GetNewAddressResponse, error)
 	SignRawTransaction(ctx context.Context, tx string) (*SignRawTxResponse, error)
 	MerkleProof(ctx context.Context, blockHash, txID string) (*MerkleProofResponse, error)
 }
@@ -76,6 +76,10 @@ type SignRawTxResponse struct {
 		Complete bool   `json:"complete"`
 	} `json:"result"`
 	response
+}
+
+type GetNewAddressResponse struct {
+	stringResponse
 }
 
 func (e *Error) Error() string {
