@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -36,7 +36,7 @@ const (
 	`
 )
 
-func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.DestinationsCreateArgs, req []gopayd.DestinationCreate) ([]gopayd.Output, error) {
+func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.DestinationsCreateArgs, req []payd.DestinationCreate) ([]payd.Output, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to setup sql transaction when adding destinations for invoice %s", args.InvoiceID.ValueOrZero())
@@ -69,7 +69,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.Destin
 		return nil, errors.Wrap(err, "failed to scan destination rows")
 	}
 	fmt.Println(sqlArgs)
-	var dd []gopayd.Output
+	var dd []payd.Output
 	for rows.Next() {
 		var (
 			id             uint64
@@ -81,7 +81,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.Destin
 		if err := rows.Scan(&id, &lockingScript, &derivationPath, &satoshis, &state); err != nil {
 			return nil, errors.Wrap(err, "failed to scan destination row")
 		}
-		dd = append(dd, gopayd.Output{
+		dd = append(dd, payd.Output{
 			ID:             id,
 			LockingScript:  lockingScript,
 			Satoshis:       satoshis,
@@ -116,8 +116,8 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args gopayd.Destin
 }
 
 // Destinations will return a set of destination outputs for a specific invoiceID.
-func (s *sqliteStore) Destinations(ctx context.Context, args gopayd.DestinationsArgs) ([]gopayd.Output, error) {
-	var oo []gopayd.Output
+func (s *sqliteStore) Destinations(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
+	var oo []payd.Output
 	if err := s.db.SelectContext(ctx, &oo, sqlDestinationsByInvoiceID, args.InvoiceID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))

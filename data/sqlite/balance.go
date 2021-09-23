@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -18,11 +18,11 @@ const (
 )
 
 // Balance will return the current account balance.
-func (s *sqliteStore) Balance(ctx context.Context) (*gopayd.Balance, error) {
-	var resp gopayd.Balance
+func (s *sqliteStore) Balance(ctx context.Context) (*payd.Balance, error) {
+	var resp payd.Balance
 	if err := s.db.GetContext(ctx, &resp, sqlBalance); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &gopayd.Balance{Satoshis: 0}, nil
+			return &payd.Balance{Satoshis: 0}, nil
 		}
 		return nil, errors.Wrap(err, "failed to get balance")
 	}

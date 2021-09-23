@@ -8,17 +8,17 @@ import (
 	"github.com/libsv/go-bk/chaincfg"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type privateKey struct {
-	store           gopayd.PrivateKeyReaderWriter
+	store           payd.PrivateKeyReaderWriter
 	useMainNet      bool
 	numericPlusTick *regexp.Regexp
 }
 
 // NewPrivateKeys will setup and return a new PrivateKey service.
-func NewPrivateKeys(store gopayd.PrivateKeyReaderWriter, useMainNet bool) *privateKey {
+func NewPrivateKeys(store payd.PrivateKeyReaderWriter, useMainNet bool) *privateKey {
 	return &privateKey{
 		store:           store,
 		useMainNet:      useMainNet,
@@ -28,7 +28,7 @@ func NewPrivateKeys(store gopayd.PrivateKeyReaderWriter, useMainNet bool) *priva
 
 // Create creates a extended private key for a keyName.
 func (svc *privateKey) Create(ctx context.Context, keyName string) error { // get keyname from settings in caller
-	key, err := svc.store.PrivateKey(ctx, gopayd.KeyArgs{Name: keyName})
+	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName})
 	if err != nil {
 		return errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}
@@ -47,7 +47,7 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 	if err != nil {
 		return errors.Wrap(err, "failed to create master node for given seed and chain")
 	}
-	if _, err := svc.store.PrivateKeyCreate(ctx, gopayd.PrivateKey{
+	if _, err := svc.store.PrivateKeyCreate(ctx, payd.PrivateKey{
 		Name: keyName,
 		Xprv: xprv.String(),
 	}); err != nil {
@@ -58,7 +58,7 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 
 // PrivateKey returns the extended private key for a keyname.
 func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error) {
-	key, err := svc.store.PrivateKey(ctx, gopayd.KeyArgs{Name: keyName})
+	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}

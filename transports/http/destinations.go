@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type destinations struct {
-	svc gopayd.DestinationsService
+	svc payd.DestinationsService
 }
 
 // NewDestinations will setup and return a new destinations http handler.
-func NewDestinations(svc gopayd.DestinationsService) *destinations {
+func NewDestinations(svc payd.DestinationsService) *destinations {
 	return &destinations{svc: svc}
 }
 
@@ -30,11 +30,11 @@ func (d *destinations) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
-// @Failure 404 {object} gopayd.ClientError "returned if the invoiceID has not been found"
+// @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
 // @Success 200
 // @Router v1/destinations/{invoiceID} [GET].
 func (d *destinations) destination(e echo.Context) error {
-	var args gopayd.DestinationsArgs
+	var args payd.DestinationsArgs
 	if err := e.Bind(&args); err != nil {
 		return errors.Wrap(err, "failed to parse destination args")
 	}

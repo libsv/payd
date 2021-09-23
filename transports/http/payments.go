@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type payments struct {
-	svc gopayd.PaymentsService
+	svc payd.PaymentsService
 }
 
 // NewPayments will setup and return a new payments http handler.
-func NewPayments(svc gopayd.PaymentsService) *payments {
+func NewPayments(svc payd.PaymentsService) *payments {
 	return &payments{svc: svc}
 }
 
@@ -31,11 +31,11 @@ func (p *payments) RegisterRoutes(g *echo.Group) {
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
 // @Failure 400 {object} validator.ErrValidation "returned if the invoiceID is empty or payment isn't valid"
-// @Failure 404 {object} gopayd.ClientError "returned if the invoiceID has not been found"
+// @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
 // @Success 200
 // @Router v1/payments/{invoiceID} [POST].
 func (p *payments) create(e echo.Context) error {
-	var req gopayd.PaymentCreate
+	var req payd.PaymentCreate
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to bind request")
 	}
