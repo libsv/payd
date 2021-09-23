@@ -5,32 +5,33 @@ package mocks
 
 import (
 	"context"
-	"github.com/libsv/payd"
 	"sync"
+
+	"github.com/libsv/payd"
 )
 
-// Ensure, that ProofsWriterMock does implement gopayd.ProofsWriter.
+// Ensure, that ProofsWriterMock does implement payd.ProofsWriter.
 // If this is not the case, regenerate this file with moq.
-var _ gopayd.ProofsWriter = &ProofsWriterMock{}
+var _ payd.ProofsWriter = &ProofsWriterMock{}
 
-// ProofsWriterMock is a mock implementation of gopayd.ProofsWriter.
+// ProofsWriterMock is a mock implementation of payd.ProofsWriter.
 //
 // 	func TestSomethingThatUsesProofsWriter(t *testing.T) {
 //
-// 		// make and configure a mocked gopayd.ProofsWriter
+// 		// make and configure a mocked payd.ProofsWriter
 // 		mockedProofsWriter := &ProofsWriterMock{
-// 			ProofCreateFunc: func(ctx context.Context, req gopayd.ProofWrapper) error {
+// 			ProofCreateFunc: func(ctx context.Context, req payd.ProofWrapper) error {
 // 				panic("mock out the ProofCreate method")
 // 			},
 // 		}
 //
-// 		// use mockedProofsWriter in code that requires gopayd.ProofsWriter
+// 		// use mockedProofsWriter in code that requires payd.ProofsWriter
 // 		// and then make assertions.
 //
 // 	}
 type ProofsWriterMock struct {
 	// ProofCreateFunc mocks the ProofCreate method.
-	ProofCreateFunc func(ctx context.Context, req gopayd.ProofWrapper) error
+	ProofCreateFunc func(ctx context.Context, req payd.ProofWrapper) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,20 +40,20 @@ type ProofsWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Req is the req argument value.
-			Req gopayd.ProofWrapper
+			Req payd.ProofWrapper
 		}
 	}
 	lockProofCreate sync.RWMutex
 }
 
 // ProofCreate calls ProofCreateFunc.
-func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req gopayd.ProofWrapper) error {
+func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req payd.ProofWrapper) error {
 	if mock.ProofCreateFunc == nil {
 		panic("ProofsWriterMock.ProofCreateFunc: method is nil but ProofsWriter.ProofCreate was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Req gopayd.ProofWrapper
+		Req payd.ProofWrapper
 	}{
 		Ctx: ctx,
 		Req: req,
@@ -68,11 +69,11 @@ func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req gopayd.ProofW
 //     len(mockedProofsWriter.ProofCreateCalls())
 func (mock *ProofsWriterMock) ProofCreateCalls() []struct {
 	Ctx context.Context
-	Req gopayd.ProofWrapper
+	Req payd.ProofWrapper
 } {
 	var calls []struct {
 		Ctx context.Context
-		Req gopayd.ProofWrapper
+		Req payd.ProofWrapper
 	}
 	mock.lockProofCreate.RLock()
 	calls = mock.calls.ProofCreate

@@ -80,7 +80,7 @@ github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/josharian/intern v1.0.0
 github.com/josharian/intern
-# github.com/labstack/echo/v4 v4.5.0
+# github.com/labstack/echo/v4 v4.6.0
 ## explicit
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
@@ -125,7 +125,6 @@ github.com/mailru/easyjson/jwriter
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.14
-## explicit
 github.com/mattn/go-isatty
 # github.com/mattn/go-sqlite3 v1.14.8
 ## explicit
@@ -211,7 +210,6 @@ golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ripemd160
 # golang.org/x/net v0.0.0-20210913180222-943fd674d43e
-## explicit
 golang.org/x/net/bpf
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -226,7 +224,6 @@ golang.org/x/net/publicsuffix
 golang.org/x/net/webdav
 golang.org/x/net/webdav/internal/xml
 # golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0
-## explicit
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix

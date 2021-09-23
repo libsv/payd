@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -22,7 +22,7 @@ type proofCallbackDTO struct {
 }
 
 // ProofCallBacksCreate can be implemented to store merkle proof callback urls for an invoice.
-func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args gopayd.ProofCallbackArgs, req map[string]gopayd.ProofCallback) error {
+func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args payd.ProofCallbackArgs, req map[string]payd.ProofCallback) error {
 	if len(req) == 0 {
 		// nothing to store
 		return nil
