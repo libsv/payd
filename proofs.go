@@ -80,6 +80,11 @@ func (p ProofWrapper) Validate(args ProofCreateArgs) error {
 	return vl.Err()
 }
 
+// ProofCallbackArgs are used to identify proofs for an invoice.
+type ProofCallbackArgs struct {
+	InvoiceID string `db:"invoice_id"`
+}
+
 // ProofsService enforces business rules and validation when handling merkle proofs.
 type ProofsService interface {
 	// Create will store a JSONEnvelope that contains a merkleproof. The envelope should
@@ -92,4 +97,10 @@ type ProofsService interface {
 type ProofsWriter interface {
 	// ProofCreate can be used to persist a merkle proof in TSC format.
 	ProofCreate(ctx context.Context, req ProofWrapper) error
+}
+
+// ProofCallbackWriter can be implemented to support writing proof callbacks.
+type ProofCallbackWriter interface {
+	// ProofCallBacksCreate can be implemented to store merkle proof callback urls for an invoice.
+	ProofCallBacksCreate(ctx context.Context, args ProofCallbackArgs, callbacks map[string]ProofCallback) error
 }

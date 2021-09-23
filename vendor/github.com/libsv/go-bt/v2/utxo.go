@@ -23,6 +23,7 @@ type utxoJSON struct {
 	Satoshis     uint64  `json:"satoshis"`
 }
 
+// UnmarshalJSON will convert a json serialised utxo to a bt.UTXO.
 func (u *UTXO) UnmarshalJSON(body []byte) error {
 	var j utxoJSON
 	if err := json.Unmarshal(body, &j); err != nil {
@@ -51,6 +52,7 @@ func (u *UTXO) UnmarshalJSON(body []byte) error {
 	return nil
 }
 
+// MarshalJSON will serialise a utxo to json.
 func (u *UTXO) MarshalJSON() ([]byte, error) {
 	return json.Marshal(utxoJSON{
 		TxID:         hex.EncodeToString(u.TxID),

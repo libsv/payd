@@ -384,6 +384,7 @@ issues:
       linters:
         - gocyclo
         - errcheck
+        - goconst
         - dupl
         - gosec
         - maligned

@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 )
 
 /*
@@ -38,7 +38,7 @@ func (b *Block) Bytes() []byte {
 	bytes = append(bytes, bt.VarInt(txCount)...)
 
 	for _, tx := range b.Txs {
-		bytes = append(bytes, tx.ToBytes()...)
+		bytes = append(bytes, tx.Bytes()...)
 	}
 
 	return bytes

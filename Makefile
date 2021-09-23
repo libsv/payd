@@ -39,7 +39,7 @@ install-swagger-gen:
 	@go get github.com/swaggo/swag/cmd/swag
 
 generate-swagger:
-	@swag init --parseVendor -g ./cmd/bip270-server/main.go
+	@swag init --parseVendor -g ./cmd/rest-server/main.go
 
 go-doc-mac:
 	@open http://localhost:6060 && \

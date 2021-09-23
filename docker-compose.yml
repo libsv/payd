@@ -32,3 +32,4 @@ networks:
   regtest-stack:
     external: true
     name: regtest-stack
+    external: true
