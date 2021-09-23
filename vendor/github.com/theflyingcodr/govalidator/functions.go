@@ -19,6 +19,7 @@ var (
 const (
 	validateEmpty      = "value cannot be empty"
 	validateLength     = "value must be between %d and %d characters"
+	validateExactLength     = "value should be exactly %d characters"
 	validateMin        = "value %d is smaller than minimum %d"
 	validateMax        = "value %d is larger than maximum %d"
 	validateNumBetween = "value %d must be between %d and %d"
@@ -32,14 +33,24 @@ const (
 	validateIsNumeric  = "string %s is not a number"
 )
 
-// Length will ensure a string, val, has a length that is at least min and
+// StrLength will ensure a string, val, has a length that is at least min and
 // at most max.
-func Length(val string, min, max int) ValidationFunc {
+func StrLength(val string, min, max int) ValidationFunc {
 	return func() error {
 		if len(val) >= min && len(val) <= max {
 			return nil
 		}
 		return fmt.Errorf(validateLength, min, max)
+	}
+}
+
+// StrLengthExact will ensure a string, val, is exactly length.
+func StrLengthExact(val string,length int) ValidationFunc {
+	return func() error {
+		if len(val) == length {
+			return nil
+		}
+		return fmt.Errorf(validateExactLength, length)
 	}
 }
 

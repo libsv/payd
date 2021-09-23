@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/libsv/go-bc/spv"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/tonicpow/go-minercraft"
 
@@ -20,6 +23,7 @@ import (
 	thttp "github.com/libsv/payd/transports/http"
 
 	"github.com/libsv/payd/config"
+	dataHttp "github.com/libsv/payd/data/http"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 )
 
@@ -103,18 +107,22 @@ func main() {
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
 	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
+	if err != nil {
+		log.Fatalf("failed to create spv client %w", err)
+	}
 
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, mapiStore)
+	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore)
 
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
 		RegisterRoutes(g)
-	thttp.NewBalance(service.NewBalance(sqlLiteStore)).
-		RegisterRoutes(g)
-	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).
-		RegisterRoutes(g)
+	thttp.NewBalance(service.NewBalance(sqlLiteStore)).RegisterRoutes(g)
+	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
+	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

@@ -9,6 +9,21 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
+// InvoiceState enforces invoice states.
+type InvoiceState string
+
+// contains states that an invocie can have.
+const (
+	StateInvoicePending  InvoiceState = "pending"
+	StateInvoicePaid     InvoiceState = "paid"
+	StateInvoiceRefunded InvoiceState = "refunded"
+	StateInvoiceDeleted  InvoiceState = "deleted"
+)
+
+func (i InvoiceState) String() string {
+	return string(i)
+}
+
 // Invoice identifies a single payment request from this payd wallet,
 // it states the amount, id and optional refund address. This indicate
 // we are requesting n satoshis in payment.
@@ -37,7 +52,7 @@ type Invoice struct {
 	// to the UTC time of the refund.
 	RefundedAt null.Time `json:"refundedAt" db:"refunded_at"`
 	// State is the current status of the invoice.
-	State string `json:"state" db:"state" enums:"pending,paid,refunded,deleted"`
+	State InvoiceState `json:"state" db:"state" enums:"pending,paid,refunded,deleted"`
 	MetaData
 }
 
@@ -63,8 +78,8 @@ type InvoiceCreate struct {
 func (i InvoiceCreate) Validate() error {
 	return validator.New().
 		Validate("satoshis", validator.MinUInt64(i.Satoshis, bt.DustLimit)).
-		Validate("description", validator.Length(i.Description.ValueOrZero(), 0, 1024)).
-		Validate("paymentReference", validator.Length(i.Reference.ValueOrZero(), 0, 32)).
+		Validate("description", validator.StrLength(i.Description.ValueOrZero(), 0, 1024)).
+		Validate("paymentReference", validator.StrLength(i.Reference.ValueOrZero(), 0, 32)).
 		Err()
 }
 
@@ -95,7 +110,7 @@ type InvoiceArgs struct {
 // Validate will check that invoice arguments match expectations.
 func (i *InvoiceArgs) Validate() error {
 	return validator.New().
-		Validate("invoiceID", validator.Length(i.InvoiceID, 1, 30)).
+		Validate("invoiceID", validator.StrLength(i.InvoiceID, 1, 30)).
 		Err()
 }
 

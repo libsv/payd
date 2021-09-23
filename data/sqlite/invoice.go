@@ -33,7 +33,7 @@ const (
 	sqlInvoiceUpdate = `
 		UPDATE invoices 
 		SET paymentReceivedAt = :paymentReceivedAt, refundTo = :refundTo
-		WHERE invoice_id = :invoice_id
+		WHERE invoice_id = :invoice_id AND state = :state
 	`
 
 	sqlInvoiceDelete = `

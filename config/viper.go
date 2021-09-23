@@ -70,7 +70,7 @@ func (c *Config) WithDb() *Config {
 
 // WithHeadersClient sets up and returns headers client configuration.
 func (c *Config) WithHeadersClient() *Config {
-	viper.SetDefault(EnvHeadersClientAddress, "headersv:8001")
+	viper.SetDefault(EnvHeadersClientAddress, "http://headersv:8080")
 	viper.SetDefault(EnvHeadersClientTimeout, 30)
 	c.HeadersClient = &HeadersClient{
 		Address: viper.GetString(EnvHeadersClientAddress),
