@@ -38,6 +38,7 @@ type Context struct {
 }
 
 func NewConfig() *Config {
+	viper.SetDefault(CfgCurrentContext, "me")
 	return &Config{
 		CurrentContext: viper.GetString(CfgCurrentContext),
 		Context:        &Context{},
