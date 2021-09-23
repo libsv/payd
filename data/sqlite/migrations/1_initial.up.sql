@@ -11,6 +11,22 @@ CREATE TABLE keys (
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE owners(
+    name            VARCHAR NOT NULL PRIMARY KEY
+    ,avatar         VARCHAR NOT NULL
+    ,email          VARCHAR NOT NULL
+    ,address        VARCHAR NOT NULL
+    ,phoneNumber    VARCHAR NOT NULL
+);
+
+CREATE TABLE owner_meta(
+    owner_name      VARCHAR NOT NULL
+    ,key            VARCHAR NOT NULL
+    ,value          VARCHAR NOT NULL
+    ,FOREIGN KEY (owner_name) REFERENCES owners(name)
+    ,CONSTRAINT owner_key UNIQUE(owner_name, key)
+);
+
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
     invoice_id              VARCHAR PRIMARY KEY
@@ -90,4 +106,9 @@ CREATE TABLE proofs(
 INSERT INTO keys(name, xprv)
 VALUES('masterkey','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
 
+INSERT INTO owners(name, avatar, email, address, phoneNumber)
+VALUES('Merchant Name', 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
 
+INSERT INTO owner_meta(owner_name, key, value)
+VALUES('Merchant Name', 'likes', 'walks in the park at night'),
+      ('Merchant Name', 'dislikes', 'trying to think up placeholder data');

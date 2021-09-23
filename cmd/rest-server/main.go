@@ -115,6 +115,8 @@ func main() {
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).
 		RegisterRoutes(g)
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
+	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).
+		RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)
