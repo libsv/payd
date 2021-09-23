@@ -1,6 +1,6 @@
 module github.com/libsv/payd
 
-go 1.16
+go 1.17
 
 require (
 	github.com/boombuler/barcode v1.0.1
