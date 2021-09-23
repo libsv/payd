@@ -26,7 +26,8 @@ var (
 
 var (
 	// ErrContextNotFound when context doesn't exist.
-	ErrContextNotFound = errors.New("context not found")
+	ErrContextNotFound      = errors.New("context not found")
+	ErrContextAlreadyExists = errors.New("context already exists")
 )
 
 var rootCmd = &cobra.Command{

@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	accountName string
-	walletHost  string
-	walletPort  string
+	setAsCurrentContext bool
+	accountName         string
+	walletHost          string
+	walletPort          string
 )
 
 var configCmd = &cobra.Command{
@@ -41,6 +42,16 @@ var setConfigCmd = &cobra.Command{
 	RunE:          setConfig,
 }
 
+var addContextCmd = &cobra.Command{
+	Use:           "addcontext",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	Short:         "add a context",
+	Long:          "add a context",
+	Args:          cobra.MinimumNArgs(1),
+	RunE:          addContext,
+}
+
 var useContextCmd = &cobra.Command{
 	Use:           "usecontext",
 	SilenceErrors: true,
@@ -56,6 +67,12 @@ func init() {
 	configCmd.AddCommand(getConfigCmd)
 	configCmd.AddCommand(setConfigCmd)
 	configCmd.AddCommand(useContextCmd)
+	configCmd.AddCommand(addContextCmd)
+
+	addContextCmd.Flags().BoolVarP(&setAsCurrentContext, "apply", "", false, "set the account name")
+	addContextCmd.Flags().StringVarP(&accountName, "account-name", "", "", "set the account name")
+	addContextCmd.Flags().StringVarP(&walletHost, "wallet-host", "", "", "set the wallet host name")
+	addContextCmd.Flags().StringVarP(&walletPort, "wallet-port", "", "", "set the wallet port")
 
 	setConfigCmd.Flags().StringVarP(&accountName, "account-name", "", "", "set the account name")
 	setConfigCmd.Flags().StringVarP(&walletHost, "wallet-host", "", "", "set the wallet host name")
@@ -85,6 +102,34 @@ func setConfig(cmd *cobra.Command, args []string) error {
 	}
 	if walletPort != "" {
 		viper.Set(config.CfgWalletPort.KeyFor(cfg.CurrentContext), walletPort)
+	}
+
+	return viper.WriteConfig()
+}
+
+func addContext(cmd *cobra.Command, args []string) error {
+	name := args[0]
+	if ok := cfg.HasContext(name); ok {
+		return ErrContextAlreadyExists
+	}
+
+	viper.Set(config.CfgAccountName.KeyFor(name), name)
+	if accountName != "" {
+		viper.Set(config.CfgAccountName.KeyFor(name), accountName)
+	}
+
+	viper.Set(config.CfgWalletHost.KeyFor(name), "payd:8443")
+	if walletHost != "" {
+		viper.Set(config.CfgWalletHost.KeyFor(name), walletHost)
+	}
+
+	viper.Set(config.CfgWalletPort.KeyFor(name), ":8443")
+	if walletPort != "" {
+		viper.Set(config.CfgWalletPort.KeyFor(name), walletPort)
+	}
+
+	if setAsCurrentContext {
+		viper.Set(config.CfgCurrentContext, name)
 	}
 
 	return viper.WriteConfig()

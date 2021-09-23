@@ -98,13 +98,17 @@ func (c *Config) WithContexts() *Config {
 	return c
 }
 
+func (c *Config) HasContext(name string) bool {
+	_, ok := c.Contexts[name]
+	return ok
+}
+
 func (c *Config) LoadContext(name string) bool {
-	for k := range c.Contexts {
-		if name == k {
-			c.CurrentContext = name
-			c.Context = c.Contexts[name]
-			return true
-		}
+	if !c.HasContext(name) {
+		return false
 	}
-	return false
+
+	c.CurrentContext = name
+	c.Context = c.Contexts[name]
+	return true
 }
