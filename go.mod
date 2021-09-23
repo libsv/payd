@@ -3,13 +3,12 @@ module github.com/libsv/payd
 go 1.16
 
 require (
-	github.com/bitcoinschema/go-bitcoin v0.3.17 // indirect
 	github.com/boombuler/barcode v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/golang-migrate/migrate/v4 v4.14.1
-	github.com/jmoiron/sqlx v1.3.1
+	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo/v4 v4.5.0
 	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.9.0 // indirect
@@ -37,12 +36,10 @@ require (
 	github.com/theflyingcodr/govalidator v0.0.2
 	github.com/theflyingcodr/lathos v0.0.3
 	github.com/tonicpow/go-minercraft v0.3.0
-	github.com/tonicpow/go-paymail v0.1.6
+	github.com/tonicpow/go-paymail v0.2.11
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.6 // indirect
 	gopkg.in/guregu/null.v3 v3.5.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
