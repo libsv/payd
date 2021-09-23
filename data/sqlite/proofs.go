@@ -11,8 +11,8 @@ import (
 
 const (
 	sqlProofInsert = `
-	INSERT INTO proofs(blockhash, txid, data)
-	VALUES(:blockhash, :txid, :data)
+	INSERT INTO proofs(blockhash, tx_id, data)
+	VALUES(:blockhash, :tx_id, :data)
 	`
 )
 
