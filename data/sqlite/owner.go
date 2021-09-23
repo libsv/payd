@@ -9,29 +9,31 @@ import (
 
 const (
 	sqlOwnerGet = `
-	SELECT name, avatar, email, address, phoneNumber
-	FROM owners
+	SELECT user_id, name, avatar_url, email, address, phone_number
+	FROM users
+	WHERE is_owner = 1
 	`
 	sqlOwnerMetaGet = `
-	SELECT key, value FROM owner_meta where owner_name = $1
+	SELECT key, value FROM users_meta where user_id = $1
 	`
 )
 
-func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.Owner, error) {
-	owner := gopayd.Owner{
+// Owner will return the owner of the wallet.
+func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.User, error) {
+	owner := gopayd.User{
 		ExtendedData: make(map[string]string),
 	}
 
 	if err := s.db.GetContext(ctx, &owner, sqlOwnerGet); err != nil {
-		return nil, errors.Wrap(err, "failed to get owner")
+		return nil, errors.Wrap(err, "failed to get wallet owner")
 	}
 
-	meta := []struct {
+	meta := make([]struct {
 		Key   string `db:"key"`
 		Value string `db:"value"`
-	}{}
-	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, owner.Name); err != nil {
-		return nil, errors.Wrap(err, "failed to get owner extended info")
+	}, 0)
+	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, owner.ID); err != nil {
+		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
 	}
 
 	for _, m := range meta {
