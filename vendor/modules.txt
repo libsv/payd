@@ -4,6 +4,10 @@ github.com/KyleBanks/depth
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
+# github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+## explicit
+github.com/alecthomas/template
+github.com/alecthomas/template/parse
 # github.com/bitcoinschema/go-bitcoin v0.3.18
 github.com/bitcoinschema/go-bitcoin
 # github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
@@ -46,7 +50,7 @@ github.com/gojektech/heimdall/v6/httpclient
 github.com/gojektech/valkyrie
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 github.com/golang-jwt/jwt
-# github.com/golang-migrate/migrate/v4 v4.14.1
+# github.com/golang-migrate/migrate/v4 v4.15.0
 ## explicit
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/database
@@ -54,7 +58,7 @@ github.com/golang-migrate/migrate/v4/database/sqlite3
 github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
-github.com/golang-migrate/migrate/v4/source/httpfs
+github.com/golang-migrate/migrate/v4/source/iofs
 # github.com/google/uuid v1.3.0
 github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
@@ -90,8 +94,6 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lib/pq v1.9.0
-## explicit
 # github.com/libsv/go-bc v0.1.4
 ## explicit
 github.com/libsv/go-bc
@@ -110,7 +112,7 @@ github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
-# github.com/libsv/go-bt/v2 v2.0.0-beta.7 => ../go-bt
+# github.com/libsv/go-bt/v2 v2.0.0-beta.7
 ## explicit
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
@@ -184,7 +186,7 @@ github.com/swaggo/echo-swagger
 # github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 ## explicit
 github.com/swaggo/files
-# github.com/swaggo/swag v1.7.1
+# github.com/swaggo/swag v1.7.2
 ## explicit
 github.com/swaggo/swag
 # github.com/theflyingcodr/govalidator v0.0.2
@@ -204,6 +206,8 @@ github.com/tonicpow/go-paymail
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
+# go.uber.org/atomic v1.7.0
+go.uber.org/atomic
 # golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 ## explicit
 golang.org/x/crypto/acme
@@ -253,4 +257,3 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
-# github.com/libsv/go-bt/v2 => ../go-bt

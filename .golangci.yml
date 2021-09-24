@@ -197,14 +197,6 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
     local-prefixes: github.com/org/project
-  golint:
-    # minimal confidence for issues, default is 0.8
-    min-confidence: 1.0
-  gomnd:
-    settings:
-      mnd:
-        # the list of enabled checks, see https://github.com/tommy-muehle/go-mnd/#checks for description.
-        checks: argument,case,condition,operation,return,assign
   govet:
     # report about shadowed variables
     check-shadowing: true
@@ -334,7 +326,7 @@ linters:
     - govet
     - gosec
     - bodyclose
-    - golint
+    - revive
     - unconvert
     - dupl
     - misspell
