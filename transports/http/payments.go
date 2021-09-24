@@ -33,7 +33,7 @@ func (p *payments) RegisterRoutes(g *echo.Group) {
 // @Failure 400 {object} validator.ErrValidation "returned if the invoiceID is empty or payment isn't valid"
 // @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
 // @Success 200
-// @Router v1/payments/{invoiceID} [POST].
+// @Router /v1/payments/{invoiceID} [POST].
 func (p *payments) create(e echo.Context) error {
 	var req payd.PaymentCreate
 	if err := e.Bind(&req); err != nil {
