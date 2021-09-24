@@ -1,43 +1,5 @@
-basePath: /api/v1
+basePath: /api
 definitions:
-  bc.MapiCallback:
-    properties:
-      apiVersion:
-        type: string
-      blockHash:
-        type: string
-      blockHeight:
-        type: integer
-      callbackPayload:
-        type: string
-      callbackReason:
-        type: string
-      callbackTxId:
-        type: string
-      minerId:
-        type: string
-      timestamp:
-        type: string
-    type: object
-  bc.MerkleProof:
-    properties:
-      composite:
-        type: boolean
-      index:
-        type: integer
-      nodes:
-        items:
-          type: string
-        type: array
-      proofType:
-        type: string
-      target:
-        type: string
-      targetType:
-        type: string
-      txOrId:
-        type: string
-    type: object
   envelope.JSONEnvelope:
     properties:
       encoding:
@@ -51,87 +13,81 @@ definitions:
       signature:
         type: string
     type: object
-  payd.CreatePayment:
+  null.String:
     properties:
-      memo:
-        description: Memo is a plain-text note from the customer to the payment host.
+      string:
         type: string
-      merchantData:
-        $ref: '#/definitions/payd.MerchantData'
-        description: |-
-          MerchantData is copied from PaymentDetails.merchantData.
-          Payment hosts may use invoice numbers or any other data they require to match Payments to PaymentRequests.
-          Note that malicious clients may modify the merchantData, so should be authenticated
-          in some way (for example, signed with a payment host-only key).
-          Maximum length is 10000 characters.
-      refundTo:
-        description: |-
-          RefundTo is a paymail to send a refund to should a refund be necessary.
-          Maximum length is 100 characters
+      valid:
+        description: Valid is true if String is not NULL
+        type: boolean
+    type: object
+  payd.ClientError:
+    properties:
+      code:
+        example: N01
         type: string
-      spvEnvelope:
-        $ref: '#/definitions/spv.Envelope'
-        description: |-
-          SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
-          See https://tsc.bitcoinassociation.net/standards/spv-envelope/
-      transaction:
-        description: |-
-          Transaction is a valid, signed Bitcoin transaction that fully
-          pays the PaymentRequest.
-          The transaction is hex-encoded and must NOT be prefixed with "0x".
+      id:
+        example: e97970bf-2a88-4bc8-90e6-2f597a80b93d
+        type: string
+      message:
+        example: unable to find foo when loading bar
+        type: string
+      title:
+        example: not found
         type: string
     type: object
   payd.InvoiceCreate:
     properties:
+      description:
+        $ref: '#/definitions/null.String'
+        description: |-
+          Description is an optional text field that can have some further info
+          like 'invoice for oranges'.
+          MaxLength is 1024 characters.
+      expiresAt:
+        description: |-
+          ExpiresAt is an optional param that can be passed to set an expiration
+          date on an invoice, after which, payments will not be accepted.
+        type: string
+      reference:
+        $ref: '#/definitions/null.String'
+        description: |-
+          Reference is an identifier that can be used to link the
+          payd invoice with an external system.
+          MaxLength is 32 characters.
       satoshis:
+        description: Satoshis is the total amount this invoice is to pay.
         type: integer
     type: object
-  payd.MerchantData:
+  payd.User:
     properties:
       address:
-        description: Address is the merchants store / head office address.
         type: string
       avatar:
-        description: AvatarURL displays a canonical url to a merchants avatar.
         type: string
       email:
-        description: Email can be sued to contact the merchant about this transaction.
         type: string
       extendedData:
-        additionalProperties: true
-        description: ExtendedData can be supplied if the merchant wishes to send some
-          arbitrary data back to the wallet.
+        additionalProperties:
+          type: string
         type: object
+      id:
+        type: integer
       name:
-        description: MerchantName is a human readable string identifying the merchant.
         type: string
-      paymentReference:
-        description: PaymentReference can be sent to link this request with a specific
-          payment id.
+      phoneNumber:
         type: string
     type: object
-  spv.Envelope:
-    properties:
-      mapiResponses:
-        items:
-          $ref: '#/definitions/bc.MapiCallback'
-        type: array
-      parents:
-        additionalProperties:
-          $ref: '#/definitions/spv.Envelope'
-        type: object
-      proof:
-        $ref: '#/definitions/bc.MerkleProof'
-      rawTx:
+  validator.ErrValidation:
+    additionalProperties:
+      items:
         type: string
-      txid:
-        type: string
+      type: array
     type: object
 host: localhost:8443
 info:
   contact: {}
-  description: Payd is a txo and key manager, with a common interface that can be
-    implemented by wallets.
+  description: Payd is a txo and key manager, with a common interface that can be implemented by wallets.
   license:
     name: ISC
     url: https://github.com/libsv/payd/blob/master/LICENSE
@@ -139,7 +95,7 @@ info:
   title: Payd
   version: 0.0.1
 paths:
-  /balance:
+  /v1/balance:
     get:
       consumes:
       - application/json
@@ -152,15 +108,15 @@ paths:
       summary: Balance
       tags:
       - Balance
-  /invoices:
-    delete:
+  /v1/destinations/{invoiceID}:
+    get:
       consumes:
       - application/json
-      description: Delete
+      description: Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
       parameters:
-      - description: PaymentID
+      - description: Invoice ID
         in: path
-        name: PaymentID
+        name: invoiceID
         required: true
         type: string
       produces:
@@ -168,9 +124,14 @@ paths:
       responses:
         "200":
           description: ""
-      summary: Delete invoice
+        "404":
+          description: returned if the invoiceID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+      summary: Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
       tags:
-      - Invoices
+      - Destinations
+  /v1/invoices:
     get:
       consumes:
       - application/json
@@ -186,9 +147,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates an invoice with payment id and satoshis
+      description: Creates an invoices with invoiceID and satoshis
       parameters:
-      - description: PaymentID and Satoshis
+      - description: Reference and Satoshis
         in: body
         name: body
         required: true
@@ -199,18 +160,40 @@ paths:
       responses:
         "201":
           description: ""
-      summary: Create invoice
+      summary: InvoiceCreate invoices
       tags:
       - Invoices
-  /invoices/{paymentID}:
+  /v1/invoices/{invoiceID}:
+    delete:
+      consumes:
+      - application/json
+      description: InvoiceDelete
+      parameters:
+      - description: invoiceID we want to remove
+        in: path
+        name: invoiceID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "404":
+          description: returned if the paymentID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+      summary: InvoiceDelete invoices
+      tags:
+      - Invoices
     get:
       consumes:
       - application/json
-      description: Returns invoice by payment id if exists
+      description: Returns invoices by invoices id if exists
       parameters:
-      - description: Payment ID
+      - description: Invoice ID
         in: path
-        name: paymentID
+        name: invoiceID
         required: true
         type: string
       produces:
@@ -221,16 +204,30 @@ paths:
       summary: Invoices
       tags:
       - Invoices
-  /payment/{paymentID}:
+  /v1/owner:
     get:
       consumes:
       - application/json
-      description: Creates a payment request based on a payment id (the identifier
-        for an invoice).
+      description: Returns information about the wallet owner
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current wallet owner
+          schema:
+            $ref: '#/definitions/payd.User'
+      summary: Wallet owner information.
+      tags:
+      - Users
+  /v1/payments/{invoiceID}:
+    post:
+      consumes:
+      - application/json
+      description: Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.
       parameters:
-      - description: Payment ID
+      - description: Invoice ID
         in: path
-        name: paymentID
+        name: invoiceID
         required: true
         type: string
       produces:
@@ -238,35 +235,18 @@ paths:
       responses:
         "200":
           description: ""
-      summary: Create payment request
+        "400":
+          description: returned if the invoiceID is empty or payment isn't valid
+          schema:
+            $ref: '#/definitions/validator.ErrValidation'
+        "404":
+          description: returned if the invoiceID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+      summary: Validate and store a payment.
       tags:
-      - Payment
-    post:
-      consumes:
-      - application/json
-      description: Creates a payment based on a payment id (the identifier for an
-        invoice).
-      parameters:
-      - description: Payment ID
-        in: path
-        name: paymentID
-        required: true
-        type: string
-      - description: payment message used in BIP270
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/payd.CreatePayment'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: ""
-      summary: Create payment
-      tags:
-      - Payment
-  /proofs/{txid}:
+      - Payments
+  /v1/proofs/{txid}:
     post:
       consumes:
       - application/json
@@ -288,26 +268,7 @@ paths:
       responses:
         "201":
           description: ""
-      summary: Create proof
+      summary: InvoiceCreate proof
       tags:
       - Proofs
-  /txstatus/{txid}:
-    get:
-      consumes:
-      - application/json
-      description: Returns status of transaction
-      parameters:
-      - description: Transaction ID
-        in: path
-        name: txid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-      summary: Transaction Status
-      tags:
-      - TxStatus
 swagger: "2.0"
