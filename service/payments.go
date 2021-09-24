@@ -81,6 +81,13 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	txID := tx.TxID()
 	for i, o := range tx.Outputs {
 		if output, ok := outputs[o.LockingScript.String()]; ok {
+			if o.Satoshis != output.Satoshis {
+				return validator.ErrValidation{
+					"tx.outputs": {
+						"output satoshis do not match requested amount",
+					},
+				}
+			}
 			total += output.Satoshis
 			txos = append(txos, &payd.TxoCreate{
 				Outpoint:      fmt.Sprintf("%s%d", txID, i),
@@ -88,6 +95,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 				TxID:          txID,
 				Vout:          uint64(i),
 			})
+			delete(outputs, o.LockingScript.String())
 		}
 	}
 	// fail if tx doesn't pay invoice in full
@@ -95,6 +103,13 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 		return validator.ErrValidation{
 			"transaction": {
 				"tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again",
+			},
+		}
+	}
+	if len(outputs) > 0 {
+		return validator.ErrValidation{
+			"tx.outputs": {
+				fmt.Sprintf("expected '%d' outputs, received '%d', ensure all destinations are supplied", len(oo), len(tx.Outputs)),
 			},
 		}
 	}
