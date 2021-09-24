@@ -85,13 +85,14 @@ CREATE TABLE destination_invoice(
 -- store unspent transactions
 CREATE TABLE txos (
     outpoint        VARCHAR PRIMARY KEY,
-    destination_id INTEGER,
+    destination_id  INTEGER,
     tx_id           CHAR(64),
-    vout		   BIGINT,
+    vout		    BIGINT,
     spent_at        TIMESTAMP, -- this is the date when YOU use the funds
     spending_txid   CHAR(64), -- the txid where you'd spent this output
+	reserved_for    VARCHAR, -- the paymentId of this txo is being spent against
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (tx_id) REFERENCES transactions(tx_id),
     FOREIGN KEY (spending_txid) REFERENCES transactions(tx_id),
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id)

@@ -368,6 +368,8 @@ github.com/libsv/go-bt v1.0.0/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcyk
 github.com/libsv/go-bt/v2 v2.0.0-20210730150403-97fd3b293e05/go.mod h1:62PATaSIMQ3omXVr9D4S7uMKaQByCJjNkrNzFpYThco=
 github.com/libsv/go-bt/v2 v2.0.0-beta.6 h1:/MVSfMUe37HBDpkO/iWHp735gE57vaIJq/qT7h0dmTg=
 github.com/libsv/go-bt/v2 v2.0.0-beta.6/go.mod h1:6Vk1qMlMoFJFNm7rR7NmFx4VwHNMCi4+V9WBqTd37rQ=
+github.com/libsv/go-bt/v2 v2.0.0-beta.7 h1:ccJXfmO2i+79oP/mDYYqvqa5DH1QV+2a1eh8+HUKhic=
+github.com/libsv/go-bt/v2 v2.0.0-beta.7/go.mod h1:6Vk1qMlMoFJFNm7rR7NmFx4VwHNMCi4+V9WBqTd37rQ=
 github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaWak/Gls=
 github.com/magiconair/properties v1.8.5/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
