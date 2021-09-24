@@ -46,7 +46,10 @@ Swag将Go的注释转换为Swagger2.0文档。我们为流行的 [Go Web Framewo
 2. 使用如下命令下载swag：
 
 ```bash
-go get -u github.com/swaggo/swag/cmd/swag
+$ go get -u github.com/swaggo/swag/cmd/swag
+
+# 1.16 及以上版本
+$ go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 从源码开始构建的话，需要有Go环境（1.13及以上版本）。
@@ -656,7 +659,7 @@ type Account struct {
 
 ```go
 type Account struct {
-    ID   string    `json:"id"   extensions:"x-nullable,x-abc=def"` // 扩展字段必须以"x-"开头
+    ID   string    `json:"id"   extensions:"x-nullable,x-abc=def,!x-omitempty"` // 扩展字段必须以"x-"开头
 }
 ```
 
@@ -669,7 +672,8 @@ type Account struct {
         "id": {
             "type": "string",
             "x-nullable": true,
-            "x-abc": "def"
+            "x-abc": "def",
+            "x-omitempty": false
         }
     }
 }

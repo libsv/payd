@@ -7,11 +7,10 @@ require (
 	github.com/boombuler/barcode v1.0.1
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo/v4 v4.6.0
 	github.com/labstack/gommon v0.3.0
-	github.com/lib/pq v1.9.0 // indirect
 	github.com/libsv/go-bc v0.1.4
 	github.com/libsv/go-bk v0.1.4
 	github.com/libsv/go-bt v1.0.0
@@ -24,7 +23,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/echo-swagger v1.1.3
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect
-	github.com/swaggo/swag v1.7.1
+	github.com/swaggo/swag v1.7.2
 	github.com/theflyingcodr/govalidator v0.0.2
 	github.com/theflyingcodr/lathos v0.0.3
 	github.com/tonicpow/go-minercraft v0.3.0
