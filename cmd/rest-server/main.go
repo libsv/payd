@@ -123,8 +123,8 @@ func main() {
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
-	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).
-		RegisterRoutes(g)
+	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
+	thttp.NewPayHandler(nil).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)
