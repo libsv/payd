@@ -50,7 +50,7 @@ github.com/gojektech/heimdall/v6/httpclient
 github.com/gojektech/valkyrie
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 github.com/golang-jwt/jwt
-# github.com/golang-migrate/migrate/v4 v4.14.1
+# github.com/golang-migrate/migrate/v4 v4.15.0
 ## explicit
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/database
@@ -58,7 +58,7 @@ github.com/golang-migrate/migrate/v4/database/sqlite3
 github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
-github.com/golang-migrate/migrate/v4/source/httpfs
+github.com/golang-migrate/migrate/v4/source/iofs
 # github.com/google/uuid v1.3.0
 github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
@@ -92,8 +92,6 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/lib/pq v1.9.0
-## explicit
 # github.com/libsv/go-bc v0.1.4
 ## explicit
 github.com/libsv/go-bc
@@ -200,6 +198,8 @@ github.com/tonicpow/go-paymail
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.1
 github.com/valyala/fasttemplate
+# go.uber.org/atomic v1.7.0
+go.uber.org/atomic
 # golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 ## explicit
 golang.org/x/crypto/acme
