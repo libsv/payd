@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+// SetupDefaults will setup default config values.
+// These can all be overwritten by environment variables.
 func SetupDefaults() {
 	// server
 	viper.SetDefault(EnvServerPort, ":8443")
