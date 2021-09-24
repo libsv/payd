@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/libsv/go-bc"
-	"github.com/libsv/go-bt/v2"
 )
 
 // Regtest interfaces interactions with regtest.
@@ -62,7 +61,12 @@ type MerkleProofResponse struct {
 }
 
 type ListUnspentResponse struct {
-	Result []*bt.UTXO `json:"result"`
+	Result []*struct {
+		TxID         string  `json:"txid"`
+		Vout         uint32  `json:"vout"`
+		ScriptPubKey string  `json:"scriptPubKey"`
+		Amount       float64 `json:"amount"`
+	} `json:"result"`
 	response
 }
 

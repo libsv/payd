@@ -4,15 +4,15 @@ help:
 	@egrep -h '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 
 run-service:
-	@go run -race cmd/bip270-server/main.go server
+	@go run -race cmd/rest-server/main.go server
 
 run-all-tests: run-linter run-unit-tests
 
 pre-commit: vendor-deps run-all-tests
 
-restart: stop-compose run-compose-dev-d
+restart: stop-compose run-compose-d
 
-redeploy: stop-compose build-image run-compose-dev-d
+redeploy: stop-compose build-image run-compose-d
 
 run-unit-tests:
 	@go clean -testcache && go test -v ./... -race

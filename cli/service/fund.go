@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
@@ -41,9 +42,26 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 		return nil, err
 	}
 
+	var utxos []*bt.UTXO
+	for _, utxo := range resp.Result {
+		script, err := bscript.NewFromHexString(utxo.ScriptPubKey)
+		if err != nil {
+			return nil, err
+		}
+		txid, err := hex.DecodeString(utxo.TxID)
+		if err != nil {
+			return nil, err
+		}
+		utxos = append(utxos, &bt.UTXO{
+			LockingScript: script,
+			Vout:          utxo.Vout,
+			Satoshis:      uint64(utxo.Amount * 100000000),
+			TxID:          txid,
+		})
+	}
+
 	if err := tx.Fund(ctx, payReq.Fee, func() bt.UTXOGetterFunc {
 		idx := 0
-		utxos := resp.Result
 		return func(ctx context.Context, deficit uint64) ([]*bt.UTXO, error) {
 			if idx == len(utxos) {
 				return nil, bt.ErrNoUTXO
