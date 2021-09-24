@@ -35,6 +35,7 @@ CREATE TABLE invoices (
     ,satoshis               INTEGER NOT NULL
     ,payment_reference      VARCHAR(32)
     ,description            VARCHAR(1024)
+    ,spv_required           BOOLEAN NOT NULL DEFAULT 0
     ,expires_at             TIMESTAMP
     ,payment_received_at    TIMESTAMP
     ,refund_to              VARCHAR

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
@@ -31,13 +32,15 @@ type invoice struct {
 	store      payd.InvoiceReaderWriter
 	destSvc    destinationCreator
 	cfg        *config.Server
+	wallCfg    *config.Wallet
 	transacter payd.Transacter
 }
 
 // NewInvoice will setup and return a new invoice service.
-func NewInvoice(cfg *config.Server, store payd.InvoiceReaderWriter, destSvc destinationCreator, transacter payd.Transacter) *invoice {
+func NewInvoice(cfg *config.Server, wallCfg *config.Wallet, store payd.InvoiceReaderWriter, destSvc destinationCreator, transacter payd.Transacter) *invoice {
 	return &invoice{
 		cfg:        cfg,
+		wallCfg:    wallCfg,
 		store:      store,
 		destSvc:    destSvc,
 		transacter: transacter,
@@ -86,18 +89,39 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	defer func() {
 		_ = i.transacter.Rollback(ctx)
 	}()
-	inv, err := i.store.InvoiceCreate(ctx, req)
-	if err != nil {
+	req.SPVRequired = i.wallCfg.SPVRequired // set default requirement
+	// any payment 1000sat or below, we don't want spv
+	// NOTE - this is just an example
+	if req.Satoshis <= 1000 {
+		req.SPVRequired = false
+	}
+	if req.ExpiresAt.IsZero() {
+		// set to default expiry hours
+		req.ExpiresAt = null.TimeFrom(time.Now().Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
+	}
+	var invoice *payd.Invoice
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		inv, err := i.store.InvoiceCreate(ctx, req)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		invoice = inv
+		return nil
+	})
+	g.Go(func() error {
+		if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
+			InvoiceID: null.StringFrom(req.InvoiceID),
+			Satoshis:  req.Satoshis,
+		}); err != nil {
+			return errors.Wrapf(err, "failed to create payment destinations for invoice")
+		}
+		return nil
+	})
+	if err := g.Wait(); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	// TODO - this could be an async call - though this ensures it all completes.
-	if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
-		InvoiceID: null.StringFrom(req.InvoiceID),
-		Satoshis:  req.Satoshis,
-	}); err != nil {
-		return nil, errors.Wrapf(err, "failed to create payment destinations for invoice")
-	}
-	return inv, errors.WithStack(i.transacter.Commit(ctx))
+	return invoice, errors.WithStack(i.transacter.Commit(ctx))
 }
 
 // Delete will permanently remove an invoice from the system.

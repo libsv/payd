@@ -30,6 +30,7 @@ require (
 	github.com/tonicpow/go-minercraft v0.3.0
 	github.com/tonicpow/go-paymail v0.2.11
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/tools v0.1.6 // indirect
 	gopkg.in/guregu/null.v3 v3.5.0
 )
