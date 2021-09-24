@@ -9,7 +9,7 @@ import (
 
 const (
 	sqlUTXOGet = `
-	SELECT t.outpoint, t.tx_id, t.vout, d.locking_script, d.satoshis
+	SELECT t.outpoint, t.tx_id, t.vout, d.locking_script, d.satoshis, d.derivation_path
 	FROM txos t JOIN destinations d ON t.destination_id = d.destination_id
 	WHERE reserved_for IS NULL and spent_at IS NULL and spending_txid IS NULL
 	LIMIT 0,1
@@ -37,7 +37,7 @@ func (s *sqliteStore) UTXOReserve(ctx context.Context, req payd.UTXOReserve) ([]
 	var utxos []payd.UTXO
 	for total := uint64(0); total <= req.Satoshis; {
 		var utxo payd.UTXO
-		if err := tx.SelectContext(ctx, &utxo, sqlUTXOGet); err != nil {
+		if err := tx.GetContext(ctx, &utxo, sqlUTXOGet); err != nil {
 			return nil, errors.Wrap(err, "failed to get utxo")
 		}
 		result, err := tx.ExecContext(ctx, sqlUTXOReserve, req.ReservedFor, utxo.Outpoint)

@@ -21,6 +21,10 @@ type ProofCreateArgs struct {
 	TxID string `json:"txId" param:"txid"`
 }
 
+type ProofRequest struct {
+	TxID string `db:"tx_id"`
+}
+
 // ProofWrapper represents a mapi callback payload for a merkleproof.
 // mAPI returns proofs in a JSONEnvelope with a payload. This represents the
 // Payload format which contains a parent object with tx meta and a nested object

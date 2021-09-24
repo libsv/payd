@@ -14,11 +14,12 @@ type TxoCreate struct {
 }
 
 type UTXO struct {
-	Outpoint      string `db:"outpoint"`
-	TxID          string `db:"tx_id"`
-	Vout          uint32 `db:"vout"`
-	Satoshis      uint64 `db:"satoshis"`
-	LockingScript string `db:"locking_script"`
+	Outpoint       string `db:"outpoint"`
+	TxID           string `db:"tx_id"`
+	Vout           uint32 `db:"vout"`
+	Satoshis       uint64 `db:"satoshis"`
+	LockingScript  string `db:"locking_script"`
+	DerivationPath string `db:"derivation_path"`
 }
 
 type UTXOReserve struct {
@@ -34,7 +35,7 @@ type UTXOSpend struct {
 // TxoWriter is used to add transaction information to a data store.
 type TxoWriter interface {
 	// TxosCreate will add an array of txos to a data store.
-	TxosCreate(ctx context.Context, req []*TxoCreate) error
+	// TxosCreate(ctx context.Context, req []*TxoCreate) error
 	UTXOReserve(ctx context.Context, req UTXOReserve) ([]UTXO, error)
 	UTXOSpend(ctx context.Context, req UTXOSpend) error
 }

@@ -112,6 +112,8 @@ func main() {
 		log.Fatalf("failed to create spv client %w", err)
 	}
 
+	// spvb, err := spv.NewEnvelopeCreator(nil, )
+
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, mapiStore)
@@ -124,7 +126,7 @@ func main() {
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewPayHandler(nil).RegisterRoutes(g)
+	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, dataHttp.NewP4(&http.Client{}), privKeySvc, nil)).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

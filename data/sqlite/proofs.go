@@ -48,3 +48,7 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) er
 	}
 	return errors.WithStack(tx.Commit())
 }
+
+func (s *sqliteStore) Proof(ctx context.Context, req payd.ProofRequest) (*payd.ProofWrapper, error) {
+	return nil, nil
+}
