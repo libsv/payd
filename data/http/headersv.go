@@ -11,12 +11,12 @@ import (
 )
 
 type hsvConnection struct {
-	client HTTPClient
+	client Client
 	host   string
 }
 
 // NewHeaderSVConnection returns a bc.BlockHeaderChain using a header client.
-func NewHeaderSVConnection(client HTTPClient, host string) bc.BlockHeaderChain {
+func NewHeaderSVConnection(client Client, host string) bc.BlockHeaderChain {
 	return &hsvConnection{
 		client: client,
 		host:   host,

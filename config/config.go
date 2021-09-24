@@ -52,7 +52,7 @@ type DbType string
 // Supported database types.
 const (
 	DBSqlite   DbType = "sqlite"
-	DBMySql    DbType = "mysql"
+	DBMySQL    DbType = "mysql"
 	DBPostgres DbType = "postgres"
 )
 

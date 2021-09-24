@@ -12,7 +12,7 @@
         "version": "0.0.1"
     },
     "host": "localhost:8443",
-    "basePath": "/api/",
+    "basePath": "/api",
     "paths": {
         "/v1/balance": {
             "get": {

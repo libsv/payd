@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	sqlCallbackUrlInsert = `
+	sqlCallbackURLInsert = `
 	INSERT INTO proof_callbacks(invoice_id, url, token, state)
 	VALUES(:invoice_id,:url,:token,'pending')
 	`
@@ -43,7 +43,7 @@ func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args payd.ProofC
 			Token:     val.Token,
 		})
 	}
-	if err := handleNamedExec(tx, sqlCallbackUrlInsert, cc); err != nil {
+	if err := handleNamedExec(tx, sqlCallbackURLInsert, cc); err != nil {
 		return errors.Wrapf(err, "failed to insert callback urls for invoiceID %s", args.InvoiceID)
 	}
 	if err := commit(ctx, tx); err != nil {

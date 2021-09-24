@@ -427,7 +427,7 @@ type swaggerInfo struct {
 var SwaggerInfo = swaggerInfo{
 	Version:     "0.0.1",
 	Host:        "localhost:8443",
-	BasePath:    "/api/",
+	BasePath:    "/api",
 	Schemes:     []string{},
 	Title:       "Payd",
 	Description: "Payd is a txo and key manager, with a common interface that can be implemented by wallets.",
