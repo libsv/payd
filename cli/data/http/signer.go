@@ -12,11 +12,11 @@ import (
 
 type signer struct {
 	c   models.HTTPClient
-	cfg *config.Wallet
+	cfg *config.Payd
 }
 
 // NewSignerAPI returns a new signer api.
-func NewSignerAPI(c models.HTTPClient, cfg *config.Wallet) models.Signer {
+func NewSignerAPI(c models.HTTPClient, cfg *config.Payd) models.Signer {
 	return &signer{
 		c:   c,
 		cfg: cfg,

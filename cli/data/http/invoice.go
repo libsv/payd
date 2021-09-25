@@ -13,11 +13,11 @@ import (
 
 type invoice struct {
 	c   models.HTTPClient
-	cfg *config.Wallet
+	cfg *config.Payd
 }
 
 // NewInvoiceAPI returns a new invoice api.
-func NewInvoiceAPI(c models.HTTPClient, cfg *config.Wallet) models.InvoiceReaderWriter {
+func NewInvoiceAPI(c models.HTTPClient, cfg *config.Payd) models.InvoiceReaderWriter {
 	return &invoice{
 		c:   c,
 		cfg: cfg,

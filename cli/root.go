@@ -67,7 +67,8 @@ func initConfig() {
 	_ = viper.ReadInConfig()
 
 	cfg = config.NewConfig().
-		WithWallet().
+		WithPayd().
+		WithP4().
 		WithAccount().
 		WithContexts()
 

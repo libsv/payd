@@ -65,7 +65,7 @@ func init() {
 }
 
 func invoiceGet(cmd *cobra.Command, args []string) error {
-	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Wallet))
+	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
 	if len(args) == 0 {
 		inv, err := svc.Invoices(cmd.Context())
 		if err != nil {
@@ -85,7 +85,7 @@ func invoiceGet(cmd *cobra.Command, args []string) error {
 }
 
 func invoiceCreate(cmd *cobra.Command, args []string) error {
-	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Wallet))
+	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
 	inv, err := svc.Create(cmd.Context(), models.InvoiceCreateRequest{
 		Satoshis:    satoshis,
 		Reference:   &invoiceReference,
@@ -99,7 +99,7 @@ func invoiceCreate(cmd *cobra.Command, args []string) error {
 }
 
 func invoiceRemove(cmd *cobra.Command, args []string) error {
-	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Wallet))
+	svc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
 	if err := svc.Delete(cmd.Context(), models.InvoiceDeleteArgs{
 		ID: args[0],
 	}); err != nil {

@@ -88,7 +88,7 @@ func paymentSend(cmd *cobra.Command, args []string) error {
 
 	svc := service.NewPaymentService(
 		chttp.NewPaymentAPI(&http.Client{}),
-		chttp.NewSignerAPI(&http.Client{}, cfg.Wallet),
+		chttp.NewSignerAPI(&http.Client{}, cfg.Payd),
 		spvb,
 	)
 	resp, err := svc.Send(cmd.Context(), models.PaymentSendArgs{

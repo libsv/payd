@@ -13,8 +13,10 @@ type ContextKey string
 const (
 	CfgContexts                  = "contexts"
 	CfgCurrentContext            = "current.context"
-	CfgWalletHost     ContextKey = "wallet.host"
-	CfgWalletPort     ContextKey = "wallet.port"
+	CfgPaydHost       ContextKey = "payd.host"
+	CfgPaydPort       ContextKey = "payd.port"
+	CfgP4Host         ContextKey = "p4.host"
+	CfgP4Port         ContextKey = "p4.port"
 	CfgAccountName    ContextKey = "account.name"
 )
 
@@ -34,7 +36,8 @@ type Config struct {
 
 type Context struct {
 	Account *Account
-	Wallet  *Wallet
+	Payd    *Payd
+	P4      *P4
 }
 
 func NewConfig() *Config {
@@ -46,22 +49,38 @@ func NewConfig() *Config {
 	}
 }
 
-type Wallet struct {
+type Payd struct {
 	host string
 	port string
 }
 
-func (c *Config) WithWallet() *Config {
-	viper.SetDefault(CfgWalletHost.KeyFor(c.CurrentContext), "http://payd:8443")
-	viper.SetDefault(CfgWalletPort.KeyFor(c.CurrentContext), ":8443")
-	c.Wallet = &Wallet{
-		host: viper.GetString(CfgWalletHost.KeyFor(c.CurrentContext)),
-		port: viper.GetString(CfgWalletPort.KeyFor(c.CurrentContext)),
+func (c *Config) WithPayd() *Config {
+	viper.SetDefault(CfgPaydHost.KeyFor(c.CurrentContext), "http://payd:8443")
+	viper.SetDefault(CfgPaydPort.KeyFor(c.CurrentContext), ":8443")
+	c.Payd = &Payd{
+		host: viper.GetString(CfgPaydHost.KeyFor(c.CurrentContext)),
+		port: viper.GetString(CfgPaydPort.KeyFor(c.CurrentContext)),
 	}
 	return c
 }
 
-func (w *Wallet) URLFor(parts ...string) string {
+type P4 struct {
+	host string
+	port string
+}
+
+func (c *Config) WithP4() *Config {
+	viper.SetDefault(CfgP4Host.KeyFor(c.CurrentContext), "http://p4:8445")
+	viper.SetDefault(CfgP4Port.KeyFor(c.CurrentContext), "://p4:8445")
+	c.P4 = &P4{
+		host: viper.GetString(CfgP4Host.KeyFor(c.CurrentContext)),
+		port: viper.GetString(CfgP4Port.KeyFor(c.CurrentContext)),
+	}
+
+	return c
+}
+
+func (w *Payd) URLFor(parts ...string) string {
 	url, err := url.Parse(w.host)
 	if err != nil {
 		panic(err)
@@ -91,7 +110,7 @@ func (c *Config) WithContexts() *Config {
 		cfg := NewConfig()
 		cfg.CurrentContext = k
 
-		cfg.WithWallet().WithAccount()
+		cfg.WithPayd().WithAccount()
 
 		c.Contexts[k] = cfg.Context
 	}
