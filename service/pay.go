@@ -72,10 +72,9 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 	if _, err := rand.Read(b[:]); err != nil {
 		return err
 	}
-	seed := binary.LittleEndian.Uint64(b[:])
 
-	path := bip32.DerivePath(seed)
-	pubKey, err := privKey.DerivePublicKeyFromPath(path)
+	derivationPath := bip32.DerivePath(binary.LittleEndian.Uint64(b[:]))
+	pubKey, err := privKey.DerivePublicKeyFromPath(derivationPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to derive key when create change output")
 	}
@@ -180,7 +179,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 			}},
 		}, payd.DestinationCreate{
 			Script:         changeLockingScript.String(),
-			DerivationPath: path,
+			DerivationPath: derivationPath,
 			Keyname:        "masterkey",
 			Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
 		}); err != nil {
