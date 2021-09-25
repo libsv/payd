@@ -23,9 +23,21 @@ var fundCmd = &cobra.Command{
 	RunE:    fund,
 }
 
+var autoFundCmd = &cobra.Command{
+	Use:     "autofund",
+	Aliases: []string{"autofun", "autof", "aufu", "af"},
+	Short:   "auto fund the current context with a specified amount of satoshis",
+	Long:    "auto fund the current context with a specified amount of satoshis",
+	RunE:    autoFund,
+}
+
 func init() {
 	rootCmd.AddCommand(fundCmd)
+	rootCmd.AddCommand(autoFundCmd)
+
 	fundCmd.Flags().StringVarP(&payToURL, "pay-to", "p", "", "to pay to")
+
+	autoFundCmd.Flags().Uint64VarP(&satoshis, "satoshis", "s", 0, "satoshis to fund")
 }
 
 func fund(cmd *cobra.Command, args []string) error {
@@ -51,4 +63,41 @@ func fund(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	return printer(ack)
+}
+
+func autoFund(cmd *cobra.Command, args []string) error {
+
+	invSvc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
+	paySvc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil)
+
+	ctx := cmd.Context()
+
+	reference := "autofund"
+	description := "created via autofund"
+
+	inv, err := invSvc.Create(ctx, models.InvoiceCreateRequest{
+		Satoshis:    satoshis,
+		Reference:   &reference,
+		Description: &description,
+	})
+	if err != nil {
+		return err
+	}
+
+	payReq, err := paySvc.Request(ctx, models.PaymentRequestArgs{
+		ID:    inv.PaymentID,
+		PayTo: cfg.P4.URLFor(),
+	})
+	if err != nil {
+		return err
+	}
+
+	bb, err := json.Marshal(payReq)
+	if err != nil {
+		return err
+	}
+
+	requestJSON = string(bb)
+
+	return fund(cmd, args)
 }

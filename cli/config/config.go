@@ -64,6 +64,17 @@ func (c *Config) WithPayd() *Config {
 	return c
 }
 
+func (w *Payd) URLFor(parts ...string) string {
+	url, err := url.Parse(w.host)
+	if err != nil {
+		panic(err)
+	}
+
+	url.Path = path.Join(parts...)
+
+	return url.String()
+}
+
 type P4 struct {
 	host string
 	port string
@@ -80,7 +91,7 @@ func (c *Config) WithP4() *Config {
 	return c
 }
 
-func (w *Payd) URLFor(parts ...string) string {
+func (w *P4) URLFor(parts ...string) string {
 	url, err := url.Parse(w.host)
 	if err != nil {
 		panic(err)
