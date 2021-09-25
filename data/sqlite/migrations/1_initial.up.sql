@@ -49,7 +49,7 @@ CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
 CREATE TABLE transactions (
     tx_id               CHAR(64) NOT NULL PRIMARY KEY
-    ,invoice_id         VARCHAR(30) NOT NULL
+    ,invoice_id         VARCHAR(30) -- null for change tx
     ,tx_hex             TEXT NOT NULL
     ,state VARCHAR(10)  NOT NULL DEFAULT 'pending'
     ,created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -90,7 +90,7 @@ CREATE TABLE txos (
     vout		    BIGINT,
     spent_at        TIMESTAMP, -- this is the date when YOU use the funds
     spending_txid   CHAR(64), -- the txid where you'd spent this output
-	reserved_for    VARCHAR, -- the paymentId of this txo is being spent against
+    reserved_for    VARCHAR, -- the paymentId of this txo is being spent against
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (tx_id) REFERENCES transactions(tx_id),

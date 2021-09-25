@@ -45,7 +45,7 @@ type Txo struct {
 // TransactionCreate is used to insert a tx into the data store.
 // To save calls, Txos can be included to also add in the same transaction.
 type TransactionCreate struct {
-	InvoiceID string       `db:"invoice_id"`
+	InvoiceID null.String  `db:"invoice_id"`
 	TxID      string       `db:"tx_id"`
 	TxHex     string       `db:"tx_hex"`
 	Outputs   []*TxoCreate `db:"-"`
@@ -83,4 +83,5 @@ type TransactionWriter interface {
 	TransactionCreate(ctx context.Context, req TransactionCreate) error
 	// TransactionUpdateState can be used to change a tx state (failed, broadcast).
 	TransactionUpdateState(ctx context.Context, args TransactionArgs, req TransactionStateUpdate) error
+	TransactionChangeCreate(ctx context.Context, txArgs TransactionCreate, dArgs DestinationCreate) error
 }

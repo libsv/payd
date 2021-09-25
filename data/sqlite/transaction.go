@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
@@ -40,6 +41,12 @@ const (
 	UPDATE invoices 
 	SET payment_received_at = :timestamp, state = 'paid', updated_at = :timestamp
 	WHERE invoice_id = :invoice_id
+	`
+
+	sqlTransactionGet = `
+	SELECT tx_hex
+	FROM transactions
+	WHERE tx_id=$1
 	`
 )
 
@@ -91,11 +98,11 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 		InvoiceID string    `db:"invoice_id"`
 	}{
 		Timestamp: timestamp,
-		InvoiceID: req.InvoiceID,
+		InvoiceID: req.InvoiceID.ValueOrZero(),
 	}
 	if err := handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
+			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID.ValueOrZero()))
 		}
 	}
 	return errors.Wrapf(commit(ctx, tx),
@@ -120,4 +127,53 @@ func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.Tran
 	}
 	return errors.Wrapf(commit(ctx, tx),
 		"failed to commit transaction when updating transactionId '%s' state to '%s'", args.TxID, req.State)
+}
+
+func (s *sqliteStore) Tx(ctx context.Context, txID string) (*bt.Tx, error) {
+	var txhex struct {
+		TxHex string `db:"tx_hex"`
+	}
+	if err := s.db.GetContext(ctx, &txhex, sqlTransactionGet, txID); err != nil {
+		return nil, errors.Wrapf(err, "failed to retrieve transaction for id %s", txID)
+	}
+
+	return bt.NewTxFromString(txhex.TxHex)
+}
+
+func (s *sqliteStore) TransactionChangeCreate(ctx context.Context, txArgs payd.TransactionCreate, dArgs payd.DestinationCreate) error {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to create transaction for change tx")
+	}
+
+	res, err := tx.NamedExecContext(ctx, sqlDestinationCreate, dArgs)
+	if err != nil {
+		return errors.Wrap(err, "failed to store destination information for change")
+	}
+	destID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.NamedExecContext(ctx, sqlTransactionCreate, txArgs); err != nil {
+		return errors.Wrap(err, "failed store tx information for change")
+	}
+	for _, output := range txArgs.Outputs {
+		output.DestinationID = uint64(destID)
+	}
+	if err := handleNamedExec(tx, sqlTxoCreate, txArgs.Outputs); err != nil {
+		return errors.Wrap(err, "failed to store tx output information for change")
+	}
+	res, err = tx.ExecContext(ctx, sqlDestinationSetReceived, time.Now().UTC(), destID)
+	if err != nil {
+		return errors.Wrap(err, "failed to mark destination as received for change")
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to mark destination as received for change")
+	}
+	if rows <= 0 {
+		return errors.Wrap(err, "failed to mark destination as received for change")
+	}
+	return errors.Wrap(commit(ctx, tx), "failed to commit store of change tx")
 }

@@ -58,3 +58,9 @@ type PaymentsService interface {
 	// PaymentCreate will validate a new payment.
 	PaymentCreate(ctx context.Context, req PaymentCreate) error
 }
+
+type PaymentSend struct {
+	SPVEnvelope    *spv.Envelope            `json:"spvEnvelope"`
+	ProofCallbacks map[string]ProofCallback `json:"proofCallbacks"`
+	MerchantData   User                     `json:"merchantData"`
+}

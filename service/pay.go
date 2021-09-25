@@ -12,32 +12,42 @@ import (
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/data/http"
 	"github.com/pkg/errors"
 )
 
 type pay struct {
-	tWtr payd.TxoWriter
-	p4   http.P4
-	pk   payd.PrivateKeyService
-	spvb spv.EnvelopeCreator
+	txoWtr payd.TxoWriter
+	txWtr  payd.TransactionWriter
+	p4     http.P4
+	pk     payd.PrivateKeyService
+	spvc   spv.EnvelopeCreator
+	svrCfg *config.Server
 }
 
-type lsdpm struct {
-	m   map[*bscript.Script]string
-	mpk *bip32.ExtendedKey
+func NewPayService(txoWtr payd.TxoWriter, txWtr payd.TransactionWriter, p4 http.P4, pk payd.PrivateKeyService, spvc spv.EnvelopeCreator, svrCfg *config.Server) payd.PayService {
+	return &pay{
+		txoWtr: txoWtr,
+		txWtr:  txWtr,
+		p4:     p4,
+		pk:     pk,
+		spvc:   spvc,
+		svrCfg: svrCfg,
+	}
 }
 
-func NewPayService(tWtr payd.TxoWriter, p4 http.P4, pk payd.PrivateKeyService, spvb spv.EnvelopeCreator) payd.PayService {
-	return &pay{tWtr: tWtr, p4: p4, pk: pk}
+type derivationSigner struct {
+	pathMap       map[*bscript.Script]string
+	masterPrivKey *bip32.ExtendedKey
 }
 
-func (l lsdpm) Signer(ctx context.Context, script *bscript.Script) (bt.Signer, error) {
-	path, ok := l.m[script]
+func (l derivationSigner) Signer(ctx context.Context, script *bscript.Script) (bt.Signer, error) {
+	path, ok := l.pathMap[script]
 	if !ok {
 		return nil, errors.New("derivation path does not exist for script")
 	}
-	extPrivKey, err := l.mpk.DeriveChildFromPath(path)
+	extPrivKey, err := l.masterPrivKey.DeriveChildFromPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -70,37 +80,34 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 		return errors.Wrap(err, "failed to derive key when create change output")
 	}
 
-	script, err := bscript.NewP2PKHFromPubKeyBytes(pubKey)
+	changeLockingScript, err := bscript.NewP2PKHFromPubKeyBytes(pubKey)
 	if err != nil {
 		return err
 	}
 
-	// Get request from p4
-	payRec, err := p.p4.PaymentRequest(ctx, req)
+	payReq, err := p.p4.PaymentRequest(ctx, req)
 	if err != nil {
 		return err
 	}
 
 	tx := bt.NewTx()
-
-	// Reserve utxos
 	var totalOutputs uint64
-	for _, out := range payRec.Outputs {
-		s, err := bscript.NewFromHexString(out.Script)
+	for _, out := range payReq.Outputs {
+		lockingScript, err := bscript.NewFromHexString(out.Script)
 		if err != nil {
 			return err
 		}
 		totalOutputs += out.Amount
-		tx.AddP2PKHOutputFromScript(s, out.Amount)
+		tx.AddP2PKHOutputFromScript(lockingScript, out.Amount)
 	}
 
-	dpTracker := &lsdpm{
-		m:   make(map[*bscript.Script]string),
-		mpk: privKey,
+	signer := &derivationSigner{
+		pathMap:       make(map[*bscript.Script]string),
+		masterPrivKey: privKey,
 	}
 
-	if err = tx.Fund(ctx, payRec.Fee, func(ctx context.Context, deficit uint64) ([]*bt.UTXO, error) {
-		utxos, err := p.tWtr.UTXOReserve(ctx, payd.UTXOReserve{
+	if err = tx.Fund(ctx, payReq.Fee, func(ctx context.Context, deficit uint64) ([]*bt.UTXO, error) {
+		utxos, err := p.txoWtr.UTXOReserve(ctx, payd.UTXOReserve{
 			ReservedFor: req.PayToURL,
 			Satoshis:    deficit,
 		})
@@ -109,12 +116,11 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 		}
 		var txos []*bt.UTXO
 		for _, utxo := range utxos {
-
-			s, err := bscript.NewFromHexString(utxo.LockingScript)
+			txid, err := hex.DecodeString(utxo.TxID)
 			if err != nil {
 				return nil, err
 			}
-			txid, err := hex.DecodeString(utxo.TxID)
+			lockingScript, err := bscript.NewFromHexString(utxo.LockingScript)
 			if err != nil {
 				return nil, err
 			}
@@ -122,30 +128,68 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 			txos = append(txos, &bt.UTXO{
 				TxID:          txid,
 				Vout:          utxo.Vout,
-				LockingScript: s,
 				Satoshis:      utxo.Satoshis,
+				LockingScript: lockingScript,
 			})
 
-			dpTracker.m[s] = utxo.DerivationPath
+			signer.pathMap[lockingScript] = utxo.DerivationPath
 		}
 		return txos, nil
 	}); err != nil {
 		return err
 	}
 
-	if err := tx.Change(script, payRec.Fee); err != nil {
+	if err := tx.Change(changeLockingScript, payReq.Fee); err != nil {
 		return err
 	}
 
-	if err := tx.SignAll(ctx, dpTracker); err != nil {
+	if err := tx.SignAll(ctx, signer); err != nil {
 		return err
 	}
-	fmt.Println(tx.String())
 
-	// Build spv envelope
+	spvEnvelope, err := p.spvc.CreateEnvelope(ctx, tx)
+	if err != nil {
+		return err
+	}
 
-	// Send request
+	if err := p.p4.PaymentSend(ctx, req, payd.PaymentSend{
+		SPVEnvelope: spvEnvelope,
+		ProofCallbacks: map[string]payd.ProofCallback{
+			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + spvEnvelope.TxID: {},
+		},
+		MerchantData: payd.User{
+			Name:         payReq.MerchantData.Name,
+			Email:        payReq.MerchantData.Email,
+			Avatar:       payReq.MerchantData.Avatar,
+			Address:      payReq.MerchantData.Address,
+			ExtendedData: payReq.MerchantData.ExtendedData,
+		},
+	}); err != nil {
+		return err
+	}
 
-	// Spend utxos?
-	return nil
+	// Only insert change tx if it exists
+	if changeLockingScript.Equals(tx.Outputs[tx.OutputCount()-1].LockingScript) {
+		if err := p.txWtr.TransactionChangeCreate(ctx, payd.TransactionCreate{
+			TxID:  spvEnvelope.TxID,
+			TxHex: spvEnvelope.RawTx,
+			Outputs: []*payd.TxoCreate{{
+				Outpoint: fmt.Sprintf("%s%d", spvEnvelope.TxID, tx.OutputCount()-1),
+				TxID:     spvEnvelope.TxID,
+				Vout:     uint64(tx.OutputCount() - 1),
+			}},
+		}, payd.DestinationCreate{
+			Script:         changeLockingScript.String(),
+			DerivationPath: path,
+			Keyname:        "masterkey",
+			Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return p.txoWtr.UTXOSpend(ctx, payd.UTXOSpend{
+		SpendingTxID: spvEnvelope.TxID,
+		Reservation:  payReq.PaymentURL,
+	})
 }

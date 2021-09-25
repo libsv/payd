@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -40,4 +41,30 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 	}
 
 	return &payRec, nil
+}
+
+func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.PaymentSend) error {
+	bb, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, args.PayToURL, bytes.NewBuffer(bb))
+	if err != nil {
+		return err
+	}
+	request.Header.Add("Content-Type", "application/json")
+
+	res, err := p.c.Do(request)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	if res.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected status code %d", res.StatusCode)
+	}
+
+	return nil
 }
