@@ -63,7 +63,7 @@ func (l derivationSigner) Signer(ctx context.Context, script *bscript.Script) (b
 }
 
 func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, error) {
-	privKey, err := p.pk.PrivateKey(ctx, "masterkey")
+	privKey, err := p.pk.PrivateKey(ctx, keyname)
 	if err != nil {
 		return nil, err
 	}
@@ -138,11 +138,11 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 		return nil, err
 	}
 
-	if err := tx.Change(changeLockingScript, payReq.Fee); err != nil {
+	if err = tx.Change(changeLockingScript, payReq.Fee); err != nil {
 		return nil, err
 	}
 
-	if err := tx.SignAll(ctx, signer); err != nil {
+	if err = tx.SignAll(ctx, signer); err != nil {
 		return nil, err
 	}
 
@@ -181,7 +181,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 		}, payd.DestinationCreate{
 			Script:         changeLockingScript.String(),
 			DerivationPath: derivationPath,
-			Keyname:        "masterkey",
+			Keyname:        keyname,
 			Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
 		}); err != nil {
 			return nil, err
