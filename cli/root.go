@@ -72,7 +72,7 @@ func initConfig() {
 		WithAccount().
 		WithContexts()
 
-	_ = viper.SafeWriteConfig()
+	_ = viper.WriteConfig()
 }
 
 // Execute the command.

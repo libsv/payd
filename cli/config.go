@@ -163,13 +163,12 @@ func deleteContext(cmd *cobra.Command, args []string) error {
 	v.AddConfigPath(home)
 	v.SetConfigName(".payctl")
 	v.SetConfigType("yml")
+	if len(cfg.Contexts) == 1 {
+		return v.WriteConfig()
+	}
 
 	deleteCurrentContext := viper.GetString(config.CfgCurrentContext) == args[0]
 	if deleteCurrentContext {
-		if len(cfg.Contexts) == 1 {
-			return v.WriteConfig()
-		}
-
 		for k := range cfg.Contexts {
 			if k != args[0] {
 				v.Set(config.CfgCurrentContext, k)

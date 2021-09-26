@@ -64,8 +64,8 @@ func (c *Config) WithPayd() *Config {
 	return c
 }
 
-func (w *Payd) URLFor(parts ...string) string {
-	url, err := url.Parse(w.host)
+func (p *Payd) URLFor(parts ...string) string {
+	url, err := url.Parse(p.host)
 	if err != nil {
 		panic(err)
 	}
@@ -91,8 +91,8 @@ func (c *Config) WithP4() *Config {
 	return c
 }
 
-func (w *P4) URLFor(parts ...string) string {
-	url, err := url.Parse(w.host)
+func (p *P4) URLFor(parts ...string) string {
+	url, err := url.Parse(p.host)
 	if err != nil {
 		panic(err)
 	}
@@ -121,7 +121,7 @@ func (c *Config) WithContexts() *Config {
 		cfg := NewConfig()
 		cfg.CurrentContext = k
 
-		cfg.WithPayd().WithAccount()
+		cfg.WithPayd().WithP4().WithAccount()
 
 		c.Contexts[k] = cfg.Context
 	}

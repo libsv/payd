@@ -109,5 +109,11 @@ func (i *Invoice) Row() []string {
 			ref = ref[:50] + "..."
 		}
 	}
-	return []string{i.PaymentID, strconv.FormatUint(i.Satoshis, 10), i.State, pra, ref}
+	return []string{
+		i.PaymentID,
+		strconv.FormatUint(i.Satoshis, 10),
+		i.State,
+		pra,
+		ref,
+	}
 }
