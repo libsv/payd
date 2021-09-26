@@ -16,6 +16,7 @@ type P4Output struct {
 	Script      string `json:"script"`
 	Description string `json:"description"`
 }
+
 type PaymentRequestResponse struct {
 	Network             string     `json:"network"`
 	Outputs             []P4Output `json:"outputs"`
@@ -34,6 +35,11 @@ type PaymentRequestResponse struct {
 	Fee *bt.FeeQuote `json:"fee"`
 }
 
+type PaymentACK struct {
+	Payment Payment `json:"payment"`
+	Memo    string  `json:"memo"`
+}
+
 type PayService interface {
-	Pay(ctx context.Context, req PayRequest) error
+	Pay(ctx context.Context, req PayRequest) (*PaymentACK, error)
 }

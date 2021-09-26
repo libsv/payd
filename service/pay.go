@@ -62,31 +62,31 @@ func (l derivationSigner) Signer(ctx context.Context, script *bscript.Script) (b
 	}, nil
 }
 
-func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
+func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, error) {
 	privKey, err := p.pk.PrivateKey(ctx, "masterkey")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var b [8]byte
 	if _, err := rand.Read(b[:]); err != nil {
-		return err
+		return nil, err
 	}
 
 	derivationPath := bip32.DerivePath(binary.LittleEndian.Uint64(b[:]))
 	pubKey, err := privKey.DerivePublicKeyFromPath(derivationPath)
 	if err != nil {
-		return errors.Wrap(err, "failed to derive key when create change output")
+		return nil, errors.Wrap(err, "failed to derive key when create change output")
 	}
 
 	changeLockingScript, err := bscript.NewP2PKHFromPubKeyBytes(pubKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	payReq, err := p.p4.PaymentRequest(ctx, req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tx := bt.NewTx()
@@ -94,7 +94,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 	for _, out := range payReq.Outputs {
 		lockingScript, err := bscript.NewFromHexString(out.Script)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		totalOutputs += out.Amount
 		tx.AddP2PKHOutputFromScript(lockingScript, out.Amount)
@@ -135,23 +135,23 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 		}
 		return txos, nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := tx.Change(changeLockingScript, payReq.Fee); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := tx.SignAll(ctx, signer); err != nil {
-		return err
+		return nil, err
 	}
 
 	spvEnvelope, err := p.spvc.CreateEnvelope(ctx, tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := p.p4.PaymentSend(ctx, req, payd.PaymentSend{
+	ack, err := p.p4.PaymentSend(ctx, req, payd.PaymentSend{
 		SPVEnvelope: spvEnvelope,
 		ProofCallbacks: map[string]payd.ProofCallback{
 			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + spvEnvelope.TxID: {},
@@ -163,8 +163,9 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 			Address:      payReq.MerchantData.Address,
 			ExtendedData: payReq.MerchantData.ExtendedData,
 		},
-	}); err != nil {
-		return err
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	// Only insert change tx if it exists
@@ -183,12 +184,16 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) error {
 			Keyname:        "masterkey",
 			Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
 		}); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return p.txoWtr.UTXOSpend(ctx, payd.UTXOSpend{
+	if err = p.txoWtr.UTXOSpend(ctx, payd.UTXOSpend{
 		SpendingTxID: spvEnvelope.TxID,
 		Reservation:  payReq.PaymentURL,
-	})
+	}); err != nil {
+		return nil, err
+	}
+
+	return ack, nil
 }

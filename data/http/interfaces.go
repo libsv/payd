@@ -14,5 +14,5 @@ type Client interface {
 
 type P4 interface {
 	PaymentRequest(ctx context.Context, req payd.PayRequest) (*payd.PaymentRequestResponse, error)
-	PaymentSend(ctx context.Context, args payd.PayRequest, req payd.PaymentSend) error
+	PaymentSend(ctx context.Context, args payd.PayRequest, req payd.PaymentSend) (*payd.PaymentACK, error)
 }

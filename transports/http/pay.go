@@ -28,15 +28,16 @@ func (p *pay) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Param body body payd.PayRequest true "Pay to url"
-// @Success 204
+// @Success 201
 // @Router /v1/pay [POST].
 func (p *pay) pay(c echo.Context) error {
 	var req payd.PayRequest
 	if err := c.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to process payment request")
 	}
-	if err := p.svc.Pay(c.Request().Context(), req); err != nil {
+	resp, err := p.svc.Pay(c.Request().Context(), req)
+	if err != nil {
 		return errors.WithStack(err)
 	}
-	return c.NoContent(http.StatusNoContent)
+	return c.JSON(http.StatusCreated, resp)
 }
