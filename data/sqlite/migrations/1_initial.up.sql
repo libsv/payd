@@ -77,8 +77,8 @@ CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
 CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
 
 CREATE TABLE destination_invoice(
-    destination_id INTEGER,
-    invoice_id VARCHAR,
+    destination_id INTEGER NOT NULL,
+    invoice_id VARCHAR NOT NULL,
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );

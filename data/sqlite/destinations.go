@@ -68,7 +68,6 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "failed to scan destination rows")
 	}
-	fmt.Println(sqlArgs)
 	var dd []payd.Output
 	for rows.Next() {
 		var (

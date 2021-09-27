@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
@@ -99,29 +98,17 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 		// set to default expiry hours
 		req.ExpiresAt = null.TimeFrom(time.Now().Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
 	}
-	var invoice *payd.Invoice
-	g := new(errgroup.Group)
-	g.Go(func() error {
-		inv, err := i.store.InvoiceCreate(ctx, req)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		invoice = inv
-		return nil
-	})
-	g.Go(func() error {
-		if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
-			InvoiceID: null.StringFrom(req.InvoiceID),
-			Satoshis:  req.Satoshis,
-		}); err != nil {
-			return errors.Wrapf(err, "failed to create payment destinations for invoice")
-		}
-		return nil
-	})
-	if err := g.Wait(); err != nil {
+	inv, err := i.store.InvoiceCreate(ctx, req)
+	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return invoice, errors.WithStack(i.transacter.Commit(ctx))
+	if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
+		InvoiceID: null.StringFrom(req.InvoiceID),
+		Satoshis:  req.Satoshis,
+	}); err != nil {
+		return nil, errors.Wrapf(err, "failed to create payment destinations for invoice")
+	}
+	return inv, errors.WithStack(i.transacter.Commit(ctx))
 }
 
 // Delete will permanently remove an invoice from the system.
