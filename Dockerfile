@@ -17,7 +17,7 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-FROM scratch
+FROM bitnami/minideb:buster
 
 COPY --from=builder /app/rest-server /bin/
 COPY --from=builder /etc/passwd /etc/passwd
