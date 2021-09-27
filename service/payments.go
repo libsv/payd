@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	lathos "github.com/theflyingcodr/lathos/errs"
-	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
 )
@@ -120,7 +119,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	}()
 	// Store tx
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
-		InvoiceID: null.StringFrom(req.InvoiceID),
+		InvoiceID: req.InvoiceID,
 		TxID:      txID,
 		TxHex: func() string {
 			if inv.SPVRequired {

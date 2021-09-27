@@ -57,7 +57,7 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) er
 	return errors.WithStack(tx.Commit())
 }
 
-// Proof will retrieve a proof.
+// MerkleProof will retrieve a proof.
 func (s *sqliteStore) MerkleProof(ctx context.Context, txID string) (*bc.MerkleProof, error) {
 	var data string
 	if err := s.db.GetContext(ctx, &data, sqlProofGet, txID); err != nil {

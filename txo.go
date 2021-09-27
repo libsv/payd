@@ -2,6 +2,7 @@ package payd
 
 import (
 	"context"
+	"time"
 )
 
 // TxoCreate will add utxos to our data store linked by a destinationId.
@@ -36,8 +37,9 @@ type UTXOUnreserve struct {
 
 // UTXOSpend takes args for marking a utxo in the db as spent.
 type UTXOSpend struct {
-	SpendingTxID string `db:"spending_txid"`
-	Reservation  string `db:"reserved_for"`
+	Timestamp    time.Time `db:"timestamp"`
+	SpendingTxID string    `db:"spending_txid"`
+	Reservation  string    `db:"reserved_for"`
 }
 
 // TxoWriter is used to add transaction information to a data store.

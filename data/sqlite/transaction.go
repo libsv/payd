@@ -16,8 +16,13 @@ import (
 
 const (
 	sqlTransactionCreate = `
-		INSERT INTO transactions(tx_id, invoice_id, tx_hex)
-		VALUES(:tx_id, :invoice_id, :tx_hex)
+		INSERT INTO transactions(tx_id, tx_hex)
+		VALUES(:tx_id, :tx_hex)
+	`
+
+	sqlTransactionInvoiceCreate = `
+		INSERT INTO transaction_invoice(tx_id, invoice_id)
+		VALUES(:tx_id, :invoice_id)
 	`
 
 	sqlTxoCreate = `
@@ -70,43 +75,60 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 		}
 		return errors.Wrap(err, "failed to insert new transaction")
 	}
-	if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
-		return errors.Wrap(err, "failed to insert transaction outputs")
-	}
-	ll := make([]uint64, 0, len(req.Outputs))
-	for _, d := range req.Outputs {
-		ll = append(ll, d.DestinationID)
+
+	// Only write outputs if they exist. This can happen in the case of a tx being funded an
+	// exact amount, causing no change output to be created.
+	if req.Outputs != nil && len(req.Outputs) > 0 {
+		if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
+			return errors.Wrap(err, "failed to insert transaction outputs")
+		}
+
+		ll := make([]uint64, 0, len(req.Outputs))
+		for _, d := range req.Outputs {
+			ll = append(ll, d.DestinationID)
+		}
+		query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, time.Now().UTC(), ll)
+		if err != nil {
+			return errors.Wrap(err, "failed to create sql for updating destination state")
+		}
+		result, err := tx.Exec(query, sqlArgs...)
+		if err != nil {
+			return errors.Wrap(err, "failed to update destinations state to received")
+		}
+		rows, err := result.RowsAffected()
+		if err != nil {
+			return errors.Wrap(err, "failed to update destinations state to received")
+		}
+		if rows <= 0 {
+			return errors.Wrap(err, "failed to update destinations state to received")
+		}
 	}
 
-	query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, time.Now().UTC(), ll)
-	if err != nil {
-		return errors.Wrap(err, "failed to create sql for updating destination state")
+	// If no invoice id was provided, end here as this is a change tx.
+	if req.InvoiceID == "" {
+		return errors.Wrapf(commit(ctx, tx),
+			"failed to commit transaction when adding tx and outputs for tx '%s'", req.TxID)
 	}
-	result, err := tx.Exec(query, sqlArgs...)
-	if err != nil {
-		return errors.Wrap(err, "failed to update destinations state to received")
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to update destinations state to received")
-	}
-	if rows <= 0 {
-		return errors.Wrap(err, "failed to update destinations state to received")
-	}
+
 	invUpdate := struct {
 		Timestamp time.Time `db:"timestamp"`
 		InvoiceID string    `db:"invoice_id"`
 	}{
 		Timestamp: timestamp,
-		InvoiceID: req.InvoiceID.ValueOrZero(),
+		InvoiceID: req.InvoiceID,
 	}
-	if err := handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
+	if err = handleNamedExec(tx, sqlTransactionInvoiceCreate, req); err != nil {
+		return errors.Wrapf(err, "failed to create invoice mapping for tx %s invoice %s", req.TxID, req.InvoiceID)
+	}
+
+	if err = handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID.ValueOrZero()))
+			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
 		}
 	}
+
 	return errors.Wrapf(commit(ctx, tx),
-		"failed to commit transaction when adding tx and outputs for invoiceID '%s'", req.InvoiceID.ValueOrZero())
+		"failed to commit transaction when adding tx and outputs for tx '%s'", req.TxID)
 }
 
 // TransactionUpdateState will update a transactions internal state.
@@ -138,42 +160,4 @@ func (s *sqliteStore) Tx(ctx context.Context, txID string) (*bt.Tx, error) {
 	}
 
 	return bt.NewTxFromString(txhex.TxHex)
-}
-
-func (s *sqliteStore) TransactionChangeCreate(ctx context.Context, txArgs payd.TransactionCreate, dArgs payd.DestinationCreate) error {
-	tx, err := s.newTx(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to create transaction for change tx")
-	}
-
-	res, err := tx.NamedExecContext(ctx, sqlDestinationCreate, dArgs)
-	if err != nil {
-		return errors.Wrap(err, "failed to store destination information for change")
-	}
-	destID, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	if _, err := tx.NamedExecContext(ctx, sqlTransactionCreate, txArgs); err != nil {
-		return errors.Wrap(err, "failed store tx information for change")
-	}
-	for _, output := range txArgs.Outputs {
-		output.DestinationID = uint64(destID)
-	}
-	if err := handleNamedExec(tx, sqlTxoCreate, txArgs.Outputs); err != nil {
-		return errors.Wrap(err, "failed to store tx output information for change")
-	}
-	res, err = tx.ExecContext(ctx, sqlDestinationSetReceived, time.Now().UTC(), destID)
-	if err != nil {
-		return errors.Wrap(err, "failed to mark destination as received for change")
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to mark destination as received for change")
-	}
-	if rows <= 0 {
-		return errors.Wrap(err, "failed to mark destination as received for change")
-	}
-	return errors.Wrap(commit(ctx, tx), "failed to commit store of change tx")
 }

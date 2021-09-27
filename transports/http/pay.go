@@ -19,6 +19,7 @@ func NewPayHandler(svc payd.PayService) *pay {
 	}
 }
 
+// RegisterRoutes registers the pay routes.
 func (p *pay) RegisterRoutes(g *echo.Group) {
 	g.POST(RouteV1Pay, p.pay)
 }

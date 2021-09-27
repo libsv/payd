@@ -68,6 +68,7 @@ func main() {
 		WithLog().
 		WithHeadersClient().
 		WithWallet().
+		WithP4().
 		WithMapi()
 	// validate the config, fail if it fails.
 	if err := cfg.Validate(); err != nil {
@@ -131,7 +132,8 @@ func main() {
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, sqlLiteStore, dataHttp.NewP4(&http.Client{}), privKeySvc, spvc, cfg.Server)).RegisterRoutes(g)
+	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, sqlLiteStore, sqlLiteStore,
+		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), privKeySvc, spvc, cfg.Server)).RegisterRoutes(g)
 
 	// create master private key if it doesn't exist
 	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {

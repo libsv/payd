@@ -16,9 +16,9 @@ type proofs struct {
 }
 
 // NewProofsService will setup and return a new merkle proof service.
-func NewProofsService(rdrWtr payd.ProofsWriter) *proofs {
+func NewProofsService(rdr payd.ProofsWriter) *proofs {
 	return &proofs{
-		wtr: rdrWtr,
+		wtr: rdr,
 	}
 }
 
