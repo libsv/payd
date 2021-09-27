@@ -76,32 +76,8 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 		return errors.Wrap(err, "failed to insert new transaction")
 	}
 
-	// Only write outputs if they exist. This can happen in the case of a tx being funded an
-	// exact amount, causing no change output to be created.
-	if req.Outputs != nil && len(req.Outputs) > 0 {
-		if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
-			return errors.Wrap(err, "failed to insert transaction outputs")
-		}
-
-		ll := make([]uint64, 0, len(req.Outputs))
-		for _, d := range req.Outputs {
-			ll = append(ll, d.DestinationID)
-		}
-		query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, time.Now().UTC(), ll)
-		if err != nil {
-			return errors.Wrap(err, "failed to create sql for updating destination state")
-		}
-		result, err := tx.Exec(query, sqlArgs...)
-		if err != nil {
-			return errors.Wrap(err, "failed to update destinations state to received")
-		}
-		rows, err := result.RowsAffected()
-		if err != nil {
-			return errors.Wrap(err, "failed to update destinations state to received")
-		}
-		if rows <= 0 {
-			return errors.Wrap(err, "failed to update destinations state to received")
-		}
+	if err = s.insertOutputs(ctx, tx, timestamp, req); err != nil {
+		return err
 	}
 
 	// If no invoice id was provided, end here as this is a change tx.
@@ -129,6 +105,40 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 
 	return errors.Wrapf(commit(ctx, tx),
 		"failed to commit transaction when adding tx and outputs for tx '%s'", req.TxID)
+}
+
+func (s *sqliteStore) insertOutputs(ctx context.Context, tx *sqlx.Tx, timestamp time.Time, req payd.TransactionCreate) error {
+	// Only write outputs if they exist. This can happen in the case of a tx being funded an
+	// exact amount, causing no change output to be created.
+	if req.Outputs == nil || len(req.Outputs) == 0 {
+		return nil
+	}
+
+	if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
+		return errors.Wrap(err, "failed to insert transaction outputs")
+	}
+
+	ll := make([]uint64, 0, len(req.Outputs))
+	for _, d := range req.Outputs {
+		ll = append(ll, d.DestinationID)
+	}
+	query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, timestamp, ll)
+	if err != nil {
+		return errors.Wrap(err, "failed to create sql for updating destination state")
+	}
+	result, err := tx.ExecContext(ctx, query, sqlArgs...)
+	if err != nil {
+		return errors.Wrap(err, "failed to update destinations state to received")
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to update destinations state to received")
+	}
+	if rows <= 0 {
+		return errors.Wrap(err, "failed to update destinations state to received")
+	}
+
+	return nil
 }
 
 // TransactionUpdateState will update a transactions internal state.
