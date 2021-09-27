@@ -40,12 +40,12 @@ type PaymentSendArgs struct {
 
 // MerchantData merchant data.
 type MerchantData struct {
-	Avatar           string                 `json:"avatar" yaml:"avatar"`
-	Name             string                 `json:"name" yaml:"name"`
-	Email            string                 `json:"email" yaml:"email"`
-	Address          string                 `json:"address" yaml:"address"`
-	PaymentReference string                 `json:"paymentReference" yaml:"paymentReference"`
-	ExtendedData     map[string]interface{} `json:"extendedData" yaml:"extendedData"`
+	Avatar           string            `json:"avatar" yaml:"avatar"`
+	Name             string            `json:"name" yaml:"name"`
+	Email            string            `json:"email" yaml:"email"`
+	Address          string            `json:"address" yaml:"address"`
+	PaymentReference string            `json:"paymentReference" yaml:"paymentReference"`
+	ExtendedData     map[string]string `json:"extendedData" yaml:"extendedData"`
 }
 
 // PaymentRequest a payment request.
@@ -101,8 +101,8 @@ func (p PaymentAck) Columns() []string {
 
 // Rows builds a series of rows.
 func (p PaymentAck) Rows() [][]string {
-	tx, _ := bt.NewTxFromString(p.Payment.Transaction)
+	//tx, _ := bt.NewTxFromString(p.Payment.Transaction)
 	return [][]string{{
-		tx.TxID(), p.Payment.MerchantData.Name, p.Payment.MerchantData.PaymentReference,
+		p.Payment.SPVEnvelope.TxID, p.Payment.MerchantData.Name, p.Payment.MerchantData.ExtendedData["paymentReference"],
 	}}
 }
