@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 
 	"github.com/speps/go-hashids"
@@ -17,7 +17,7 @@ import (
 type destinationCreator interface {
 	// DestinationsCreate will split satoshis into multiple denominations and store
 	// as denominations waiting to be fulfilled in a tx.
-	DestinationsCreate(ctx context.Context, req gopayd.DestinationsCreate) (*gopayd.Destination, error)
+	DestinationsCreate(ctx context.Context, req payd.DestinationsCreate) (*payd.Destination, error)
 }
 
 // invoice represents a purchase order system or other such system that a merchant would use
@@ -28,16 +28,18 @@ type destinationCreator interface {
 // This invoicing system is separate to the protocol server itself but added here
 // as a very basic example.
 type invoice struct {
-	store      gopayd.InvoiceReaderWriter
+	store      payd.InvoiceReaderWriter
 	destSvc    destinationCreator
 	cfg        *config.Server
-	transacter gopayd.Transacter
+	wallCfg    *config.Wallet
+	transacter payd.Transacter
 }
 
 // NewInvoice will setup and return a new invoice service.
-func NewInvoice(cfg *config.Server, store gopayd.InvoiceReaderWriter, destSvc destinationCreator, transacter gopayd.Transacter) *invoice {
+func NewInvoice(cfg *config.Server, wallCfg *config.Wallet, store payd.InvoiceReaderWriter, destSvc destinationCreator, transacter payd.Transacter) *invoice {
 	return &invoice{
 		cfg:        cfg,
+		wallCfg:    wallCfg,
 		store:      store,
 		destSvc:    destSvc,
 		transacter: transacter,
@@ -45,7 +47,7 @@ func NewInvoice(cfg *config.Server, store gopayd.InvoiceReaderWriter, destSvc de
 }
 
 // Invoice will return an invoice by paymentID.
-func (i *invoice) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*gopayd.Invoice, error) {
+func (i *invoice) Invoice(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 	if err := args.Validate(); err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func (i *invoice) Invoice(ctx context.Context, args gopayd.InvoiceArgs) (*gopayd
 }
 
 // Invoices will return all currently stored invoices.
-func (i *invoice) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
+func (i *invoice) Invoices(ctx context.Context) ([]payd.Invoice, error) {
 	ii, err := i.store.Invoices(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to get invoices")
@@ -66,7 +68,7 @@ func (i *invoice) Invoices(ctx context.Context) ([]gopayd.Invoice, error) {
 }
 
 // Create will add a new invoice to the system.
-func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd.Invoice, error) {
+func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Invoice, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -86,12 +88,21 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 	defer func() {
 		_ = i.transacter.Rollback(ctx)
 	}()
+	req.SPVRequired = i.wallCfg.SPVRequired // set default requirement
+	// any payment 1000sat or below, we don't want spv
+	// NOTE - this is just an example
+	if req.Satoshis <= 1000 {
+		req.SPVRequired = false
+	}
+	if req.ExpiresAt.IsZero() {
+		// set to default expiry hours
+		req.ExpiresAt = null.TimeFrom(time.Now().Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
+	}
 	inv, err := i.store.InvoiceCreate(ctx, req)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	// TODO - this could be an async call - though this ensures it all completes.
-	if _, err := i.destSvc.DestinationsCreate(ctx, gopayd.DestinationsCreate{
+	if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
 		InvoiceID: null.StringFrom(req.InvoiceID),
 		Satoshis:  req.Satoshis,
 	}); err != nil {
@@ -101,7 +112,7 @@ func (i *invoice) Create(ctx context.Context, req gopayd.InvoiceCreate) (*gopayd
 }
 
 // Delete will permanently remove an invoice from the system.
-func (i *invoice) Delete(ctx context.Context, args gopayd.InvoiceArgs) error {
+func (i *invoice) Delete(ctx context.Context, args payd.InvoiceArgs) error {
 	if err := args.Validate(); err != nil {
 		return err
 	}

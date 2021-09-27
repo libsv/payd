@@ -6,15 +6,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type balance struct {
-	svc gopayd.BalanceService
+	svc payd.BalanceService
 }
 
 // NewBalance will setup and return a balance handler.
-func NewBalance(svc gopayd.BalanceService) *balance {
+func NewBalance(svc payd.BalanceService) *balance {
 	return &balance{svc: svc}
 }
 
@@ -30,7 +30,7 @@ func (b *balance) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /balance [GET].
+// @Router /v1/balance [GET].
 func (b *balance) balance(e echo.Context) error {
 	resp, err := b.svc.Balance(e.Request().Context())
 	if err != nil {

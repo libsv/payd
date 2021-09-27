@@ -1,4 +1,4 @@
-package gopayd
+package payd
 
 import (
 	"context"
@@ -33,8 +33,9 @@ type DestinationCreate struct {
 // Destination contains outputs and current fees
 // required to construct a transaction.
 type Destination struct {
-	Outputs []Output     `json:"outputs"`
-	Fees    *bt.FeeQuote `json:"fees"`
+	SPVRequired bool         `json:"spvRequired"`
+	Outputs     []Output     `json:"outputs"`
+	Fees        *bt.FeeQuote `json:"fees"`
 }
 
 // Output contains a single locking script

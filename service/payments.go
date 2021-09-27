@@ -11,22 +11,25 @@ import (
 	validator "github.com/theflyingcodr/govalidator"
 	lathos "github.com/theflyingcodr/lathos/errs"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
+
+type paymentValidatorFunc func(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error)
 
 type payments struct {
 	paymentVerify spv.PaymentVerifier
-	txWtr         gopayd.TransactionWriter
-	invRdr        gopayd.InvoiceReader
-	destRdr       gopayd.DestinationsReader
-	transacter    gopayd.Transacter
-	callbackWtr   gopayd.ProofCallbackWriter
-	broadcaster   gopayd.BroadcastWriter
+	txWtr         payd.TransactionWriter
+	invRdr        payd.InvoiceReader
+	destRdr       payd.DestinationsReader
+	transacter    payd.Transacter
+	callbackWtr   payd.ProofCallbackWriter
+	broadcaster   payd.BroadcastWriter
+	validator     map[bool]paymentValidatorFunc
 }
 
 // NewPayments will setup and return a payments service.
-func NewPayments(paymentVerify spv.PaymentVerifier, txWtr gopayd.TransactionWriter, invRdr gopayd.InvoiceReader, destRdr gopayd.DestinationsReader, transacter gopayd.Transacter, broadcaster gopayd.BroadcastWriter, callbackWtr gopayd.ProofCallbackWriter) *payments {
-	return &payments{
+func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReader, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, callbackWtr payd.ProofCallbackWriter) *payments {
+	svc := &payments{
 		paymentVerify: paymentVerify,
 		invRdr:        invRdr,
 		destRdr:       destRdr,
@@ -34,68 +37,65 @@ func NewPayments(paymentVerify spv.PaymentVerifier, txWtr gopayd.TransactionWrit
 		txWtr:         txWtr,
 		broadcaster:   broadcaster,
 		callbackWtr:   callbackWtr,
+		validator:     map[bool]paymentValidatorFunc{},
 	}
+	// setup validators for spv and rawTX
+	svc.validator[true] = svc.spvHandler
+	svc.validator[false] = svc.rawTxHandler
+
+	return svc
 }
 
 // PaymentCreate will validate and store the payment.
-func (p *payments) PaymentCreate(ctx context.Context, req gopayd.PaymentCreate) error {
-	if err := req.Validate(); err != nil {
+func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) error {
+	if err := validator.New().
+		Validate("invoiceID", validator.StrLength(req.InvoiceID, 1, 30)).Err(); err != nil {
 		return err
 	}
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
-	inv, err := p.invRdr.Invoice(ctx, gopayd.InvoiceArgs{InvoiceID: req.InvoiceID})
+	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: req.InvoiceID})
 	if err != nil {
 		return errors.Wrapf(err, "failed to get invoice with ID '%s'", req.InvoiceID)
 	}
-	if inv.State != gopayd.StateInvoicePending {
+	if inv.State != payd.StateInvoicePending {
 		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", req.InvoiceID))
 	}
-	ok, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope)
+	// validate request tx or envelope and return tx.
+	tx, err := p.validator[inv.SPVRequired](ctx, req)
 	if err != nil {
-		// map error to a validation error
-		return validator.ErrValidation{
-			"spvEnvelope": {
-				err.Error(),
-			},
-		}
-	}
-	if !ok {
-		// map error to a validation error
-		return validator.ErrValidation{
-			"spvEnvelope": {
-				"payment envelope is not valid",
-			},
-		}
-	}
-	// validate outputs match invoice
-	// ensure tx pays enough fees.
-	tx, err := bt.NewTxFromString(req.SPVEnvelope.RawTx)
-	if err != nil {
-		return errors.Wrap(err, "failed to read transaction")
+		return errors.WithStack(err)
 	}
 	// get destinations
-	oo, err := p.destRdr.Destinations(ctx, gopayd.DestinationsArgs{InvoiceID: req.InvoiceID})
+	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: req.InvoiceID})
 	if err != nil {
 		return errors.Wrapf(err, "failed to get destinations with ID '%s'", req.InvoiceID)
 	}
 	// gather all outputs and add to a lookup map
 	var total uint64
-	outputs := map[string]gopayd.Output{}
+	outputs := map[string]payd.Output{}
 	for _, o := range oo {
 		outputs[o.LockingScript] = o
 	}
-	txos := make([]*gopayd.TxoCreate, 0)
+	txos := make([]*payd.TxoCreate, 0)
 	// get total of outputs that we know about
 	txID := tx.TxID()
 	for i, o := range tx.Outputs {
 		if output, ok := outputs[o.LockingScript.String()]; ok {
+			if o.Satoshis != output.Satoshis {
+				return validator.ErrValidation{
+					"tx.outputs": {
+						"output satoshis do not match requested amount",
+					},
+				}
+			}
 			total += output.Satoshis
-			txos = append(txos, &gopayd.TxoCreate{
+			txos = append(txos, &payd.TxoCreate{
 				Outpoint:      fmt.Sprintf("%s%d", txID, i),
 				DestinationID: output.ID,
 				TxID:          txID,
 				Vout:          uint64(i),
 			})
+			delete(outputs, o.LockingScript.String())
 		}
 	}
 	// fail if tx doesn't pay invoice in full
@@ -106,38 +106,101 @@ func (p *payments) PaymentCreate(ctx context.Context, req gopayd.PaymentCreate) 
 			},
 		}
 	}
+	if len(outputs) > 0 {
+		return validator.ErrValidation{
+			"tx.outputs": {
+				fmt.Sprintf("expected '%d' outputs, received '%d', ensure all destinations are supplied", len(oo), len(tx.Outputs)),
+			},
+		}
+	}
 	ctx = p.transacter.WithTx(ctx)
 	defer func() {
 		_ = p.transacter.Rollback(ctx)
 	}()
 	// Store tx
-	if err := p.txWtr.TransactionCreate(ctx, gopayd.TransactionCreate{
+	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
 		InvoiceID: req.InvoiceID,
 		TxID:      txID,
-		TxHex:     req.SPVEnvelope.RawTx,
-		Outputs:   txos,
+		TxHex: func() string {
+			if inv.SPVRequired {
+				return req.SPVEnvelope.RawTx
+			}
+			return req.RawTX.ValueOrZero()
+		}(),
+		Outputs: txos,
 	}); err != nil {
 		return errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", req.InvoiceID)
 	}
 	// Store callbacks if we have any
 	if len(req.ProofCallbacks) > 0 {
-		if err := p.callbackWtr.ProofCallBacksCreate(ctx, gopayd.ProofCallbackArgs{InvoiceID: req.InvoiceID}, req.ProofCallbacks); err != nil {
+		if err := p.callbackWtr.ProofCallBacksCreate(ctx, payd.ProofCallbackArgs{InvoiceID: req.InvoiceID}, req.ProofCallbacks); err != nil {
 			return errors.Wrapf(err, "failed to store proof callbacks for invoiceID '%s'", req.InvoiceID)
 		}
 	}
 	// Broadcast the transaction
 	if err := p.broadcaster.Broadcast(ctx, tx); err != nil {
 		// set as failed
-		if err := p.txWtr.TransactionUpdateState(ctx, gopayd.TransactionArgs{TxID: txID}, gopayd.TransactionStateUpdate{State: gopayd.StateTxFailed}); err != nil {
+		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
 			log.Error(err)
 		}
 		return errors.Wrap(err, "failed to broadcast tx")
 	}
 
 	// Update tx state to broadcast
-	if err := p.txWtr.TransactionUpdateState(ctx, gopayd.TransactionArgs{TxID: txID}, gopayd.TransactionStateUpdate{State: gopayd.StateTxBroadcast}); err != nil {
+	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxBroadcast}); err != nil {
 		log.Error(err)
 	}
 
 	return p.transacter.Commit(ctx)
+}
+
+func (p *payments) spvHandler(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error) {
+	if err := req.Validate(true); err != nil {
+		return nil, err
+	}
+	ok, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope)
+	if err != nil {
+		// map error to a validation error
+		return nil, validator.ErrValidation{
+			"spvEnvelope": {
+				err.Error(),
+			},
+		}
+	}
+	if !ok {
+		// map error to a validation error
+		return nil, validator.ErrValidation{
+			"spvEnvelope": {
+				"payment envelope is not valid",
+			},
+		}
+	}
+	// validate outputs match invoice
+	// ensure tx pays enough fees.
+	tx, err := bt.NewTxFromString(req.SPVEnvelope.RawTx)
+	if err != nil {
+		// convert to validation error
+		if err := validator.New().Validate("rawTx", func() error {
+			return errors.Wrap(err, "invalid transaction received")
+		}).Err(); err != nil {
+			return nil, err
+		}
+	}
+	return tx, nil
+}
+
+func (p *payments) rawTxHandler(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error) {
+	if err := validator.New().Validate("rawTx", validator.NotEmpty(req.RawTX.ValueOrZero())).Err(); err != nil {
+		return nil, err
+	}
+	tx, err := bt.NewTxFromString(req.RawTX.ValueOrZero())
+	if err != nil {
+		// convert to validation error
+		if err := validator.New().Validate("rawTx", func() error {
+			return errors.Wrap(err, "invalid transaction received")
+		}).Err(); err != nil {
+			return nil, err
+		}
+	}
+	return tx, nil
 }

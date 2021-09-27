@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/libsv/go-bc/spv"
+	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/tonicpow/go-minercraft"
 
@@ -52,19 +54,19 @@ const banner = `
 // @license.name ISC
 // @license.url https://github.com/libsv/payd/blob/master/LICENSE
 // @host localhost:8443
-// @BasePath /api/
+// @BasePath /api
 // @schemes:
 //	- http
 //	- https
 func main() {
 	println("\033[32m" + banner + "\033[0m")
+	config.SetupDefaults()
 	cfg := config.NewViperConfig(appname).
 		WithServer().
 		WithDb().
 		WithDeployment(appname).
 		WithLog().
 		WithHeadersClient().
-		WithPaymail().
 		WithWallet().
 		WithMapi()
 	// validate the config, fail if it fails.
@@ -114,10 +116,10 @@ func main() {
 
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, mapiStore)
+	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore)
 
-	thttp.NewInvoice(service.NewInvoice(cfg.Server, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
+	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
 		RegisterRoutes(g)
 	thttp.NewBalance(service.NewBalance(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
@@ -125,6 +127,11 @@ func main() {
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).
 		RegisterRoutes(g)
+
+	// create master private key if it doesn't exist
+	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
+		log.Fatal(errors.Wrap(err, "failed to create master key"))
+	}
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)

@@ -43,10 +43,10 @@ install-linter:
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
 
 install-swagger-gen:
-	@go get github.com/swaggo/swag/cmd/swag
+	@go get -d github.com/swaggo/swag/cmd/swag
 
 generate-swagger:
-	@swag init --parseVendor -g ./cmd/rest-server/main.go
+	@swag init --parseVendor --parseDependency --parseInternal -g ./cmd/rest-server/main.go
 
 go-doc-mac:
 	@open http://localhost:6060 && \

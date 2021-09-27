@@ -1,6 +1,7 @@
 package mapstructure
 
 import (
+	"encoding"
 	"errors"
 	"fmt"
 	"net"
@@ -61,7 +62,8 @@ func DecodeHookExec(
 func ComposeDecodeHookFunc(fs ...DecodeHookFunc) DecodeHookFunc {
 	return func(f reflect.Value, t reflect.Value) (interface{}, error) {
 		var err error
-		var data interface{}
+		data := f.Interface()
+
 		newFrom := f
 		for _, f1 := range fs {
 			data, err = DecodeHookExec(f1, newFrom, t)
@@ -228,5 +230,28 @@ func RecursiveStructToMapHookFunc() DecodeHookFunc {
 		t.Set(reflect.ValueOf(m))
 
 		return f.Interface(), nil
+	}
+}
+
+// TextUnmarshallerHookFunc returns a DecodeHookFunc that applies
+// strings to the UnmarshalText function, when the target type
+// implements the encoding.TextUnmarshaler interface
+func TextUnmarshallerHookFunc() DecodeHookFuncType {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		result := reflect.New(t).Interface()
+		unmarshaller, ok := result.(encoding.TextUnmarshaler)
+		if !ok {
+			return data, nil
+		}
+		if err := unmarshaller.UnmarshalText([]byte(data.(string))); err != nil {
+			return nil, err
+		}
+		return result, nil
 	}
 }

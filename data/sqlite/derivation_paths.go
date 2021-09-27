@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 )
 
 // DerivationPathExists will return true / false if the supplied derivation path exists or not.
-func (s *sqliteStore) DerivationPathExists(ctx context.Context, args gopayd.DerivationExistsArgs) (bool, error) {
+func (s *sqliteStore) DerivationPathExists(ctx context.Context, args payd.DerivationExistsArgs) (bool, error) {
 	var exists int
 	if err := s.db.GetContext(ctx, &exists, sqlDerivationPathExists, args.Path, args.KeyName); err != nil {
 		return false, errors.WithStack(err)
