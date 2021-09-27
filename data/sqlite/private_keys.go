@@ -29,7 +29,7 @@ const (
 func (s *sqliteStore) PrivateKey(ctx context.Context, args payd.KeyArgs) (*payd.PrivateKey, error) {
 	var resp payd.PrivateKey
 	if err := s.db.Get(&resp, keyByName, args.Name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, errors.Wrapf(err, "failed to get key named %s from datastore", args.Name)
