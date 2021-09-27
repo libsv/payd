@@ -43,7 +43,7 @@ jobs:
         run: go build -v ./...
       - name: Generate Swagger
         if: startsWith(github.ref, 'refs/tags/')
-        run: make generate-swagger
+        run: make install-swagger-gen && make generate-swagger
   release:
     needs: [golangci,build]
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 # This is an example .goreleaser.yml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
+project_name: payd-server
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -39,3 +40,20 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+dockers:
+  -
+    ids:
+      - payd-server
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--platform=linux/amd64"
+    dockerfile: Dockerfile.releaser
+    image_templates:
+      - "libsv/payd:latest"
+      - "libsv/payd:{{ .Tag }}"
+    extra_files:
+      - data/sqlite/migrations/

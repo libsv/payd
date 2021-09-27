@@ -13,18 +13,18 @@ import (
 
 const (
 	sqlCreateInvoice = `
-	INSERT INTO invoices(invoice_id, satoshis, description, payment_reference, expires_at, state)
-	VALUES(:invoice_id, :satoshis, :description, :payment_reference, :expires_at, 'pending')
+	INSERT INTO invoices(invoice_id, satoshis, description, spv_required, payment_reference, expires_at, state)
+	VALUES(:invoice_id, :satoshis, :description, :spv_required, :payment_reference, :expires_at, 'pending')
 	`
 
 	sqlInvoiceByID = `
-	SELECT invoice_id, satoshis, description, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
+	SELECT invoice_id, satoshis, description, spv_required, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
 	FROM invoices
 	WHERE invoice_id = :invoice_id
 	`
 
 	sqlInvoices = `
-	SELECT invoice_id, satoshis, description, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
+	SELECT invoice_id, satoshis, description, spv_required, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
 	FROM invoices
 	WHERE state != 'deleted'
 	`

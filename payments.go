@@ -7,12 +7,14 @@ import (
 	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
+	"gopkg.in/guregu/null.v3"
 )
 
 // PaymentCreate is submitted to validate and add a payment to the wallet.
 type PaymentCreate struct {
 	InvoiceID   string        `json:"-" param:"invoiceID"`
 	SPVEnvelope *spv.Envelope `json:"spvEnvelope"`
+	RawTX       null.String   `json:"rawTx"`
 	// ProofCallbacks allow support of multiple callbacks for merkle proofs
 	// this will help support multisig and also transmitting proofs to the sender wallet.
 	//    "proofCallbacks": {
@@ -24,10 +26,17 @@ type PaymentCreate struct {
 }
 
 // Validate will ensure the users request is correct.
-func (p PaymentCreate) Validate() error {
-	v := validator.New().
-		Validate("spvEnvelope", validator.NotEmpty(p.SPVEnvelope))
+func (p PaymentCreate) Validate(spvRequired bool) error {
+	v := validator.New()
 
+	if spvRequired {
+		v = v.Validate("spvEnvelope", func() error {
+			if validator.NotEmpty(p.SPVEnvelope)() != nil {
+				return errors.New("spvEnvelope is required by this payment")
+			}
+			return nil
+		})
+	}
 	// perform a light validation of the envelope, make sure we have a valid root txID
 	// the root rawTx is actually a tx and that the supplied root txhex and txid match
 	if p.SPVEnvelope != nil {

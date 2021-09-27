@@ -15,6 +15,8 @@ import (
 	"github.com/libsv/payd"
 )
 
+type paymentValidatorFunc func(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error)
+
 type payments struct {
 	paymentVerify spv.PaymentVerifier
 	txWtr         payd.TransactionWriter
@@ -23,11 +25,12 @@ type payments struct {
 	transacter    payd.Transacter
 	callbackWtr   payd.ProofCallbackWriter
 	broadcaster   payd.BroadcastWriter
+	validator     map[bool]paymentValidatorFunc
 }
 
 // NewPayments will setup and return a payments service.
 func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReader, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, callbackWtr payd.ProofCallbackWriter) *payments {
-	return &payments{
+	svc := &payments{
 		paymentVerify: paymentVerify,
 		invRdr:        invRdr,
 		destRdr:       destRdr,
@@ -35,12 +38,19 @@ func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter
 		txWtr:         txWtr,
 		broadcaster:   broadcaster,
 		callbackWtr:   callbackWtr,
+		validator:     map[bool]paymentValidatorFunc{},
 	}
+	// setup validators for spv and rawTX
+	svc.validator[true] = svc.spvHandler
+	svc.validator[false] = svc.rawTxHandler
+
+	return svc
 }
 
 // PaymentCreate will validate and store the payment.
 func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) error {
-	if err := req.Validate(); err != nil {
+	if err := validator.New().
+		Validate("invoiceID", validator.StrLength(req.InvoiceID, 1, 30)).Err(); err != nil {
 		return err
 	}
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
@@ -51,28 +61,10 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	if inv.State != payd.StateInvoicePending {
 		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", req.InvoiceID))
 	}
-	ok, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope)
+	// validate request tx or envelope and return tx.
+	tx, err := p.validator[inv.SPVRequired](ctx, req)
 	if err != nil {
-		// map error to a validation error
-		return validator.ErrValidation{
-			"spvEnvelope": {
-				err.Error(),
-			},
-		}
-	}
-	if !ok {
-		// map error to a validation error
-		return validator.ErrValidation{
-			"spvEnvelope": {
-				"payment envelope is not valid",
-			},
-		}
-	}
-	// validate outputs match invoice
-	// ensure tx pays enough fees.
-	tx, err := bt.NewTxFromString(req.SPVEnvelope.RawTx)
-	if err != nil {
-		return errors.Wrap(err, "failed to read transaction")
+		return errors.WithStack(err)
 	}
 	// get destinations
 	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: req.InvoiceID})
@@ -90,6 +82,13 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	txID := tx.TxID()
 	for i, o := range tx.Outputs {
 		if output, ok := outputs[o.LockingScript.String()]; ok {
+			if o.Satoshis != output.Satoshis {
+				return validator.ErrValidation{
+					"tx.outputs": {
+						"output satoshis do not match requested amount",
+					},
+				}
+			}
 			total += output.Satoshis
 			txos = append(txos, &payd.TxoCreate{
 				Outpoint:      fmt.Sprintf("%s%d", txID, i),
@@ -97,6 +96,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 				TxID:          txID,
 				Vout:          uint64(i),
 			})
+			delete(outputs, o.LockingScript.String())
 		}
 	}
 	// fail if tx doesn't pay invoice in full
@@ -104,6 +104,13 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 		return validator.ErrValidation{
 			"transaction": {
 				"tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again",
+			},
+		}
+	}
+	if len(outputs) > 0 {
+		return validator.ErrValidation{
+			"tx.outputs": {
+				fmt.Sprintf("expected '%d' outputs, received '%d', ensure all destinations are supplied", len(oo), len(tx.Outputs)),
 			},
 		}
 	}
@@ -115,8 +122,13 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
 		InvoiceID: null.StringFrom(req.InvoiceID),
 		TxID:      txID,
-		TxHex:     req.SPVEnvelope.RawTx,
-		Outputs:   txos,
+		TxHex: func() string {
+			if inv.SPVRequired {
+				return req.SPVEnvelope.RawTx
+			}
+			return req.RawTX.ValueOrZero()
+		}(),
+		Outputs: txos,
 	}); err != nil {
 		return errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", req.InvoiceID)
 	}
@@ -141,4 +153,55 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	}
 
 	return p.transacter.Commit(ctx)
+}
+
+func (p *payments) spvHandler(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error) {
+	if err := req.Validate(true); err != nil {
+		return nil, err
+	}
+	ok, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope)
+	if err != nil {
+		// map error to a validation error
+		return nil, validator.ErrValidation{
+			"spvEnvelope": {
+				err.Error(),
+			},
+		}
+	}
+	if !ok {
+		// map error to a validation error
+		return nil, validator.ErrValidation{
+			"spvEnvelope": {
+				"payment envelope is not valid",
+			},
+		}
+	}
+	// validate outputs match invoice
+	// ensure tx pays enough fees.
+	tx, err := bt.NewTxFromString(req.SPVEnvelope.RawTx)
+	if err != nil {
+		// convert to validation error
+		if err := validator.New().Validate("rawTx", func() error {
+			return errors.Wrap(err, "invalid transaction received")
+		}).Err(); err != nil {
+			return nil, err
+		}
+	}
+	return tx, nil
+}
+
+func (p *payments) rawTxHandler(ctx context.Context, req payd.PaymentCreate) (*bt.Tx, error) {
+	if err := validator.New().Validate("rawTx", validator.NotEmpty(req.RawTX.ValueOrZero())).Err(); err != nil {
+		return nil, err
+	}
+	tx, err := bt.NewTxFromString(req.RawTX.ValueOrZero())
+	if err != nil {
+		// convert to validation error
+		if err := validator.New().Validate("rawTx", func() error {
+			return errors.Wrap(err, "invalid transaction received")
+		}).Err(); err != nil {
+			return nil, err
+		}
+	}
+	return tx, nil
 }
