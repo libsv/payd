@@ -11,18 +11,10 @@ builds:
     main: ./cmd/rest-server
     env:
       - CGO_ENABLED=1
+    goarch:
+      - amd64
     goos:
       - linux
-      - windows
-      - darwin
-  - id: qr-server
-    main: ./cmd/qrcode
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
 archives:
   - replacements:
       darwin: Darwin
