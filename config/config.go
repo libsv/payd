@@ -25,14 +25,8 @@ const (
 	EnvDbMigrate            = "db.migrate"
 	EnvHeadersClientAddress = "headersclient.address"
 	EnvHeadersClientTimeout = "headersclient.timeout"
-	EnvPaymailEnabled       = "paymail.enabled"
-	EnvPaymailIsBeta        = "paymail.isbeta"
-	EnvPaymailAddress       = "paymail.address"
 	EnvNetwork              = "wallet.network"
-	EnvAvatarURL            = "wallet.avatarurl"
-	EnvMerchantName         = "wallet.merchantname"
-	EnvMerchantEmail        = "wallet.merchantemail"
-	EnvMerchantAddress      = "wallet.merchantaddress"
+	EnvWalletSpvRequired    = "wallet.spvrequired"
 	EnvPaymentExpiry        = "wallet.paymentexpiry"
 	EnvMAPIMinerName        = "mapi.minername"
 	EnvMAPIURL              = "mapi.minerurl"
@@ -52,7 +46,7 @@ type DbType string
 // Supported database types.
 const (
 	DBSqlite   DbType = "sqlite"
-	DBMySql    DbType = "mysql"
+	DBMySQL    DbType = "mysql"
 	DBPostgres DbType = "postgres"
 )
 
@@ -63,7 +57,6 @@ type Config struct {
 	Deployment    *Deployment
 	Db            *Db
 	HeadersClient *HeadersClient
-	Paymail       *Paymail
 	Wallet        *Wallet
 	Mapi          *MApi
 }
@@ -124,21 +117,11 @@ type HeadersClient struct {
 	Timeout int
 }
 
-// Paymail settings relating to paymail.
-type Paymail struct {
-	UsePaymail bool
-	IsBeta     bool
-	Address    string
-}
-
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
 	Network            string
-	MerchantAvatarURL  string
-	MerchantName       string
-	MerchantEmail      string
-	Address            string
-	PaymentExpiryHours int
+	SPVRequired        bool
+	PaymentExpiryHours int64
 }
 
 // MApi contains MAPI connection settings.

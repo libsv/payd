@@ -5,11 +5,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
-	sqlCallbackUrlInsert = `
+	sqlCallbackURLInsert = `
 	INSERT INTO proof_callbacks(invoice_id, url, token, state)
 	VALUES(:invoice_id,:url,:token,'pending')
 	`
@@ -22,7 +22,7 @@ type proofCallbackDTO struct {
 }
 
 // ProofCallBacksCreate can be implemented to store merkle proof callback urls for an invoice.
-func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args gopayd.ProofCallbackArgs, req map[string]gopayd.ProofCallback) error {
+func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args payd.ProofCallbackArgs, req map[string]payd.ProofCallback) error {
 	if len(req) == 0 {
 		// nothing to store
 		return nil
@@ -43,7 +43,7 @@ func (s *sqliteStore) ProofCallBacksCreate(ctx context.Context, args gopayd.Proo
 			Token:     val.Token,
 		})
 	}
-	if err := handleNamedExec(tx, sqlCallbackUrlInsert, cc); err != nil {
+	if err := handleNamedExec(tx, sqlCallbackURLInsert, cc); err != nil {
 		return errors.Wrapf(err, "failed to insert callback urls for invoiceID %s", args.InvoiceID)
 	}
 	if err := commit(ctx, tx); err != nil {

@@ -12,9 +12,9 @@
         "version": "0.0.1"
     },
     "host": "localhost:8443",
-    "basePath": "/api/v1",
+    "basePath": "/api",
     "paths": {
-        "/balance": {
+        "/v1/balance": {
             "get": {
                 "description": "Returns current balance, which is a sum of unspent txos",
                 "consumes": [
@@ -34,7 +34,42 @@
                 }
             }
         },
-        "/invoices": {
+        "/v1/destinations/{invoiceID}": {
+            "get": {
+                "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Destinations"
+                ],
+                "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invoice ID",
+                        "name": "invoiceID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "404": {
+                        "description": "returned if the invoiceID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/invoices": {
             "get": {
                 "description": "Returns all invoices currently stored",
                 "consumes": [
@@ -54,7 +89,7 @@
                 }
             },
             "post": {
-                "description": "Creates an invoice with payment id and satoshis",
+                "description": "Creates an invoices with invoiceID and satoshis",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,15 +99,15 @@
                 "tags": [
                     "Invoices"
                 ],
-                "summary": "Create invoice",
+                "summary": "InvoiceCreate invoices",
                 "parameters": [
                     {
-                        "description": "PaymentID and Satoshis",
+                        "description": "Reference and Satoshis",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/gopayd.InvoiceCreate"
+                            "$ref": "#/definitions/payd.InvoiceCreate"
                         }
                     }
                 ],
@@ -81,38 +116,11 @@
                         "description": ""
                     }
                 }
-            },
-            "delete": {
-                "description": "Delete",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "Delete invoice",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "PaymentID",
-                        "name": "PaymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
             }
         },
-        "/invoices/{paymentID}": {
+        "/v1/invoices/{invoiceID}": {
             "get": {
-                "description": "Returns invoice by payment id if exists",
+                "description": "Returns invoices by invoices id if exists",
                 "consumes": [
                     "application/json"
                 ],
@@ -126,37 +134,8 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Payment ID",
-                        "name": "paymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/payment/{paymentID}": {
-            "get": {
-                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Create payment request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Payment ID",
-                        "name": "paymentID",
+                        "description": "Invoice ID",
+                        "name": "invoiceID",
                         "in": "path",
                         "required": true
                     }
@@ -167,8 +146,8 @@
                     }
                 }
             },
-            "post": {
-                "description": "Creates a payment based on a payment id (the identifier for an invoice).",
+            "delete": {
+                "description": "InvoiceDelete",
                 "consumes": [
                     "application/json"
                 ],
@@ -176,35 +155,96 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Payment"
+                    "Invoices"
                 ],
-                "summary": "Create payment",
+                "summary": "InvoiceDelete invoices",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Payment ID",
-                        "name": "paymentID",
+                        "description": "invoiceID we want to remove",
+                        "name": "invoiceID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "payment message used in BIP270",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/gopayd.CreatePayment"
-                        }
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": ""
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
                     }
                 }
             }
         },
-        "/proofs/{txid}": {
+        "/v1/owner": {
+            "get": {
+                "description": "Returns information about the wallet owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Wallet owner information.",
+                "responses": {
+                    "200": {
+                        "description": "Current wallet owner",
+                        "schema": {
+                            "$ref": "#/definitions/payd.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payments/{invoiceID}": {
+            "post": {
+                "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Validate and store a payment.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invoice ID",
+                        "name": "invoiceID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "returned if the invoiceID is empty or payment isn't valid",
+                        "schema": {
+                            "$ref": "#/definitions/validator.ErrValidation"
+                        }
+                    },
+                    "404": {
+                        "description": "returned if the invoiceID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/proofs/{txid}": {
             "post": {
                 "description": "Creates a json envelope proof",
                 "consumes": [
@@ -216,7 +256,7 @@
                 "tags": [
                     "Proofs"
                 ],
-                "summary": "Create proof",
+                "summary": "InvoiceCreate proof",
                 "parameters": [
                     {
                         "type": "string",
@@ -241,96 +281,9 @@
                     }
                 }
             }
-        },
-        "/txstatus/{txid}": {
-            "get": {
-                "description": "Returns status of transaction",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "TxStatus"
-                ],
-                "summary": "Transaction Status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Transaction ID",
-                        "name": "txid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            }
         }
     },
     "definitions": {
-        "bc.MapiCallback": {
-            "type": "object",
-            "properties": {
-                "apiVersion": {
-                    "type": "string"
-                },
-                "blockHash": {
-                    "type": "string"
-                },
-                "blockHeight": {
-                    "type": "integer"
-                },
-                "callbackPayload": {
-                    "type": "string"
-                },
-                "callbackReason": {
-                    "type": "string"
-                },
-                "callbackTxId": {
-                    "type": "string"
-                },
-                "minerId": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "bc.MerkleProof": {
-            "type": "object",
-            "properties": {
-                "composite": {
-                    "type": "boolean"
-                },
-                "index": {
-                    "type": "integer"
-                },
-                "nodes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "proofType": {
-                    "type": "string"
-                },
-                "target": {
-                    "type": "string"
-                },
-                "targetType": {
-                    "type": "string"
-                },
-                "txOrId": {
-                    "type": "string"
-                }
-            }
-        },
         "envelope.JSONEnvelope": {
             "type": "object",
             "properties": {
@@ -351,91 +304,94 @@
                 }
             }
         },
-        "gopayd.CreatePayment": {
+        "null.String": {
             "type": "object",
             "properties": {
-                "memo": {
-                    "description": "Memo is a plain-text note from the customer to the payment host.",
+                "string": {
                     "type": "string"
                 },
-                "merchantData": {
-                    "description": "MerchantData is copied from PaymentDetails.merchantData.\nPayment hosts may use invoice numbers or any other data they require to match Payments to PaymentRequests.\nNote that malicious clients may modify the merchantData, so should be authenticated\nin some way (for example, signed with a payment host-only key).\nMaximum length is 10000 characters.",
-                    "$ref": "#/definitions/gopayd.MerchantData"
-                },
-                "refundTo": {
-                    "description": "RefundTo is a paymail to send a refund to should a refund be necessary.\nMaximum length is 100 characters",
-                    "type": "string"
-                },
-                "spvEnvelope": {
-                    "description": "SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.\nSee https://tsc.bitcoinassociation.net/standards/spv-envelope/",
-                    "$ref": "#/definitions/spv.Envelope"
-                },
-                "transaction": {
-                    "description": "Transaction is a valid, signed Bitcoin transaction that fully\npays the PaymentRequest.\nThe transaction is hex-encoded and must NOT be prefixed with \"0x\".",
-                    "type": "string"
+                "valid": {
+                    "description": "Valid is true if String is not NULL",
+                    "type": "boolean"
                 }
             }
         },
-        "gopayd.InvoiceCreate": {
+        "payd.ClientError": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "N01"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "e97970bf-2a88-4bc8-90e6-2f597a80b93d"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "unable to find foo when loading bar"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "not found"
+                }
+            }
+        },
+        "payd.InvoiceCreate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
+                    "$ref": "#/definitions/null.String"
+                },
+                "expiresAt": {
+                    "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
+                    "type": "string"
+                },
+                "reference": {
+                    "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
+                    "$ref": "#/definitions/null.String"
+                },
                 "satoshis": {
+                    "description": "Satoshis is the total amount this invoice is to pay.",
                     "type": "integer"
                 }
             }
         },
-        "gopayd.MerchantData": {
+        "payd.User": {
             "type": "object",
             "properties": {
                 "address": {
-                    "description": "Address is the merchants store / head office address.",
                     "type": "string"
                 },
                 "avatar": {
-                    "description": "AvatarURL displays a canonical url to a merchants avatar.",
                     "type": "string"
                 },
                 "email": {
-                    "description": "Email can be sued to contact the merchant about this transaction.",
                     "type": "string"
                 },
                 "extendedData": {
-                    "description": "ExtendedData can be supplied if the merchant wishes to send some arbitrary data back to the wallet.",
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
-                    "description": "MerchantName is a human readable string identifying the merchant.",
                     "type": "string"
                 },
-                "paymentReference": {
-                    "description": "PaymentReference can be sent to link this request with a specific payment id.",
+                "phoneNumber": {
                     "type": "string"
                 }
             }
         },
-        "spv.Envelope": {
+        "validator.ErrValidation": {
             "type": "object",
-            "properties": {
-                "mapiResponses": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/bc.MapiCallback"
-                    }
-                },
-                "parents": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/spv.Envelope"
-                    }
-                },
-                "proof": {
-                    "$ref": "#/definitions/bc.MerkleProof"
-                },
-                "rawTx": {
-                    "type": "string"
-                },
-                "txid": {
+            "additionalProperties": {
+                "type": "array",
+                "items": {
                     "type": "string"
                 }
             }

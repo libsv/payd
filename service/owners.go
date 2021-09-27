@@ -3,21 +3,21 @@ package service
 import (
 	"context"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 type owner struct {
-	str gopayd.OwnerStore
+	str payd.OwnerStore
 }
 
 // NewOwnerService returns a new owner service.
-func NewOwnerService(str gopayd.OwnerStore) gopayd.OwnerService {
+func NewOwnerService(str payd.OwnerStore) payd.OwnerService {
 	return &owner{
 		str: str,
 	}
 }
 
 // Owner will return the current owner of the wallet.
-func (o *owner) Owner(ctx context.Context) (*gopayd.User, error) {
+func (o *owner) Owner(ctx context.Context) (*payd.User, error) {
 	return o.str.Owner(ctx)
 }

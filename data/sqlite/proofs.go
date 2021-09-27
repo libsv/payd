@@ -6,18 +6,18 @@ import (
 
 	"github.com/pkg/errors"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 )
 
 const (
 	sqlProofInsert = `
-	INSERT INTO proofs(blockhash, txid, data)
-	VALUES(:blockhash, :txid, :data)
+	INSERT INTO proofs(blockhash, tx_id, data)
+	VALUES(:blockhash, :tx_id, :data)
 	`
 )
 
 // ProofsCreate will insert a proof to the database.
-func (s *sqliteStore) ProofCreate(ctx context.Context, req gopayd.ProofWrapper) error {
+func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) error {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return errors.WithStack(err)

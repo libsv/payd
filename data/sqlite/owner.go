@@ -3,7 +3,7 @@ package sqlite
 import (
 	"context"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 
@@ -19,8 +19,8 @@ const (
 )
 
 // Owner will return the owner of the wallet.
-func (s *sqliteStore) Owner(ctx context.Context) (*gopayd.User, error) {
-	owner := gopayd.User{
+func (s *sqliteStore) Owner(ctx context.Context) (*payd.User, error) {
+	owner := payd.User{
 		ExtendedData: make(map[string]string),
 	}
 

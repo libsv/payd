@@ -2,8 +2,9 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 
-	gopayd "github.com/libsv/payd"
+	"github.com/libsv/payd"
 
 	// test here.
 	_ "github.com/mattn/go-sqlite3"
@@ -25,16 +26,19 @@ const (
 
 // Key will return a key by name from the datastore.
 // If not found an error will be returned.
-func (s *sqliteStore) PrivateKey(ctx context.Context, args gopayd.KeyArgs) (*gopayd.PrivateKey, error) {
-	var resp gopayd.PrivateKey
+func (s *sqliteStore) PrivateKey(ctx context.Context, args payd.KeyArgs) (*payd.PrivateKey, error) {
+	var resp payd.PrivateKey
 	if err := s.db.Get(&resp, keyByName, args.Name); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, errors.Wrapf(err, "failed to get key named %s from datastore", args.Name)
 	}
 	return &resp, nil
 }
 
 // PrivateKeyCreate will create and return a new key in the database.
-func (s *sqliteStore) PrivateKeyCreate(ctx context.Context, req gopayd.PrivateKey) (*gopayd.PrivateKey, error) {
+func (s *sqliteStore) PrivateKeyCreate(ctx context.Context, req payd.PrivateKey) (*payd.PrivateKey, error) {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to begin tx when creating key")
@@ -51,9 +55,9 @@ func (s *sqliteStore) PrivateKeyCreate(ctx context.Context, req gopayd.PrivateKe
 	if rows <= 0 {
 		return nil, errors.Wrap(err, "no rows affected when creating private key")
 	}
-	var resp *gopayd.PrivateKey
-	if err := tx.Get(resp, keyByName, req); err != nil {
+	var resp payd.PrivateKey
+	if err := tx.Get(&resp, keyByName, req.Name); err != nil {
 		return nil, errors.Wrapf(err, "failed to get key named %s from datastore", req.Name)
 	}
-	return nil, errors.Wrap(tx.Commit(), "failed to commit create key tx")
+	return &resp, errors.Wrap(tx.Commit(), "failed to commit create key tx")
 }

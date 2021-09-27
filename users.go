@@ -1,4 +1,4 @@
-package gopayd
+package payd
 
 import "context"
 

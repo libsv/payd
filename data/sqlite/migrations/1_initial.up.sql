@@ -35,6 +35,7 @@ CREATE TABLE invoices (
     ,satoshis               INTEGER NOT NULL
     ,payment_reference      VARCHAR(32)
     ,description            VARCHAR(1024)
+    ,spv_required           BOOLEAN NOT NULL DEFAULT 0
     ,expires_at             TIMESTAMP
     ,payment_received_at    TIMESTAMP
     ,refund_to              VARCHAR
@@ -76,8 +77,8 @@ CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
 CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
 
 CREATE TABLE destination_invoice(
-    destination_id INTEGER,
-    invoice_id VARCHAR,
+    destination_id INTEGER NOT NULL,
+    invoice_id VARCHAR NOT NULL,
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );
@@ -118,9 +119,6 @@ CREATE TABLE proof_callbacks(
     FOREIGN KEY (invoice_id)            REFERENCES invoices(invoice_id),
     PRIMARY KEY(invoice_id,url)
 );
-
-INSERT INTO keys(name, xprv)
-VALUES('masterkey','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
 
 INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
 VALUES('Merchant Name',1, 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
