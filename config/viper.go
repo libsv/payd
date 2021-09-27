@@ -64,6 +64,7 @@ func (c *Config) WithHeadersClient() *Config {
 
 // WithWallet sets up and returns merchant wallet configuration.
 func (c *Config) WithWallet() *Config {
+
 	c.Wallet = &Wallet{
 		Network:            viper.GetString(EnvNetwork),
 		SPVRequired:        viper.GetBool(EnvWalletSpvRequired),

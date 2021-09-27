@@ -2,12 +2,12 @@
 # Make sure to check the documentation at http://goreleaser.com
 project_name: payd-server
 before:
-  hooks:
+  hooks: ~
     # You may remove this if you don't use go modules.
   #- go mod download
 builds:
   -
-    id: rest-server
+    id: payd-server
     main: ./cmd/rest-server
     env:
       - CGO_ENABLED=1
@@ -24,6 +24,8 @@ archives:
       amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
+release:
+  name_template: "Release v{{.Version}}"
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:

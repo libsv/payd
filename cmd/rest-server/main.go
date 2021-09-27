@@ -140,6 +140,11 @@ func main() {
 		log.Fatal(errors.Wrap(err, "failed to create master key"))
 	}
 
+	// create master private key if it doesn't exist
+	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
+		log.Fatal(errors.Wrap(err, "failed to create master key"))
+	}
+
 	if cfg.Deployment.IsDev() {
 		printDev(e)
 	}
