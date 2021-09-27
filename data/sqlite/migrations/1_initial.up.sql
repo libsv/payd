@@ -35,6 +35,7 @@ CREATE TABLE invoices (
     ,satoshis               INTEGER NOT NULL
     ,payment_reference      VARCHAR(32)
     ,description            VARCHAR(1024)
+    ,spv_required           BOOLEAN NOT NULL DEFAULT 0
     ,expires_at             TIMESTAMP
     ,payment_received_at    TIMESTAMP
     ,refund_to              VARCHAR
@@ -76,8 +77,8 @@ CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
 CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
 
 CREATE TABLE destination_invoice(
-    destination_id INTEGER,
-    invoice_id VARCHAR,
+    destination_id INTEGER NOT NULL,
+    invoice_id VARCHAR NOT NULL,
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );

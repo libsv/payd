@@ -53,6 +53,8 @@ type Invoice struct {
 	RefundedAt null.Time `json:"refundedAt" db:"refunded_at"`
 	// State is the current status of the invoice.
 	State InvoiceState `json:"state" db:"state" enums:"pending,paid,refunded,deleted"`
+	// SPVRequired if true will mean this invoice requires a valid spvenvelope otherwise a rawTX will suffice.
+	SPVRequired bool `json:"-" db:"spv_required"`
 	MetaData
 }
 
@@ -72,6 +74,8 @@ type InvoiceCreate struct {
 	// ExpiresAt is an optional param that can be passed to set an expiration
 	// date on an invoice, after which, payments will not be accepted.
 	ExpiresAt null.Time `json:"expiresAt" db:"expires_at"`
+	// SPVRequired if true will mean this invoice requires a valid spvenvelope otherwise a rawTX will suffice.
+	SPVRequired bool `json:"-" db:"spv_required"`
 }
 
 // Validate will check that InvoiceCreate params match expectations.
