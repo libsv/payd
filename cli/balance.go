@@ -10,7 +10,7 @@ import (
 
 var balanceCmd = &cobra.Command{
 	Use:     "balance",
-	Aliases: []string{"balanc", "bal", "b"},
+	Aliases: []string{"balanc", "balan", "bala", "bal", "ba", "b"},
 	Short:   "view wallet balance",
 	Long:    "view wallet balance",
 	RunE:    getBalance,
