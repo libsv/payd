@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/libsv/go-bc/spv"
+	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/tonicpow/go-minercraft"
 
@@ -125,6 +127,11 @@ func main() {
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).
 		RegisterRoutes(g)
+
+	// create master private key if it doesn't exist
+	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
+		log.Fatal(errors.Wrap(err, "failed to create master key"))
+	}
 
 	if cfg.Deployment.IsDev() {
 		printDev(e)
