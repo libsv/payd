@@ -13,6 +13,7 @@ type TxoCreate struct {
 	Vout          uint64 `db:"vout"`
 }
 
+// UTXO an internal utxo.
 type UTXO struct {
 	Outpoint       string `db:"outpoint"`
 	TxID           string `db:"tx_id"`
@@ -22,11 +23,18 @@ type UTXO struct {
 	DerivationPath string `db:"derivation_path"`
 }
 
+// UTXOReserve takes args for marking a utxo in the db as reserved.
 type UTXOReserve struct {
 	ReservedFor string
 	Satoshis    uint64
 }
 
+// UTXOUnreserve takes args for unreserving reserved utxos in the db.
+type UTXOUnreserve struct {
+	ReservedFor string
+}
+
+// UTXOSpend takes args for marking a utxo in the db as spent.
 type UTXOSpend struct {
 	SpendingTxID string `db:"spending_txid"`
 	Reservation  string `db:"reserved_for"`
@@ -37,5 +45,6 @@ type TxoWriter interface {
 	// TxosCreate will add an array of txos to a data store.
 	// TxosCreate(ctx context.Context, req []*TxoCreate) error
 	UTXOReserve(ctx context.Context, req UTXOReserve) ([]UTXO, error)
+	UTXOUnreserve(ctx context.Context, req UTXOUnreserve) error
 	UTXOSpend(ctx context.Context, req UTXOSpend) error
 }

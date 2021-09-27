@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 
+	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
@@ -19,6 +21,12 @@ const (
 	UPDATE txos
 	SET reserved_for = $1, updated_at = DATETIME('now')
 	WHERE outpoint = $2
+	`
+
+	sqlUTXOUnreserve = `
+	UPDATE txos
+	SET reserved_for = NULL, updated_at = DATETIME('now')
+	WHERE reserved_for = $1 AND spent_at IS NULL and spending_txid IS NULL
 	`
 
 	sqlUTXOSpend = `
@@ -38,6 +46,9 @@ func (s *sqliteStore) UTXOReserve(ctx context.Context, req payd.UTXOReserve) ([]
 	for total := uint64(0); total <= req.Satoshis; {
 		var utxo payd.UTXO
 		if err := tx.GetContext(ctx, &utxo, sqlUTXOGet); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, bt.ErrNoUTXO
+			}
 			return nil, errors.Wrap(err, "failed to get utxo")
 		}
 		result, err := tx.ExecContext(ctx, sqlUTXOReserve, req.ReservedFor, utxo.Outpoint)
@@ -52,7 +63,20 @@ func (s *sqliteStore) UTXOReserve(ctx context.Context, req payd.UTXOReserve) ([]
 		total += utxo.Satoshis
 	}
 
-	return utxos, errors.Wrap(commit(ctx, tx), "error commiting utxo reservation")
+	return utxos, errors.Wrap(commit(ctx, tx), "error committing utxo reservation")
+}
+
+func (s *sqliteStore) UTXOUnreserve(ctx context.Context, req payd.UTXOUnreserve) error {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error creation transaction to get utxos")
+	}
+
+	if _, err = tx.ExecContext(ctx, sqlUTXOUnreserve, req.ReservedFor); err != nil {
+		return errors.Wrap(err, "failed to unreserve utxos")
+	}
+
+	return errors.Wrap(commit(ctx, tx), "failed to commit transaction to unreserve utxos")
 }
 
 func (s *sqliteStore) UTXOSpend(ctx context.Context, req payd.UTXOSpend) error {

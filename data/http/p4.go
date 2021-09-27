@@ -14,6 +14,7 @@ type p4 struct {
 	c Client
 }
 
+// NewP4 returns a new p4 interface.
 func NewP4(c Client) P4 {
 	return &p4{c: c}
 }

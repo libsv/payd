@@ -1,4 +1,4 @@
-package http //nolint:dupl // simple service
+package http
 
 import (
 	"net/http"

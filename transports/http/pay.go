@@ -12,6 +12,7 @@ type pay struct {
 	svc payd.PayService
 }
 
+// NewPayHandler returns a new handler for pay endpoints.
 func NewPayHandler(svc payd.PayService) *pay {
 	return &pay{
 		svc: svc,

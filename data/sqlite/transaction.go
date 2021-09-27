@@ -106,7 +106,7 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 		}
 	}
 	return errors.Wrapf(commit(ctx, tx),
-		"failed to commit transaction when adding tx and outputs for invoiceID '%s'", req.InvoiceID)
+		"failed to commit transaction when adding tx and outputs for invoiceID '%s'", req.InvoiceID.ValueOrZero())
 }
 
 // TransactionUpdateState will update a transactions internal state.

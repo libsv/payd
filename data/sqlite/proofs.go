@@ -61,7 +61,7 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) er
 func (s *sqliteStore) MerkleProof(ctx context.Context, txID string) (*bc.MerkleProof, error) {
 	var data string
 	if err := s.db.GetContext(ctx, &data, sqlProofGet, txID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, errors.Wrap(err, "failed to retrieve proof")

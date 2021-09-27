@@ -59,6 +59,7 @@ type PaymentsService interface {
 	PaymentCreate(ctx context.Context, req PaymentCreate) error
 }
 
+// Payment is a payment.
 type Payment struct {
 	Transaction  string        `json:"transaction"`
 	SPVEnvelope  *spv.Envelope `json:"spvEnvelope"`
@@ -66,6 +67,7 @@ type Payment struct {
 	Memo         string        `json:"memo"`
 }
 
+// PaymentSend is a send request to p4.
 type PaymentSend struct {
 	SPVEnvelope    *spv.Envelope            `json:"spvEnvelope"`
 	ProofCallbacks map[string]ProofCallback `json:"proofCallbacks"`

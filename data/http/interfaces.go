@@ -12,6 +12,7 @@ type Client interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
+// P4 interfaces interactions with a p4 server.
 type P4 interface {
 	PaymentRequest(ctx context.Context, req payd.PayRequest) (*payd.PaymentRequestResponse, error)
 	PaymentSend(ctx context.Context, args payd.PayRequest, req payd.PaymentSend) (*payd.PaymentACK, error)
