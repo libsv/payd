@@ -119,9 +119,6 @@ CREATE TABLE proof_callbacks(
     PRIMARY KEY(invoice_id,url)
 );
 
-INSERT INTO keys(name, xprv)
-VALUES('masterkey','11111111111112xVQYuzHSiJmG55ahUXStc73UpffdMqgy4GTd4B5TXbn1ZY16Derh4uaoVyK4ZkCbn8GcDvV8GzLAcsDbdzUkgafnKPW6Nj');
-
 INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
 VALUES('Merchant Name',1, 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
 
