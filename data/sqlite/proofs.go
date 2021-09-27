@@ -7,7 +7,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/libsv/payd"
 	"github.com/libsv/go-bc"
 	"github.com/libsv/payd"
 )
