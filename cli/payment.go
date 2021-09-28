@@ -15,7 +15,6 @@ var (
 	requestJSON  string
 	payToURL     string
 	payToContext string
-	tx           string
 )
 
 var paymentCmd = &cobra.Command{

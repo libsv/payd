@@ -60,6 +60,7 @@ type MerkleProofResponse struct {
 	response
 }
 
+// ListUnspentResponse models the response of `listunspent`.
 type ListUnspentResponse struct {
 	Result []*struct {
 		TxID         string  `json:"txid"`
@@ -70,10 +71,7 @@ type ListUnspentResponse struct {
 	response
 }
 
-type CreateRawTxResponse struct {
-	stringResponse
-}
-
+// SignRawTxResponse models the response of `signrawtransaction <txhex> <prevtxs> <privkeys> <sighashtype>`.
 type SignRawTxResponse struct {
 	Result struct {
 		Hex      string `json:"hex"`
@@ -82,6 +80,7 @@ type SignRawTxResponse struct {
 	response
 }
 
+// GetNewAddressResponse models the response of `getnewaddress`.
 type GetNewAddressResponse struct {
 	stringResponse
 }

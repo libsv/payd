@@ -10,16 +10,17 @@ import (
 	"github.com/libsv/payd/cli/models"
 )
 
-type paymentHttp struct {
+type payment struct {
 	c models.HTTPClient
 }
 
 // NewPaymentAPI returns a new payment api.
 func NewPaymentAPI(c models.HTTPClient) models.PaymentStore {
-	return &paymentHttp{c: c}
+	return &payment{c: c}
 }
 
-func (p *paymentHttp) Request(ctx context.Context, args models.PaymentRequestArgs) (*models.PaymentRequest, error) {
+// Request a payment request from a p4 server.
+func (p *payment) Request(ctx context.Context, args models.PaymentRequestArgs) (*models.PaymentRequest, error) {
 	endpoint := fmt.Sprintf("%s/api/v1/payment/%s", args.PayTo, args.ID)
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -46,7 +47,8 @@ func (p *paymentHttp) Request(ctx context.Context, args models.PaymentRequestArg
 	return &response, nil
 }
 
-func (p *paymentHttp) Submit(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentAck, error) {
+// Submit a payment to a p4 server.
+func (p *payment) Submit(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentAck, error) {
 	bb, err := json.Marshal(args)
 	if err != nil {
 		return nil, err

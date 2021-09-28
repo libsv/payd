@@ -14,6 +14,7 @@ type balance struct {
 	cfg *config.Payd
 }
 
+// NewBalanceAPI returns a new balance api.
 func NewBalanceAPI(c models.HTTPClient, cfg *config.Payd) models.BalanceReader {
 	return &balance{
 		c:   c,
@@ -21,6 +22,7 @@ func NewBalanceAPI(c models.HTTPClient, cfg *config.Payd) models.BalanceReader {
 	}
 }
 
+// Balance requests the balance of a payd wallet.
 func (b *balance) Balance(ctx context.Context) (*models.Balance, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, b.cfg.URLFor("/api/v1/balance"), nil)
 	if err != nil {

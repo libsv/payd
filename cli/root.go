@@ -24,8 +24,8 @@ var (
 	cfg     *config.Config
 )
 
+// Error codes.
 var (
-	// ErrContextNotFound when context doesn't exist.
 	ErrContextNotFound      = errors.New("context not found")
 	ErrContextAlreadyExists = errors.New("context already exists")
 )

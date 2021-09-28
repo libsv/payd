@@ -16,6 +16,7 @@ type fund struct {
 	sec spv.EnvelopeCreator
 }
 
+// NewFundService creates a new fund service.
 func NewFundService(rt models.Regtest, ps models.PaymentStore, sec spv.EnvelopeCreator) *fund {
 	return &fund{
 		rt:  rt,
@@ -24,6 +25,7 @@ func NewFundService(rt models.Regtest, ps models.PaymentStore, sec spv.EnvelopeC
 	}
 }
 
+// Fund a wallet with a given amount of satoshis.
 func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.PaymentAck, error) {
 	tx := bt.NewTx()
 	for _, o := range payReq.Outputs {
@@ -42,8 +44,8 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 		return nil, err
 	}
 
-	var utxos []*bt.UTXO
-	for _, utxo := range resp.Result {
+	utxos := make([]*bt.UTXO, len(resp.Result))
+	for i, utxo := range resp.Result {
 		script, err := bscript.NewFromHexString(utxo.ScriptPubKey)
 		if err != nil {
 			return nil, err
@@ -52,12 +54,12 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 		if err != nil {
 			return nil, err
 		}
-		utxos = append(utxos, &bt.UTXO{
+		utxos[i] = &bt.UTXO{
 			LockingScript: script,
 			Vout:          utxo.Vout,
 			Satoshis:      uint64(utxo.Amount * 100000000),
 			TxID:          txid,
-		})
+		}
 	}
 
 	if err := tx.Fund(ctx, payReq.Fee, func() bt.UTXOGetterFunc {
