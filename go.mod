@@ -15,7 +15,7 @@ require (
 	github.com/labstack/gommon v0.3.0
 	github.com/libsv/go-bc v0.1.4
 	github.com/libsv/go-bk v0.1.4
-	github.com/libsv/go-bt v1.0.0
+	github.com/libsv/go-bt v1.0.1
 	github.com/libsv/go-bt/v2 v2.0.0-beta.7
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8
