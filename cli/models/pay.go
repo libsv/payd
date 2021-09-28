@@ -7,7 +7,12 @@ type SendPayload struct {
 	PayToURL string `json:"payToUrl"`
 }
 
+// PayService interfaces a with a pay service.
+type PayService interface {
+	PayStore
+}
+
 // PayStore interface for a pay (not to be confused with payment).
 type PayStore interface {
-	Request(ctx context.Context, args SendPayload) error
+	Request(ctx context.Context, args SendPayload) (*PaymentACK, error)
 }

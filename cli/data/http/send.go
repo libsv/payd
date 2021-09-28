@@ -10,34 +10,34 @@ import (
 	"github.com/libsv/payd/cli/models"
 )
 
-type payHttp struct {
+type pay struct {
 	c   models.HTTPClient
 	cfg *config.Payd
 }
 
 // NewPayAPI creates an instace of pay api.
 func NewPayAPI(c models.HTTPClient, cfg *config.Payd) models.PayStore {
-	return &payHttp{c: c, cfg: cfg}
+	return &pay{c: c, cfg: cfg}
 }
 
 // Request performs a post a pay request to a payd instance.
-func (p *payHttp) Request(ctx context.Context, args models.SendPayload) error {
+func (p *pay) Request(ctx context.Context, args models.SendPayload) (*models.PaymentACK, error) {
 	bb, err := json.Marshal(models.SendPayload{
 		PayToURL: args.PayToURL,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, p.cfg.URLFor("/api/v1/pay"), bytes.NewBuffer(bb))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := p.c.Do(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer func() {
@@ -45,7 +45,12 @@ func (p *payHttp) Request(ctx context.Context, args models.SendPayload) error {
 	}()
 
 	if err := checkError(resp, http.StatusCreated); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	var payAck models.PaymentACK
+	if err := json.NewDecoder(resp.Body).Decode(&payAck); err != nil {
+		return nil, err
+	}
+	return &payAck, nil
 }

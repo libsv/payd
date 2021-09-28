@@ -42,7 +42,7 @@ var sendCmd = &cobra.Command{
 	Long:    "send satoshis to address",
 	Args:    cobra.MinimumNArgs(1),
 	PreRunE: paymentValidator,
-	RunE:    send,
+	RunE:    sendPayment,
 }
 
 func init() {
@@ -88,9 +88,14 @@ func paymentRequest(cmd *cobra.Command, args []string) error {
 	return printer(req)
 }
 
-func send(cmd *cobra.Command, args []string) error {
+func sendPayment(cmd *cobra.Command, args []string) error {
 	svc := service.NewPayService(chttp.NewPayAPI(&http.Client{}, cfg.Payd))
-	return svc.Request(cmd.Context(), models.SendPayload{
+	ack, err := svc.Request(cmd.Context(), models.SendPayload{
 		PayToURL: fmt.Sprintf("%s/api/v1/payment/%s", payToURL, args[0]),
 	})
+	if err != nil {
+		return err
+	}
+
+	return printer(ack)
 }

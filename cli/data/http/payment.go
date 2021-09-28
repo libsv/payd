@@ -48,7 +48,7 @@ func (p *payment) Request(ctx context.Context, args models.PaymentRequestArgs) (
 }
 
 // Submit a payment to a p4 server.
-func (p *payment) Submit(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentAck, error) {
+func (p *payment) Submit(ctx context.Context, args models.PaymentSendArgs) (*models.PaymentACK, error) {
 	bb, err := json.Marshal(args)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (p *payment) Submit(ctx context.Context, args models.PaymentSendArgs) (*mod
 		return nil, err
 	}
 
-	var response models.PaymentAck
+	var response models.PaymentACK
 	if err = json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}

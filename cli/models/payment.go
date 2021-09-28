@@ -17,7 +17,7 @@ type PaymentService interface {
 // PaymentStore interfaces a store for payments.
 type PaymentStore interface {
 	Request(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
-	Submit(ctx context.Context, args PaymentSendArgs) (*PaymentAck, error)
+	Submit(ctx context.Context, args PaymentSendArgs) (*PaymentACK, error)
 }
 
 // PaymentRequestArgs the args for requesting a payment.
@@ -64,8 +64,8 @@ type PaymentRequest struct {
 	Fee          *bt.FeeQuote `json:"fee" yaml:"fee"`
 }
 
-// PaymentAck an acknowledgement of a payment.
-type PaymentAck struct {
+// PaymentACK an acknowledgement of a payment.
+type PaymentACK struct {
 	Payment *PaymentSendArgs `json:"payment" yaml:"payment"`
 	Memo    *string          `json:"memo" yaml:"memo"`
 	Error   *int             `json:"error" yaml:"error"`
@@ -95,12 +95,12 @@ func (p PaymentRequest) Row() []string {
 }
 
 // Columns builds column headers.
-func (p PaymentAck) Columns() []string {
+func (p PaymentACK) Columns() []string {
 	return []string{"TxID", "Merchant", "Payment Reference"}
 }
 
 // Rows builds a series of rows.
-func (p PaymentAck) Rows() [][]string {
+func (p PaymentACK) Rows() [][]string {
 	//tx, _ := bt.NewTxFromString(p.Payment.Transaction)
 	return [][]string{{
 		p.Payment.SPVEnvelope.TxID, p.Payment.MerchantData.Name, p.Payment.MerchantData.ExtendedData["paymentReference"],
