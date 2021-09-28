@@ -3,7 +3,7 @@ version: "3.7"
 services:
   payd:
     container_name: payd
-    image: payd-test.service
+    image: libsv/payd:0.0.3
     environment:
       DB_DSN: "file:paydb/wallet.db?cache=shared&_foreign_keys=true"
       DB_SCHEMA_PATH: "migrations"
@@ -16,14 +16,14 @@ services:
 
   payd-merchant:
     container_name: payd-merchant
-    image: local.payd
+    image: libsv/payd:0.0.3
     environment:
-      DB_DSN: "file:data/merchant-wallet.db?cache=shared&_foreign_keys=true;"
+      DB_DSN: "file:data/merchant-wallet.db?cache=shared&_foreign_keys=true"
       DB_SCHEMA_PATH: "migrations"
       SERVER_HOST: payd-merchant:28443
       SERVER_PORT: :28443
     volumes:
-      - ./run/data:/data
+      - merchant-data:/paydb
     ports:
       - "28443:28443"
     networks:
@@ -36,4 +36,6 @@ networks:
 
 volumes:
   payd-data:
+    external: false
+  merchant-data:
     external: false

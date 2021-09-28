@@ -33,4 +33,3 @@ USER appuser:appuser
 EXPOSE 8443
 
 CMD ["rest-server"]
-
