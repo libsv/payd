@@ -2,6 +2,7 @@ package cli
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -29,24 +30,19 @@ var paymentRequestCmd = &cobra.Command{
 	Aliases: []string{"req"},
 	Short:   "request a payment",
 	Long:    "request a payment",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if payToURL == "" && payToContext == "" {
-			return errors.New("either --pay-to-url or --pay-to-context must be provided")
-		}
+	PreRunE: paymentValidator,
+	Args:    cobra.MinimumNArgs(1),
+	RunE:    paymentRequest,
+}
 
-		if payToContext != "" {
-			if ok := cfg.HasContext(payToContext); !ok {
-				return ErrContextNotFound
-			}
-
-			payToURL = cfg.Contexts[payToContext].P4.URLFor()
-		}
-
-		_, err := url.Parse(payToURL)
-		return err
-	},
-	Args: cobra.MinimumNArgs(1),
-	RunE: paymentRequest,
+var sendCmd = &cobra.Command{
+	Use:     "send",
+	Aliases: []string{"send", "s"},
+	Short:   "send satoshis to address",
+	Long:    "send satoshis to address",
+	Args:    cobra.MinimumNArgs(1),
+	PreRunE: paymentValidator,
+	RunE:    send,
 }
 
 func init() {
@@ -55,6 +51,27 @@ func init() {
 	paymentRequestCmd.PersistentFlags().StringVarP(&payToURL, "pay-to-url", "u", "", "the payto url")
 	paymentRequestCmd.PersistentFlags().StringVarP(&payToContext, "pay-to-context", "c", "", "the payto context")
 	paymentCmd.AddCommand(paymentRequestCmd)
+
+	sendCmd.PersistentFlags().StringVarP(&payToURL, "pay-to-url", "u", "", "the payto url")
+	sendCmd.PersistentFlags().StringVarP(&payToContext, "pay-to-context", "c", "", "the payto context")
+	paymentCmd.AddCommand(sendCmd)
+}
+
+func paymentValidator(cmd *cobra.Command, args []string) error {
+	if payToURL == "" && payToContext == "" {
+		return errors.New("either --pay-to-url or --pay-to-context must be provided")
+	}
+
+	if payToContext != "" {
+		if ok := cfg.HasContext(payToContext); !ok {
+			return ErrContextNotFound
+		}
+
+		payToURL = cfg.Contexts[payToContext].P4.URLFor()
+	}
+
+	_, err := url.Parse(payToURL)
+	return err
 }
 
 func paymentRequest(cmd *cobra.Command, args []string) error {
@@ -69,4 +86,11 @@ func paymentRequest(cmd *cobra.Command, args []string) error {
 	}
 
 	return printer(req)
+}
+
+func send(cmd *cobra.Command, args []string) error {
+	svc := service.NewPayService(chttp.NewPayAPI(&http.Client{}, cfg.Payd))
+	return svc.Request(cmd.Context(), models.SendPayload{
+		PayToURL: fmt.Sprintf("%s/api/v1/payment/%s", payToURL, args[0]),
+	})
 }
