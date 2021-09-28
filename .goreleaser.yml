@@ -48,6 +48,6 @@ dockers:
     dockerfile: Dockerfile.releaser
     image_templates:
       - "libsv/payd:latest"
-      - "libsv/payd:{{ .Tag }}"
+      - "libsv/payd:{{.Version}}"
     extra_files:
       - data/sqlite/migrations/
