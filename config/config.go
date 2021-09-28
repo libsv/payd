@@ -28,6 +28,7 @@ const (
 	EnvNetwork              = "wallet.network"
 	EnvWalletSpvRequired    = "wallet.spvrequired"
 	EnvPaymentExpiry        = "wallet.paymentexpiry"
+	EnvP4Timeout            = "p4.timeout"
 	EnvMAPIMinerName        = "mapi.minername"
 	EnvMAPIURL              = "mapi.minerurl"
 	EnvMAPIToken            = "mapi.token"
@@ -58,6 +59,7 @@ type Config struct {
 	Db            *Db
 	HeadersClient *HeadersClient
 	Wallet        *Wallet
+	P4            *P4
 	Mapi          *MApi
 }
 
@@ -124,6 +126,11 @@ type Wallet struct {
 	PaymentExpiryHours int64
 }
 
+// P4 contains information relating to a p4 interactions.
+type P4 struct {
+	Timeout int
+}
+
 // MApi contains MAPI connection settings.
 type MApi struct {
 	MinerName string
@@ -140,5 +147,6 @@ type ConfigurationLoader interface {
 	WithLog() *Config
 	WithPaymail() *Config
 	WithWallet() *Config
+	WithP4() *Config
 	WithHeadersClient() *Config
 }

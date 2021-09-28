@@ -2,10 +2,12 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 
 	"github.com/pkg/errors"
 
+	"github.com/libsv/go-bc"
 	"github.com/libsv/payd"
 )
 
@@ -13,6 +15,12 @@ const (
 	sqlProofInsert = `
 	INSERT INTO proofs(blockhash, tx_id, data)
 	VALUES(:blockhash, :tx_id, :data)
+	`
+
+	sqlProofGet = `
+	SELECT data
+	FROM proofs
+	WHERE tx_id = $1
 	`
 )
 
@@ -47,4 +55,20 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req payd.ProofWrapper) er
 		return errors.Wrap(err, "no rows affected when creating proof")
 	}
 	return errors.WithStack(tx.Commit())
+}
+
+// MerkleProof will retrieve a proof.
+func (s *sqliteStore) MerkleProof(ctx context.Context, txID string) (*bc.MerkleProof, error) {
+	var data string
+	if err := s.db.GetContext(ctx, &data, sqlProofGet, txID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "failed to retrieve proof")
+	}
+	var proof bc.MerkleProof
+	if err := json.Unmarshal([]byte(data), &proof); err != nil {
+		return nil, errors.Wrap(err, "failed to process raw proof")
+	}
+	return &proof, nil
 }

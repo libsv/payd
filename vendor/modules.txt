@@ -7,10 +7,6 @@ github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 ## explicit
 github.com/PuerkitoBio/urlesc
-# github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-## explicit
-github.com/alecthomas/template
-github.com/alecthomas/template/parse
 # github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
 ## explicit
 github.com/bitcoinsv/bsvd/bsvec

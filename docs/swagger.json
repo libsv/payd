@@ -203,6 +203,36 @@
                 }
             }
         },
+        "/v1/pay": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pay"
+                ],
+                "summary": "Make a payment",
+                "parameters": [
+                    {
+                        "description": "Pay to url",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payd.PayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/v1/payments/{invoiceID}": {
             "post": {
                 "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
@@ -232,7 +262,7 @@
                     "400": {
                         "description": "returned if the invoiceID is empty or payment isn't valid",
                         "schema": {
-                            "$ref": "#/definitions/validator.ErrValidation"
+                            "$ref": "#/definitions/payd.ClientError"
                         }
                     },
                     "404": {
@@ -358,6 +388,14 @@
                 }
             }
         },
+        "payd.PayRequest": {
+            "type": "object",
+            "properties": {
+                "payToURL": {
+                    "type": "string"
+                }
+            }
+        },
         "payd.User": {
             "type": "object",
             "properties": {
@@ -383,15 +421,6 @@
                     "type": "string"
                 },
                 "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
-        "validator.ErrValidation": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "array",
-                "items": {
                     "type": "string"
                 }
             }

@@ -10,16 +10,7 @@ run-all-tests: run-linter run-unit-tests
 
 pre-commit: vendor-deps run-all-tests
 
-stop:
-	@docker compose down -v
-
-build:
-	@docker build -t "local.payd" .
-
-run-docker:
-	@docker compose up -d
-
-redeploy: stop build run-docker
+redeploy: stop-compose build-image run-compose-d
 
 run-unit-tests:
 	@go clean -testcache && go test -v ./... -race
