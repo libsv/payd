@@ -41,6 +41,7 @@ var sendCmd = &cobra.Command{
 	Aliases: []string{"send", "s"},
 	Short:   "send satoshis to address",
 	Long:    "send satoshis to address",
+	Args:    cobra.MinimumNArgs(1),
 	PreRunE: paymentValidator,
 	RunE:    send,
 }
@@ -89,14 +90,8 @@ func paymentRequest(cmd *cobra.Command, args []string) error {
 }
 
 func send(cmd *cobra.Command, args []string) error {
-	svc := service.NewPayService(chttp.NewPayAPI(&http.Client{}))
-	err := svc.Request(cmd.Context(), models.SendArgs{
-		PayToURL:    fmt.Sprintf("%s/api/v1/payment/%s", payToURL, args[0]),
-		PayEndpoint: cfg.Payd.URLFor("/api/v1/pay"),
+	svc := service.NewPayService(chttp.NewPayAPI(&http.Client{}, cfg.Payd))
+	return svc.Request(cmd.Context(), models.SendPayload{
+		PayToURL: fmt.Sprintf("%s/api/v1/payment/%s", payToURL, args[0]),
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

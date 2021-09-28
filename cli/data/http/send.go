@@ -6,18 +6,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/libsv/payd/cli/config"
 	"github.com/libsv/payd/cli/models"
 )
 
 type payHttp struct {
-	c models.HTTPClient
+	c   models.HTTPClient
+	cfg *config.Payd
 }
 
-func NewPayAPI(c models.HTTPClient) models.PayStore {
-	return &payHttp{c: c}
+// NewPayAPI creates an instace of pay api.
+func NewPayAPI(c models.HTTPClient, cfg *config.Payd) models.PayStore {
+	return &payHttp{c: c, cfg: cfg}
 }
 
-func (p *payHttp) Request(ctx context.Context, args models.SendArgs) error {
+// Request performs a post a pay request to a payd instance.
+func (p *payHttp) Request(ctx context.Context, args models.SendPayload) error {
 	bb, err := json.Marshal(models.SendPayload{
 		PayToURL: args.PayToURL,
 	})
@@ -25,7 +29,7 @@ func (p *payHttp) Request(ctx context.Context, args models.SendArgs) error {
 		return err
 	}
 
-	r, err := http.NewRequestWithContext(ctx, http.MethodPost, args.PayEndpoint, bytes.NewBuffer(bb))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, p.cfg.URLFor("/api/v1/pay"), bytes.NewBuffer(bb))
 	if err != nil {
 		return err
 	}
