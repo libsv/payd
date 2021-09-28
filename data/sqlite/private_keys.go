@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/libsv/payd"
 
@@ -28,6 +29,9 @@ const (
 func (s *sqliteStore) PrivateKey(ctx context.Context, args payd.KeyArgs) (*payd.PrivateKey, error) {
 	var resp payd.PrivateKey
 	if err := s.db.Get(&resp, keyByName, args.Name); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, errors.Wrapf(err, "failed to get key named %s from datastore", args.Name)
 	}
 	return &resp, nil
@@ -51,9 +55,9 @@ func (s *sqliteStore) PrivateKeyCreate(ctx context.Context, req payd.PrivateKey)
 	if rows <= 0 {
 		return nil, errors.Wrap(err, "no rows affected when creating private key")
 	}
-	var resp *payd.PrivateKey
-	if err := tx.Get(resp, keyByName, req); err != nil {
+	var resp payd.PrivateKey
+	if err := tx.Get(&resp, keyByName, req.Name); err != nil {
 		return nil, errors.Wrapf(err, "failed to get key named %s from datastore", req.Name)
 	}
-	return nil, errors.Wrap(tx.Commit(), "failed to commit create key tx")
+	return &resp, errors.Wrap(tx.Commit(), "failed to commit create key tx")
 }

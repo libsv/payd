@@ -6,8 +6,10 @@ import (
 	"encoding/binary"
 
 	"github.com/libsv/go-bk/bip32"
+	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/libsv/payd"
 )
@@ -21,15 +23,17 @@ type destinations struct {
 	privKeySvc payd.PrivateKeyService
 	destRdrWtr payd.DestinationsReaderWriter
 	derivRdr   payd.DerivationReader
+	invRdr     payd.InvoiceReader
 	feeRdr     payd.FeeReader
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, feeRdr payd.FeeReader) *destinations {
+func NewDestinationsService(privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader) *destinations {
 	return &destinations{
 		privKeySvc: privKeySvc,
 		destRdrWtr: destRdrWtr,
 		derivRdr:   derivRdr,
+		invRdr:     invRdr,
 		feeRdr:     feeRdr,
 	}
 }
@@ -112,18 +116,43 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 	if err := args.Validate(); err != nil {
 		return nil, err
 	}
-	oo, err := d.destRdrWtr.Destinations(ctx, args)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read destinations for invoiceID '%s'", args.InvoiceID)
-	}
+
+	var invoice *payd.Invoice
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		i, err := d.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID})
+		if err != nil {
+			return errors.Wrapf(err, "failed to get invoice for invoiceID '%s' when getting destinations", args.InvoiceID)
+		}
+		invoice = i
+		return nil
+	})
+	var outputs []payd.Output
+	g.Go(func() error {
+		oo, err := d.destRdrWtr.Destinations(ctx, args)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read destinations for invoiceID '%s'", args.InvoiceID)
+		}
+		outputs = oo
+		return nil
+	})
+	var fees *bt.FeeQuote
 	// GET Fees
-	fees, err := d.feeRdr.Fees(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get fees when creating destinations")
+	g.Go(func() error {
+		f, err := d.feeRdr.Fees(ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to get fees when creating destinations")
+		}
+		fees = f
+		return nil
+	})
+	if err := g.Wait(); err != nil {
+		return nil, errors.WithStack(err)
 	}
 	return &payd.Destination{
-		Outputs: oo,
-		Fees:    fees,
+		Fees:        fees,
+		SPVRequired: invoice.SPVRequired,
+		Outputs:     outputs,
 	}, nil
 }
 
