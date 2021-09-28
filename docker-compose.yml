@@ -28,6 +28,21 @@ services:
     networks:
       - regtest-stack
 
+  payd-merchant:
+    container_name: payd-merchant
+    image: local.payd
+    environment:
+      DB_DSN: "file:data/merchant-wallet.db?cache=shared&_foreign_keys=true;"
+      DB_SCHEMA_PATH: "migrations"
+      SERVER_HOST: payd-merchant:28443
+      SERVER_PORT: :28443
+    volumes:
+      - ./run/data:/data
+    ports:
+      - "28443:28443"
+    networks:
+      - regtest-stack
+
 networks:
   regtest-stack:
     external: true

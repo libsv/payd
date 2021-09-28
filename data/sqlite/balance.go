@@ -11,7 +11,7 @@ import (
 
 const (
 	sqlBalance = `
-	SELECT SUM(d.satoshis) as satoshis
+	SELECT IFNULL(SUM(d.satoshis), 0) as satoshis
 	FROM txos as t INNER JOIN destinations as d on t.destination_id = d.destination_id
 	WHERE t.spent_at IS NULL 
 	`

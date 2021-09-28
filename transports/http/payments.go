@@ -30,7 +30,7 @@ func (p *payments) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
-// @Failure 400 {object} validator.ErrValidation "returned if the invoiceID is empty or payment isn't valid"
+// @Failure 400 {object} payd.ClientError "returned if the invoiceID is empty or payment isn't valid"
 // @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
 // @Success 200
 // @Router /v1/payments/{invoiceID} [POST].

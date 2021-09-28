@@ -59,6 +59,11 @@ definitions:
         description: Satoshis is the total amount this invoice is to pay.
         type: integer
     type: object
+  payd.PayRequest:
+    properties:
+      payToURL:
+        type: string
+    type: object
   payd.User:
     properties:
       address:
@@ -78,16 +83,11 @@ definitions:
       phoneNumber:
         type: string
     type: object
-  validator.ErrValidation:
-    additionalProperties:
-      items:
-        type: string
-      type: array
-    type: object
 host: localhost:8443
 info:
   contact: {}
-  description: Payd is a txo and key manager, with a common interface that can be implemented by wallets.
+  description: Payd is a txo and key manager, with a common interface that can be
+    implemented by wallets.
   license:
     name: ISC
     url: https://github.com/libsv/payd/blob/master/LICENSE
@@ -112,7 +112,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
+      description: Given an invoiceID, a set of outputs and fees will be returned,
+        if not found a 404 is returned.
       parameters:
       - description: Invoice ID
         in: path
@@ -128,7 +129,8 @@ paths:
           description: returned if the invoiceID has not been found
           schema:
             $ref: '#/definitions/payd.ClientError'
-      summary: Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
+      summary: Given an invoiceID, a set of outputs and fees will be returned, if
+        not found a 404 is returned.
       tags:
       - Destinations
   /v1/invoices:
@@ -219,11 +221,31 @@ paths:
       summary: Wallet owner information.
       tags:
       - Users
+  /v1/pay:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pay to url
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/payd.PayRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+      summary: Make a payment
+      tags:
+      - Pay
   /v1/payments/{invoiceID}:
     post:
       consumes:
       - application/json
-      description: Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.
+      description: Given an invoiceID, and an spvEnvelope, we will validate the payment
+        and inputs used are valid and that it covers the invoice.
       parameters:
       - description: Invoice ID
         in: path
@@ -238,7 +260,7 @@ paths:
         "400":
           description: returned if the invoiceID is empty or payment isn't valid
           schema:
-            $ref: '#/definitions/validator.ErrValidation'
+            $ref: '#/definitions/payd.ClientError'
         "404":
           description: returned if the invoiceID has not been found
           schema:
