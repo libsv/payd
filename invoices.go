@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
 )

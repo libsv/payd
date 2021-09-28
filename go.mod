@@ -14,7 +14,6 @@ require (
 	github.com/labstack/gommon v0.3.0
 	github.com/libsv/go-bc v0.1.4
 	github.com/libsv/go-bk v0.1.4
-	github.com/libsv/go-bt v1.0.1
 	github.com/libsv/go-bt/v2 v2.0.0-beta.7
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8
@@ -51,6 +50,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/libsv/go-bt v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
