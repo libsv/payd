@@ -16,8 +16,9 @@ func NewViperConfig(appname string) *Config {
 // WithServer will setup the web server configuration if required.
 func (c *Config) WithServer() *Config {
 	c.Server = &Server{
-		Port:     viper.GetString(EnvServerPort),
-		Hostname: viper.GetString(EnvServerHost),
+		Port:           viper.GetString(EnvServerPort),
+		Hostname:       viper.GetString(EnvServerHost),
+		SwaggerEnabled: viper.GetBool(EnvServerSwaggerEnabled),
 	}
 	return c
 }
@@ -31,7 +32,6 @@ func (c *Config) WithDeployment(appName string) *Config {
 		Commit:      viper.GetString(EnvCommit),
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
-		MainNet:     viper.GetBool(EnvMainNet),
 	}
 	return c
 }

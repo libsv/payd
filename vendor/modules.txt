@@ -108,7 +108,7 @@ github.com/libsv/go-bk/bip32
 github.com/libsv/go-bk/chaincfg
 github.com/libsv/go-bk/crypto
 github.com/libsv/go-bk/envelope
-# github.com/libsv/go-bt v1.0.0
+# github.com/libsv/go-bt v1.0.1
 ## explicit
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript

@@ -86,7 +86,9 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 	g := e.Group("/")
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	if cfg.Server.SwaggerEnabled {
+		e.GET("/swagger/*", echoSwagger.WrapHandler)
+	}
 	// Middleware
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
