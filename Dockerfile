@@ -24,8 +24,11 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /app/data/sqlite/migrations/ /migrations
+RUN mkdir /paydb && chown -R appuser:appuser /paydb
+VOLUME /paydb
 USER appuser:appuser
 
 EXPOSE 8443
 
 CMD ["rest-server"]
+

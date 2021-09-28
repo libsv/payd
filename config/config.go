@@ -12,8 +12,8 @@ import (
 const (
 	EnvServerPort           = "server.port"
 	EnvServerHost           = "server.host"
+	EnvServerSwaggerEnabled = "server.swagger.enabled"
 	EnvEnvironment          = "env.environment"
-	EnvMainNet              = "env.mainnet"
 	EnvRegion               = "env.region"
 	EnvVersion              = "env.version"
 	EnvCommit               = "env.commit"
@@ -79,7 +79,6 @@ type Deployment struct {
 	Version     string
 	Commit      string
 	BuildDate   time.Time
-	MainNet     bool
 }
 
 // IsDev determines if this app is running on a dev environment.
@@ -101,6 +100,8 @@ type Logging struct {
 type Server struct {
 	Port     string
 	Hostname string
+	// SwaggerEnabled if true we will include an endpoint to serve swagger documents.
+	SwaggerEnabled bool
 }
 
 // Db contains database information.

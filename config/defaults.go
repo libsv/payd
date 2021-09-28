@@ -12,6 +12,7 @@ func SetupDefaults() {
 	// server
 	viper.SetDefault(EnvServerPort, ":8443")
 	viper.SetDefault(EnvServerHost, "payd:8443")
+	viper.SetDefault(EnvServerSwaggerEnabled, true)
 
 	// deployment
 	viper.SetDefault(EnvEnvironment, "dev")
@@ -19,7 +20,6 @@ func SetupDefaults() {
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
-	viper.SetDefault(EnvMainNet, false)
 
 	// logging
 	viper.SetDefault(EnvLogLevel, "info")
