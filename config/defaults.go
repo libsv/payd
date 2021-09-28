@@ -34,6 +34,9 @@ func SetupDefaults() {
 	viper.SetDefault(EnvHeadersClientAddress, "http://headersv:8080")
 	viper.SetDefault(EnvHeadersClientTimeout, 30)
 
+	// p4
+	viper.SetDefault(EnvP4Timeout, 30)
+
 	// wallet
 	viper.SetDefault(EnvNetwork, "regtest")
 	viper.SetDefault(EnvWalletSpvRequired, true)

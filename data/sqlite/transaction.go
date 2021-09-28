@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
@@ -15,8 +16,13 @@ import (
 
 const (
 	sqlTransactionCreate = `
-		INSERT INTO transactions(tx_id, invoice_id, tx_hex)
-		VALUES(:tx_id, :invoice_id, :tx_hex)
+		INSERT INTO transactions(tx_id, tx_hex)
+		VALUES(:tx_id, :tx_hex)
+	`
+
+	sqlTransactionInvoiceCreate = `
+		INSERT INTO transaction_invoice(tx_id, invoice_id)
+		VALUES(:tx_id, :invoice_id)
 	`
 
 	sqlTxoCreate = `
@@ -41,6 +47,12 @@ const (
 	SET payment_received_at = :timestamp, state = 'paid', updated_at = :timestamp
 	WHERE invoice_id = :invoice_id
 	`
+
+	sqlTransactionGet = `
+	SELECT tx_hex
+	FROM transactions
+	WHERE tx_id=$1
+	`
 )
 
 // TransactionCreate will store a transaction and its txos in the data base.
@@ -63,19 +75,58 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 		}
 		return errors.Wrap(err, "failed to insert new transaction")
 	}
+
+	if err = s.insertOutputs(ctx, tx, timestamp, req); err != nil {
+		return err
+	}
+
+	// If no invoice id was provided, end here as this is a change tx.
+	if req.InvoiceID == "" {
+		return errors.Wrapf(commit(ctx, tx),
+			"failed to commit transaction when adding tx and outputs for tx '%s'", req.TxID)
+	}
+
+	invUpdate := struct {
+		Timestamp time.Time `db:"timestamp"`
+		InvoiceID string    `db:"invoice_id"`
+	}{
+		Timestamp: timestamp,
+		InvoiceID: req.InvoiceID,
+	}
+	if err = handleNamedExec(tx, sqlTransactionInvoiceCreate, req); err != nil {
+		return errors.Wrapf(err, "failed to create invoice mapping for tx %s invoice %s", req.TxID, req.InvoiceID)
+	}
+
+	if err = handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
+		}
+	}
+
+	return errors.Wrapf(commit(ctx, tx),
+		"failed to commit transaction when adding tx and outputs for tx '%s'", req.TxID)
+}
+
+func (s *sqliteStore) insertOutputs(ctx context.Context, tx *sqlx.Tx, timestamp time.Time, req payd.TransactionCreate) error {
+	// Only write outputs if they exist. This can happen in the case of a tx being funded an
+	// exact amount, causing no change output to be created.
+	if req.Outputs == nil || len(req.Outputs) == 0 {
+		return nil
+	}
+
 	if err := handleNamedExec(tx, sqlTxoCreate, req.Outputs); err != nil {
 		return errors.Wrap(err, "failed to insert transaction outputs")
 	}
+
 	ll := make([]uint64, 0, len(req.Outputs))
 	for _, d := range req.Outputs {
 		ll = append(ll, d.DestinationID)
 	}
-
-	query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, time.Now().UTC(), ll)
+	query, sqlArgs, err := sqlx.In(sqlDestinationSetReceived, timestamp, ll)
 	if err != nil {
 		return errors.Wrap(err, "failed to create sql for updating destination state")
 	}
-	result, err := tx.Exec(query, sqlArgs...)
+	result, err := tx.ExecContext(ctx, query, sqlArgs...)
 	if err != nil {
 		return errors.Wrap(err, "failed to update destinations state to received")
 	}
@@ -86,20 +137,8 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 	if rows <= 0 {
 		return errors.Wrap(err, "failed to update destinations state to received")
 	}
-	invUpdate := struct {
-		Timestamp time.Time `db:"timestamp"`
-		InvoiceID string    `db:"invoice_id"`
-	}{
-		Timestamp: timestamp,
-		InvoiceID: req.InvoiceID,
-	}
-	if err := handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
-		}
-	}
-	return errors.Wrapf(commit(ctx, tx),
-		"failed to commit transaction when adding tx and outputs for invoiceID '%s'", req.InvoiceID)
+
+	return nil
 }
 
 // TransactionUpdateState will update a transactions internal state.
@@ -120,4 +159,15 @@ func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.Tran
 	}
 	return errors.Wrapf(commit(ctx, tx),
 		"failed to commit transaction when updating transactionId '%s' state to '%s'", args.TxID, req.State)
+}
+
+func (s *sqliteStore) Tx(ctx context.Context, txID string) (*bt.Tx, error) {
+	var txhex struct {
+		TxHex string `db:"tx_hex"`
+	}
+	if err := s.db.GetContext(ctx, &txhex, sqlTransactionGet, txID); err != nil {
+		return nil, errors.Wrapf(err, "failed to retrieve transaction for id %s", txID)
+	}
+
+	return bt.NewTxFromString(txhex.TxHex)
 }

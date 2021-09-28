@@ -50,13 +50,18 @@ CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
 CREATE TABLE transactions (
     tx_id               CHAR(64) NOT NULL PRIMARY KEY
-    ,invoice_id         VARCHAR(30) NOT NULL
     ,tx_hex             TEXT NOT NULL
     ,state VARCHAR(10)  NOT NULL DEFAULT 'pending'
     ,created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,deleted_at         TIMESTAMP
+);
+
+CREATE TABLE transaction_invoice (
+    tx_id               CHAR(64) NOT NULL
+    ,invoice_id         VARCHAR NOT NULL
     ,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
+    ,FOREIGN KEY (tx_id) REFERENCES transactions(tx_id)
 );
 
 CREATE TABLE destinations(
@@ -86,13 +91,14 @@ CREATE TABLE destination_invoice(
 -- store unspent transactions
 CREATE TABLE txos (
     outpoint        VARCHAR PRIMARY KEY,
-    destination_id INTEGER,
+    destination_id  INTEGER,
     tx_id           CHAR(64),
-    vout		   BIGINT,
+    vout		    BIGINT,
     spent_at        TIMESTAMP, -- this is the date when YOU use the funds
     spending_txid   CHAR(64), -- the txid where you'd spent this output
+    reserved_for    VARCHAR, -- the paymentId of this txo is being spent against
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (tx_id) REFERENCES transactions(tx_id),
     FOREIGN KEY (spending_txid) REFERENCES transactions(tx_id),
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id)

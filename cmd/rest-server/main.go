@@ -68,6 +68,7 @@ func main() {
 		WithLog().
 		WithHeadersClient().
 		WithWallet().
+		WithP4().
 		WithMapi()
 	// validate the config, fail if it fails.
 	if err := cfg.Validate(); err != nil {
@@ -116,6 +117,11 @@ func main() {
 		log.Fatalf("failed to create spv client %w", err)
 	}
 
+	spvc, err := spv.NewEnvelopeCreator(sqlLiteStore, sqlLiteStore)
+	if err != nil {
+		log.Fatalf("failed to create spv verifier %w", err)
+	}
+
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
@@ -127,8 +133,14 @@ func main() {
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewDestinations(destSvc).RegisterRoutes(g)
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
-	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).
-		RegisterRoutes(g)
+	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
+	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, sqlLiteStore, sqlLiteStore,
+		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), privKeySvc, spvc, cfg.Server)).RegisterRoutes(g)
+
+	// create master private key if it doesn't exist
+	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
+		log.Fatal(errors.Wrap(err, "failed to create master key"))
+	}
 
 	// create master private key if it doesn't exist
 	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {

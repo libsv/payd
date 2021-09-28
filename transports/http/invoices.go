@@ -91,7 +91,7 @@ func (i *invoices) create(e echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "invoiceID we want to remove"
-// @Success 200
+// @Success 204
 // @Failure 404 {object} payd.ClientError "returned if the paymentID has not been found"
 // @Router /v1/invoices/{invoiceID} [DELETE].
 func (i *invoices) delete(e echo.Context) error {

@@ -73,6 +73,14 @@ func (c *Config) WithWallet() *Config {
 	return c
 }
 
+// WithP4 sets up and return p4 interface configuration.
+func (c *Config) WithP4() *Config {
+	c.P4 = &P4{
+		Timeout: viper.GetInt(EnvP4Timeout),
+	}
+	return c
+}
+
 // WithMapi will setup Mapi settings.
 func (c *Config) WithMapi() *Config {
 	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
