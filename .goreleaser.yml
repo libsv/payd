@@ -25,6 +25,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 release:
+  prerelease: true
   name_template: "Release v{{.Version}}"
 snapshot:
   name_template: "{{ .Tag }}-next"
