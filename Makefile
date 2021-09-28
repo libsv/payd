@@ -32,6 +32,9 @@ run-linter:
 create-alias:
 	@go run -race main.go create $(alias)
 
+install-cli:
+	@go install cmd/cli/main.go && mv $(shell go env GOBIN)/{main,payctl}
+
 install-linter:
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
 
