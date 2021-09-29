@@ -32,10 +32,10 @@ type PaymentSendArgs struct {
 	PaymentRequest PaymentRequest `json:"-" yaml:"-"`
 	Tx             string         `json:"-" yaml:"-"`
 
-	Transaction  string       `json:"transaction" yaml:"transaction"`
-	Memo         string       `json:"memo" yaml:"memo"`
-	MerchantData MerchantData `json:"merchantData" yaml:"merchantData"`
-	SPVEnvelope  spv.Envelope `json:"spvEnvelope" yaml:"spvEnvelope"`
+	Transaction  string        `json:"transaction" yaml:"transaction"`
+	Memo         string        `json:"memo" yaml:"memo"`
+	MerchantData MerchantData  `json:"merchantData" yaml:"merchantData"`
+	SPVEnvelope  *spv.Envelope `json:"spvEnvelope" yaml:"spvEnvelope"`
 }
 
 // MerchantData merchant data.

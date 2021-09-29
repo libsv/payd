@@ -1,12 +1,19 @@
 package cli
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 
+	"github.com/libsv/go-bc/spv"
+	"github.com/libsv/go-bt/v2"
 	chttp "github.com/libsv/payd/cli/data/http"
+	"github.com/libsv/payd/cli/data/regtest"
 	"github.com/libsv/payd/cli/models"
 	"github.com/libsv/payd/cli/service"
 	"github.com/spf13/cobra"
@@ -16,6 +23,7 @@ var (
 	requestJSON  string
 	payToURL     string
 	payToContext string
+	lowFees      bool
 )
 
 var paymentCmd = &cobra.Command{
@@ -33,6 +41,14 @@ var paymentRequestCmd = &cobra.Command{
 	PreRunE: paymentValidator,
 	Args:    cobra.MinimumNArgs(1),
 	RunE:    paymentRequest,
+}
+
+var paymentBuildCmd = &cobra.Command{
+	Use:     "build",
+	Aliases: []string{"buil", "bui", "bu", "b"},
+	Short:   "build a payment message",
+	Long:    "build a payment message",
+	RunE:    paymentBuild,
 }
 
 var sendCmd = &cobra.Command{
@@ -55,6 +71,9 @@ func init() {
 	sendCmd.PersistentFlags().StringVarP(&payToURL, "pay-to-url", "u", "", "the payto url")
 	sendCmd.PersistentFlags().StringVarP(&payToContext, "pay-to-context", "c", "", "the payto context")
 	paymentCmd.AddCommand(sendCmd)
+
+	paymentBuildCmd.Flags().BoolVarP(&lowFees, "low-fees", "l", false, "build tx with too low fees")
+	paymentCmd.AddCommand(paymentBuildCmd)
 }
 
 func paymentValidator(cmd *cobra.Command, args []string) error {
@@ -98,4 +117,65 @@ func sendPayment(cmd *cobra.Command, args []string) error {
 	}
 
 	return printer(ack)
+}
+
+func paymentBuild(cmd *cobra.Command, args []string) error {
+	var rdr io.Reader = os.Stdin
+	if requestJSON != "" {
+		rdr = bytes.NewBufferString(requestJSON)
+	}
+
+	var payReq models.PaymentRequest
+	if err := json.NewDecoder(rdr).Decode(&payReq); err != nil {
+		return err
+	}
+
+	if lowFees {
+		fmt.Fprintln(os.Stderr, "creating tx with low fees")
+		payReq.Fee.AddQuote(bt.FeeTypeStandard, &bt.Fee{
+			MiningFee: bt.FeeUnit{
+				Satoshis: 100,
+				Bytes:    500,
+			},
+			RelayFee: bt.FeeUnit{
+				Satoshis: 100,
+				Bytes:    500,
+			},
+		})
+		payReq.Fee.AddQuote(bt.FeeTypeData, &bt.Fee{
+			MiningFee: bt.FeeUnit{
+				Satoshis: 100,
+				Bytes:    500,
+			},
+			RelayFee: bt.FeeUnit{
+				Satoshis: 100,
+				Bytes:    500,
+			},
+		})
+	}
+
+	rt := regtest.NewRegtest(&http.Client{})
+	spvb, err := spv.NewEnvelopeCreator(service.NewTxService(rt), service.NewMerkleProofStore(rt))
+	if err != nil {
+		return err
+	}
+	svc := service.NewFundService(rt, chttp.NewPaymentAPI(&http.Client{}), spvb)
+
+	tx, err := svc.FundedTx(cmd.Context(), payReq)
+	if err != nil {
+		return err
+	}
+
+	spvEnvelope, err := spvb.CreateEnvelope(cmd.Context(), tx)
+	if err != nil {
+		return err
+	}
+
+	return printer(models.PaymentSendArgs{
+		Transaction:    tx.String(),
+		PaymentRequest: payReq,
+		MerchantData:   payReq.MerchantData,
+		Memo:           payReq.Memo,
+		SPVEnvelope:    spvEnvelope,
+	})
 }
