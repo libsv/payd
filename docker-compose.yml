@@ -7,6 +7,7 @@ services:
     environment:
       DB_DSN: "file:paydb/wallet.db?cache=shared&_foreign_keys=true"
       DB_SCHEMA_PATH: "migrations"
+      LOG_LEVEL: "debug"
     volumes:
       - payd-data:/paydb
     ports:
@@ -22,6 +23,7 @@ services:
       DB_SCHEMA_PATH: "migrations"
       SERVER_HOST: payd-merchant:28443
       SERVER_PORT: :28443
+      LOG_LEVEL: "debug"
     volumes:
       - merchant-data:/paydb
     ports:
