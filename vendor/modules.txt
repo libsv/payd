@@ -196,7 +196,7 @@ github.com/theflyingcodr/govalidator
 ## explicit; go 1.17
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/tonicpow/go-minercraft v0.3.0
+# github.com/tonicpow/go-minercraft v0.3.1
 ## explicit; go 1.15
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0
