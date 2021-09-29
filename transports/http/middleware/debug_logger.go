@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
+// DebugDumpBody dumps the body of the request and response provided the
+// passed in log level is set.
 func DebugDumpBody(level log.Lvl) echo.MiddlewareFunc {
 	return middleware.BodyDumpWithConfig(middleware.BodyDumpConfig{
 		Skipper: func(c echo.Context) bool {
