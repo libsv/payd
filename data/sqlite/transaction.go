@@ -161,11 +161,15 @@ func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.Tran
 		"failed to commit transaction when updating transactionId '%s' state to '%s'", args.TxID, req.State)
 }
 
+// Tx returns a tx from the internal store.
 func (s *sqliteStore) Tx(ctx context.Context, txID string) (*bt.Tx, error) {
 	var txhex struct {
 		TxHex string `db:"tx_hex"`
 	}
 	if err := s.db.GetContext(ctx, &txhex, sqlTransactionGet, txID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, lathos.NewErrNotFound("T001", fmt.Sprintf("tx '%s' not in store", txID))
+		}
 		return nil, errors.Wrapf(err, "failed to retrieve transaction for id %s", txID)
 	}
 
