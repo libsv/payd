@@ -56,9 +56,8 @@ var sendCmd = &cobra.Command{
 	Aliases: []string{"send", "s"},
 	Short:   "send satoshis to address",
 	Long:    "send satoshis to address",
-	Args:    cobra.MinimumNArgs(1),
 	PreRunE: paymentValidator,
-	RunE:    sendPayment,
+	RunE:    paymentSend,
 }
 
 func init() {
@@ -105,18 +104,6 @@ func paymentRequest(cmd *cobra.Command, args []string) error {
 	}
 
 	return printer(req)
-}
-
-func sendPayment(cmd *cobra.Command, args []string) error {
-	svc := service.NewPayService(chttp.NewPayAPI(&http.Client{}, cfg.Payd))
-	ack, err := svc.Request(cmd.Context(), models.SendPayload{
-		PayToURL: fmt.Sprintf("%s/api/v1/payment/%s", payToURL, args[0]),
-	})
-	if err != nil {
-		return err
-	}
-
-	return printer(ack)
 }
 
 func paymentBuild(cmd *cobra.Command, args []string) error {
@@ -178,4 +165,27 @@ func paymentBuild(cmd *cobra.Command, args []string) error {
 		Memo:           payReq.Memo,
 		SPVEnvelope:    spvEnvelope,
 	})
+}
+
+func paymentSend(cmd *cobra.Command, args []string) error {
+	var rdr io.Reader = os.Stdin
+	if requestJSON != "" {
+		rdr = bytes.NewBufferString(requestJSON)
+	}
+
+	var paySend models.PaymentSendArgs
+	if err := json.NewDecoder(rdr).Decode(&paySend); err != nil {
+		return err
+	}
+
+	paySend.PaymentRequest.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", payToURL, paySend.MerchantData.ExtendedData["paymentReference"])
+
+	svc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil)
+
+	ack, err := svc.Send(cmd.Context(), paySend)
+	if err != nil {
+		return err
+	}
+
+	return printer(ack)
 }

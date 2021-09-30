@@ -21,8 +21,8 @@ func NewPayAPI(c models.HTTPClient, cfg *config.Payd) models.PayStore {
 }
 
 // Request performs a post a pay request to a payd instance.
-func (p *pay) Request(ctx context.Context, args models.SendPayload) (*models.PaymentACK, error) {
-	bb, err := json.Marshal(models.SendPayload{
+func (p *pay) Pay(ctx context.Context, args models.PayRequest) (*models.PaymentACK, error) {
+	bb, err := json.Marshal(models.PayRequest{
 		PayToURL: args.PayToURL,
 	})
 	if err != nil {

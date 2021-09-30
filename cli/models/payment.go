@@ -12,6 +12,7 @@ import (
 // PaymentService interfaces a service for payments.
 type PaymentService interface {
 	Request(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
+	Send(ctx context.Context, args PaymentSendArgs) (*PaymentACK, error)
 }
 
 // PaymentStore interfaces a store for payments.

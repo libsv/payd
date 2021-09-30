@@ -2,8 +2,8 @@ package models
 
 import "context"
 
-// SendPayload is the expected shape for the /pay endpoint.
-type SendPayload struct {
+// PayRequest is the expected shape for the /pay endpoint.
+type PayRequest struct {
 	PayToURL string `json:"payToUrl"`
 }
 
@@ -14,5 +14,5 @@ type PayService interface {
 
 // PayStore interface for a pay (not to be confused with payment).
 type PayStore interface {
-	Request(ctx context.Context, args SendPayload) (*PaymentACK, error)
+	Pay(ctx context.Context, args PayRequest) (*PaymentACK, error)
 }

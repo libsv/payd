@@ -18,6 +18,6 @@ func NewPayService(ps models.PayStore) models.PayStore {
 }
 
 // Request calls the http data store to POST a pay to url.
-func (p *paySvc) Request(ctx context.Context, args models.SendPayload) (*models.PaymentACK, error) {
-	return p.ps.Request(ctx, args)
+func (p *paySvc) Pay(ctx context.Context, args models.PayRequest) (*models.PaymentACK, error) {
+	return p.ps.Pay(ctx, args)
 }
