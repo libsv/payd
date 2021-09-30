@@ -1,6 +1,6 @@
 package bc
 
-// MapiCallback is the body contents posted to the provided callback url from Merchant API
+// MapiCallback is the body contents posted to the provided callback url from Merchant API.
 type MapiCallback struct {
 	CallbackPayload string `json:"callbackPayload"`
 	APIVersion      string `json:"apiVersion"`

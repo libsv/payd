@@ -18,7 +18,7 @@ func getHashes(txHashes []string) []string {
 	return hashes
 }
 
-// GetMerkleBranches comment TODO:
+// GetMerkleBranches comment.
 func GetMerkleBranches(template []string) []string {
 	hashes := getHashes(template)
 

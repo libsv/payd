@@ -12,7 +12,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/labstack/gommon v0.3.0
-	github.com/libsv/go-bc v0.1.4
+	github.com/libsv/go-bc v0.1.6
 	github.com/libsv/go-bk v0.1.4
 	github.com/libsv/go-bt/v2 v2.0.0-beta.7
 	github.com/mailru/easyjson v0.7.7 // indirect

@@ -17,12 +17,12 @@ type EnvelopeCreator interface {
 	CreateEnvelope(context.Context, *bt.Tx) (*Envelope, error)
 }
 
-// TxStore interfaces the a tx store
+// TxStore interfaces the a tx store.
 type TxStore interface {
 	Tx(ctx context.Context, txID string) (*bt.Tx, error)
 }
 
-// MerkleProofStore interfaces a Merkle Proof store
+// MerkleProofStore interfaces a Merkle Proof store.
 type MerkleProofStore interface {
 	MerkleProof(ctx context.Context, txID string) (*bc.MerkleProof, error)
 }
