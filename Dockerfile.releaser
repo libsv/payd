@@ -14,14 +14,15 @@ RUN adduser \
 
 FROM bitnami/minideb:buster
 
-ADD payd-server /bin
-ADD data/sqlite/migrations/ /migrations
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 RUN mkdir /paydb && chown -R appuser:appuser /paydb
 VOLUME /paydb
+
+ADD payd-server /bin
+ADD data/sqlite/migrations/ /migrations
 
 USER appuser:appuser
 
