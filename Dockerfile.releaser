@@ -21,8 +21,8 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 RUN mkdir /paydb && chown -R appuser:appuser /paydb
 VOLUME /paydb
 
-ADD payd-server /bin
 ADD data/sqlite/migrations/ /migrations
+ADD payd-server /bin
 
 USER appuser:appuser
 
