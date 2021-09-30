@@ -13,6 +13,7 @@ func SetupDefaults() {
 	viper.SetDefault(EnvServerPort, ":8443")
 	viper.SetDefault(EnvServerHost, "payd:8443")
 	viper.SetDefault(EnvServerSwaggerEnabled, true)
+	viper.SetDefault(EnvServerSwaggerHost, "localhost:8443")
 
 	// deployment
 	viper.SetDefault(EnvEnvironment, "dev")
