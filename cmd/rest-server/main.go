@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/libsv/go-bc/spv"
+	docs "github.com/libsv/payd/docs"
 	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/tonicpow/go-minercraft"
@@ -87,6 +88,7 @@ func main() {
 	e.HideBanner = true
 	g := e.Group("/")
 	if cfg.Server.SwaggerEnabled {
+		docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 	// Middleware
@@ -126,7 +128,7 @@ func main() {
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
-	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore)
+	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
 		RegisterRoutes(g)

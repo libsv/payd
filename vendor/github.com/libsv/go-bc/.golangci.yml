@@ -336,7 +336,7 @@ linters:
     - govet
     - gosec
     - bodyclose
-    - golint
+    - revive
     - unconvert
     - dupl
     - maligned
@@ -349,15 +349,16 @@ linters:
     - nolintlint
     - goconst
     - lll
+    - godot
   disable:
     - gocritic # use this for very opinionated linting
     - gochecknoglobals
     - whitespace
+    - golint
     - wsl
-    - goerr113
-    - godot
     - testpackage
     - nestif
+    - goerr113
     - nlreturn
     - gci
   disable-all: false

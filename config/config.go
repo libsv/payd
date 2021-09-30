@@ -13,6 +13,7 @@ const (
 	EnvServerPort           = "server.port"
 	EnvServerHost           = "server.host"
 	EnvServerSwaggerEnabled = "server.swagger.enabled"
+	EnvServerSwaggerHost    = "server.swagger.host"
 	EnvEnvironment          = "env.environment"
 	EnvRegion               = "env.region"
 	EnvVersion              = "env.version"
@@ -104,6 +105,7 @@ type Server struct {
 	Hostname string
 	// SwaggerEnabled if true we will include an endpoint to serve swagger documents.
 	SwaggerEnabled bool
+	SwaggerHost    string
 }
 
 // Db contains database information.

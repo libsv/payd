@@ -86,7 +86,7 @@ func (bh *BlockHeader) Valid() bool {
 	}
 
 	digest := bt.ReverseBytes(crypto.Sha256d(bh.Bytes()))
-	var bn *big.Int = big.NewInt(0)
+	var bn = big.NewInt(0)
 	bn.SetBytes(digest)
 
 	return bn.Cmp(target) < 0
@@ -138,7 +138,7 @@ func ExtractMerkleRootFromBlockHeader(header string) (string, error) {
 	return hex.EncodeToString(bh.HashMerkleRoot), nil
 }
 
-// MarshalJSON marshals the receiving bc.BlockHeader into a JSON []byte
+// MarshalJSON marshals the receiving bc.BlockHeader into a JSON []byte.
 func (bh *BlockHeader) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bhJSON{
 		Version:        bh.Version,
@@ -150,7 +150,7 @@ func (bh *BlockHeader) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON unmarshals a JSON []byte into the receiving bc.BlockHeader
+// UnmarshalJSON unmarshals a JSON []byte into the receiving bc.BlockHeader.
 func (bh *BlockHeader) UnmarshalJSON(b []byte) error {
 	var bhj bhJSON
 	if err := json.Unmarshal(b, &bhj); err != nil {
