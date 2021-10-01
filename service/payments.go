@@ -54,7 +54,6 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	if inv.State != payd.StateInvoicePending {
 		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", req.InvoiceID))
 	}
-
 	fq, err := p.feeRdr.Fees(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read fees for payment with id %s", req.InvoiceID)

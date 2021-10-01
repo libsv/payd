@@ -106,7 +106,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 
 	tx := bt.NewTx()
 	// Add funds to new tx.
-	for _, out := range payReq.Outputs {
+	for _, out := range payReq.Destinations.Outputs {
 		lockingScript, err := bscript.NewFromHexString(out.Script)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parsed script %s", out.Script)
