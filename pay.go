@@ -29,14 +29,19 @@ type P4Output struct {
 	Description string `json:"description"`
 }
 
+// P4Destination defines a P4 payment destination object.
+type P4Destination struct {
+	Outputs []P4Output `json:"outputs"`
+}
+
 // PaymentRequestResponse a payment request from p4.
 type PaymentRequestResponse struct {
-	Network             string     `json:"network"`
-	Outputs             []P4Output `json:"outputs"`
-	CreationTimestamp   time.Time  `json:"creationTimestamp"`
-	ExpirationTimestamp time.Time  `json:"expirationTimestamp"`
-	PaymentURL          string     `json:"paymentURL"`
-	Memo                string     `json:"memo"`
+	Network             string        `json:"network"`
+	Destinations        P4Destination `json:"destinations"`
+	CreationTimestamp   time.Time     `json:"creationTimestamp"`
+	ExpirationTimestamp time.Time     `json:"expirationTimestamp"`
+	PaymentURL          string        `json:"paymentURL"`
+	Memo                string        `json:"memo"`
 	MerchantData        struct {
 		Avatar           string            `json:"avatar"`
 		Name             string            `json:"name"`
@@ -45,7 +50,7 @@ type PaymentRequestResponse struct {
 		PaymentReference string            `json:"paymentReference"`
 		ExtendedData     map[string]string `json:"extendedData"`
 	} `json:"merchantData"`
-	Fee *bt.FeeQuote `json:"fee"`
+	Fee *bt.FeeQuote `json:"fees"`
 }
 
 // PaymentACK an ack response from P4.

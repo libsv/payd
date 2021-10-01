@@ -56,6 +56,9 @@ run-compose-d:
 run-compose-dev:
 	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml up
 
+run-compose-testnet:
+	@docker-compose -f docker-compose.yml  -f docker-compose.testnet.yml up
+
 build-image:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
 
