@@ -23,6 +23,8 @@ const (
 	RequestGetMerkleProof = "getmerkleproof2"
 	RequestGetNewAddress  = "getnewaddress"
 	RequestListUnspent    = "listunspent"
+	RequestGenerate       = "generate"
+	RequestSendToAddress  = "sendtoaddress"
 )
 
 type regtest struct {
@@ -100,6 +102,18 @@ func (r *regtest) SignRawTransaction(ctx context.Context, tx string) (*models.Si
 	return &resp, nil
 }
 
+func (r *regtest) SendToAddress(ctx context.Context, address string, amount uint64) (*models.SendToAddressResponse, error) {
+	var resp models.SendToAddressResponse
+	if err := r.performRPC(ctx, RequestSendToAddress, &resp, address, amount); err != nil {
+		if resp.Error != nil {
+			return nil, errors.Wrap(resp.Error, err.Error())
+		}
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
 func (r *regtest) MerkleProof(ctx context.Context, blockHash, txID string) (*models.MerkleProofResponse, error) {
 	var resp models.MerkleProofResponse
 	if err := r.performRPC(ctx, RequestGetMerkleProof, &resp, blockHash, txID); err != nil {
@@ -107,6 +121,18 @@ func (r *regtest) MerkleProof(ctx context.Context, blockHash, txID string) (*mod
 			return nil, errors.Wrap(resp.Error, err.Error())
 		}
 
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
+func (r *regtest) Generate(ctx context.Context, amount uint64) (*models.GenerateResponse, error) {
+	var resp models.GenerateResponse
+	if err := r.performRPC(ctx, RequestGenerate, &resp, amount); err != nil {
+		if resp.Error != nil {
+			return nil, errors.Wrap(resp.Error, err.Error())
+		}
 		return nil, err
 	}
 

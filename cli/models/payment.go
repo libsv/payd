@@ -65,11 +65,25 @@ type PaymentRequest struct {
 	Fee          *bt.FeeQuote `json:"fee" yaml:"fee"`
 }
 
+// PaymentCallback a payment callback from mapi.
+type PaymentCallback struct {
+	Token string `json:"token" yaml:"token"`
+}
+
+// Payment a payment package.
+type Payment struct {
+	Memo           *string                    `json:"memo" yaml:"memo"`
+	MerchantData   MerchantData               `json:"merchantData" yaml:"merchantData"`
+	ProofCallbacks map[string]PaymentCallback `json:"proofCallbacks" yaml:"proofCallbacks"`
+	RefundTo       string                     `json:"refundTo" yaml:"refundTo"`
+	SPVEnvelope    *spv.Envelope              `json:"spvEnvelope" yaml:"spvEnvelope"`
+}
+
 // PaymentACK an acknowledgement of a payment.
 type PaymentACK struct {
-	Payment *PaymentSendArgs `json:"payment" yaml:"payment"`
-	Memo    *string          `json:"memo" yaml:"memo"`
-	Error   *int             `json:"error" yaml:"error"`
+	Payment *Payment `json:"payment" yaml:"payment"`
+	Memo    *string  `json:"memo" yaml:"memo"`
+	Error   *int     `json:"error" yaml:"error"`
 }
 
 // Columns builds column headers.

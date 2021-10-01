@@ -62,15 +62,29 @@ func fund(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	return printer(ack)
 }
 
 func autoFund(cmd *cobra.Command, args []string) error {
-
+	rt := regtest.NewRegtest(&http.Client{})
 	invSvc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
 	paySvc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil)
 
 	ctx := cmd.Context()
+
+	addr, err := rt.GetNewAddress(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err = rt.SendToAddress(ctx, *addr.Result, 1); err != nil {
+		return err
+	}
+
+	if _, err = rt.Generate(ctx, 1); err != nil {
+		return err
+	}
 
 	reference := "autofund"
 	description := "created via autofund"

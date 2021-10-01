@@ -14,6 +14,8 @@ type Regtest interface {
 	ListUnspent(ctx context.Context) (*ListUnspentResponse, error)
 	GetNewAddress(ctx context.Context) (*GetNewAddressResponse, error)
 	SignRawTransaction(ctx context.Context, tx string) (*SignRawTxResponse, error)
+	SendToAddress(ctx context.Context, address string, amount uint64) (*SendToAddressResponse, error)
+	Generate(ctx context.Context, amount uint64) (*GenerateResponse, error)
 	MerkleProof(ctx context.Context, blockHash, txID string) (*MerkleProofResponse, error)
 }
 
@@ -83,6 +85,17 @@ type SignRawTxResponse struct {
 // GetNewAddressResponse models the response of `getnewaddress`.
 type GetNewAddressResponse struct {
 	stringResponse
+}
+
+// SendToAddressResponse models the response of `sendtoaddress <address> <amount>`.
+type SendToAddressResponse struct {
+	stringResponse
+}
+
+// GenerateResponse models the response of `generate <num>`.
+type GenerateResponse struct {
+	Result []string `json:"result"`
+	response
 }
 
 func (e *Error) Error() string {

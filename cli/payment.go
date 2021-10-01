@@ -159,11 +159,10 @@ func paymentBuild(cmd *cobra.Command, args []string) error {
 	}
 
 	return printer(models.PaymentSendArgs{
-		Transaction:    tx.String(),
-		PaymentRequest: payReq,
-		MerchantData:   payReq.MerchantData,
-		Memo:           payReq.Memo,
-		SPVEnvelope:    spvEnvelope,
+		Transaction:  tx.String(),
+		MerchantData: payReq.MerchantData,
+		Memo:         payReq.Memo,
+		SPVEnvelope:  spvEnvelope,
 	})
 }
 

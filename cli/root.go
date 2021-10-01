@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 
+	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/libsv/payd/cli/config"
@@ -64,7 +66,12 @@ func initConfig() {
 	viper.SetConfigName(".payctl")
 	viper.SetConfigType("yml")
 
-	_ = viper.ReadInConfig()
+	_, err = os.Stat(path.Join(home, ".payctl.yml"))
+	createConfig := err != nil && os.IsNotExist(err)
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatal(err)
+	}
 
 	cfg = config.NewConfig().
 		WithPayd().
@@ -72,7 +79,9 @@ func initConfig() {
 		WithAccount().
 		WithContexts()
 
-	_ = viper.WriteConfig()
+	if createConfig {
+		_ = viper.WriteConfig()
+	}
 }
 
 // Execute the command.
