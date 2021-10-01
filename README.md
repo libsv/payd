@@ -28,11 +28,12 @@ Values can also be passed at build time to provide information such as build inf
 
 ### Server
 
-| Key                    | Description                                                        | Default  |
-|------------------------|--------------------------------------------------------------------|----------|
-| SERVER_PORT            | Port which this server should use                                  | :8443    |
-| SERVER_HOST            | Host name under which this server is found                         | payd:8443|
-| SERVER_SWAGGER_ENABLED | If set to true we will expose an endpoint hosting the Swagger docs | true     |
+| Key                    | Description                                                        | Default       |
+|------------------------|--------------------------------------------------------------------|---------------|
+| SERVER_PORT            | Port which this server should use                                  | :8443         |
+| SERVER_HOST            | Host name under which this server is found                         | payd:8443     |
+| SERVER_SWAGGER_ENABLED | If set to true we will expose an endpoint hosting the Swagger docs | true          |
+| SERVER_SWAGGER_HOST    | The host that swagger will point its api requests to               | localhost:8443|
 
 ### Environment / Deployment Info
 

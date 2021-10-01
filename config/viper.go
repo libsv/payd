@@ -19,6 +19,7 @@ func (c *Config) WithServer() *Config {
 		Port:           viper.GetString(EnvServerPort),
 		Hostname:       viper.GetString(EnvServerHost),
 		SwaggerEnabled: viper.GetBool(EnvServerSwaggerEnabled),
+		SwaggerHost:    viper.GetString(EnvServerSwaggerHost),
 	}
 	return c
 }

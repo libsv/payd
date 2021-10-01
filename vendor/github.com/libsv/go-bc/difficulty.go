@@ -35,7 +35,7 @@ func init() {
 	regDiff = math.Pow(2, 256) / regDiff
 }
 
-// ExpandTargetFrom comment
+// ExpandTargetFrom comment.
 func ExpandTargetFrom(bits string) (string, error) {
 	bn, err := ExpandTargetFromAsInt(bits)
 	if err != nil {
@@ -49,7 +49,7 @@ func ExpandTargetFrom(bits string) (string, error) {
 	return hex.EncodeToString(dst), nil
 }
 
-// ExpandTargetFromAsInt comment
+// ExpandTargetFromAsInt comment.
 func ExpandTargetFromAsInt(bits string) (*big.Int, error) {
 	binaryBits, err := hex.DecodeString(bits)
 	if err != nil {
