@@ -26,7 +26,7 @@ require (
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect
 	github.com/swaggo/swag v1.7.3
 	github.com/theflyingcodr/govalidator v0.0.2
-	github.com/theflyingcodr/lathos v0.0.3
+	github.com/theflyingcodr/lathos v0.0.4
 	github.com/tonicpow/go-minercraft v0.3.1
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect

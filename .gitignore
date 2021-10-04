@@ -11,6 +11,7 @@ cover.out
 wallet.db
 main
 docker-compose.dev.yml
+docker-compose.override.yml
 cover.out
 cover.html
 

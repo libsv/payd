@@ -39,7 +39,7 @@ if ok := err.(lathos.NotFound); ok {
 
 This reads ok (in my opinion not as nice as a lathos check though), but if you want to change the NotFound type, you need to update this throughout your code base where you check the errors. You may want to implement your own version of the NotFound error for example.
 
-## Useage
+## Usage
 
 Lathos is mostly made up of interfaces that when implemented on an error type give it a particular behaviour, these can be found in the [lathos.go](lathos.go) file.
 
