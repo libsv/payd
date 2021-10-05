@@ -25,7 +25,7 @@ func (e *Envelope) IsAnchored() bool {
 
 // HasParents returns true if this envelope has immediate parents.
 func (e *Envelope) HasParents() bool {
-	return e.Parents == nil || len(e.Parents) == 0
+	return e.Parents != nil && len(e.Parents) > 0
 }
 
 // ParentTX will return a parent if found and convert the rawTx to a bt.TX, otherwise a ErrNotAllInputsSupplied error is returned.
