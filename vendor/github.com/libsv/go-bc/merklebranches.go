@@ -12,7 +12,7 @@ func getHashes(txHashes []string) []string {
 	hashes := make([]string, 0, len(txHashes))
 
 	for i, tx := range txHashes {
-		hashes[i] = (ReverseHexString(tx))
+		hashes[i] = ReverseHexString(tx)
 	}
 
 	return hashes

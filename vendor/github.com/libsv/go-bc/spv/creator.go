@@ -3,9 +3,10 @@ package spv
 import (
 	"context"
 
-	"github.com/libsv/go-bc"
 	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
+
+	"github.com/libsv/go-bc"
 )
 
 // An EnvelopeCreator is an interface used to build the spv.Envelope data type for

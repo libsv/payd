@@ -69,17 +69,17 @@ func (mp *MerkleProof) ToBytes() ([]byte, error) {
 	var txLength []byte
 	if len(mp.TxOrID) > 64 { // tx bytes instead of txid
 		// set bit at index 0
-		flags |= (1 << 0)
+		flags |= 1 << 0
 
 		txLength = bt.VarInt(uint64(len(txOrID)))
 	}
 
 	if mp.TargetType == "header" {
 		// set bit at index 1
-		flags |= (1 << 1)
+		flags |= 1 << 1
 	} else if mp.TargetType == "merkleRoot" {
 		// set bit at index 2
-		flags |= (1 << 2)
+		flags |= 1 << 2
 	}
 
 	// ignore proofType and compositeType for this version
