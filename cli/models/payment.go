@@ -51,18 +51,20 @@ type MerchantData struct {
 
 // PaymentRequest a payment request.
 type PaymentRequest struct {
-	Network string `json:"network" yaml:"network"`
-	Outputs []struct {
-		Amount      uint64 `json:"amount" yaml:"amount"`
-		Script      string `json:"script" yaml:"script"`
-		Description string `json:"description" yaml:"description"`
-	} `json:"outputs" yaml:"outputs"`
+	Network      string `json:"network" yaml:"network"`
+	Destinations struct {
+		Outputs []struct {
+			Amount      uint64 `json:"amount" yaml:"amount"`
+			Script      string `json:"script" yaml:"script"`
+			Description string `json:"description" yaml:"description"`
+		} `json:"outputs" yaml:"outputs"`
+	} `json:"destinations" yaml:"destinations"`
 	CreatedAt    time.Time    `json:"creationTimestamp" yaml:"createdAt"`
 	ExpiresAt    time.Time    `json:"expirationTimestamp" yaml:"expiresAt"`
 	PaymentURL   string       `json:"paymentURL" yaml:"paymentURL"`
 	Memo         string       `json:"memo" yaml:"memo"`
 	MerchantData MerchantData `json:"merchantData" yaml:"merchantData"`
-	Fee          *bt.FeeQuote `json:"fee" yaml:"fee"`
+	Fee          *bt.FeeQuote `json:"fees" yaml:"fees"`
 }
 
 // PaymentCallback a payment callback from mapi.
@@ -105,7 +107,7 @@ func (p PaymentRequest) Row() []string {
 		p.MerchantData.Name,
 		p.PaymentURL,
 		p.CreatedAt.String(),
-		strconv.FormatInt(int64(len(p.Outputs)), 10),
+		strconv.FormatInt(int64(len(p.Destinations.Outputs)), 10),
 	}
 }
 

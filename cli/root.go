@@ -69,6 +69,8 @@ func initConfig() {
 	_, err = os.Stat(path.Join(home, ".payctl.yml"))
 	createConfig := err != nil && os.IsNotExist(err)
 
+	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal(err)
 	}
