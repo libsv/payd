@@ -182,9 +182,9 @@ func (s *Script) AppendPushDataArray(d [][]byte) error {
 
 // AppendPushDataStrings takes an array of strings and appends their
 // UTF-8 encoding to the script with proper PUSHDATA prefixes
-func (s *Script) AppendPushDataStrings(strs []string) error {
+func (s *Script) AppendPushDataStrings(pushDataStrings []string) error {
 	dataBytes := make([][]byte, 0)
-	for _, str := range strs {
+	for _, str := range pushDataStrings {
 		strBytes := []byte(str)
 		dataBytes = append(dataBytes, strBytes)
 	}
@@ -270,8 +270,8 @@ func (s *Script) IsP2SH() bool {
 func (s *Script) IsData() bool {
 	b := []byte(*s)
 
-	return b[0] == OpRETURN ||
-		b[0] == OpFALSE && b[1] == OpRETURN
+	return (len(b) > 0 && b[0] == OpRETURN) ||
+		(len(b) > 1 && b[0] == OpFALSE && b[1] == OpRETURN)
 }
 
 // IsMultiSigOut returns true if this is a multisig output script.
@@ -323,6 +323,9 @@ func (s *Script) PublicKeyHash() ([]byte, error) {
 
 // ScriptType returns the type of script this is as a string.
 func (s *Script) ScriptType() string {
+	if len(*s) == 0 {
+		return ScriptTypeNonStandard
+	}
 	if s.IsP2PKH() {
 		return ScriptTypePubKeyHash
 	}

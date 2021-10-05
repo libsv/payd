@@ -13,7 +13,7 @@ require (
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/labstack/gommon v0.3.0
 	github.com/libsv/go-bk v0.1.4
-	github.com/libsv/go-bt/v2 v2.0.0-beta.7
+	github.com/libsv/go-bt/v2 v2.0.0-beta.8
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/pkg/errors v0.9.1
