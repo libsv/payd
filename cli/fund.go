@@ -51,7 +51,7 @@ func fund(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	rt := regtest.NewRegtest(&http.Client{})
+	rt := regtest.NewRegtest(&http.Client{}, cfg.Regtest)
 	spvb, err := spv.NewEnvelopeCreator(service.NewTxService(rt), service.NewMerkleProofStore(rt))
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func fund(cmd *cobra.Command, args []string) error {
 }
 
 func autoFund(cmd *cobra.Command, args []string) error {
-	rt := regtest.NewRegtest(&http.Client{})
+	rt := regtest.NewRegtest(&http.Client{}, cfg.Regtest)
 	invSvc := service.NewInvoiceService(chttp.NewInvoiceAPI(&http.Client{}, cfg.Payd))
 	paySvc := service.NewPaymentService(chttp.NewPaymentAPI(&http.Client{}), nil)
 

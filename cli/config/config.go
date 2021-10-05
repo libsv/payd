@@ -20,6 +20,8 @@ const (
 	CfgP4Host         ContextKey = "p4.host"
 	CfgP4Port         ContextKey = "p4.port"
 	CfgAccountName    ContextKey = "account.name"
+
+	CfgRegtestHost = "regtest.host"
 )
 
 // Key returns the viper key for the current context.
@@ -37,6 +39,7 @@ type Config struct {
 	CurrentContext string
 	*Context
 	Contexts map[string]*Context
+	Regtest  *Regtest
 }
 
 // Context holds contextual configuration.
@@ -160,4 +163,19 @@ func (c *Config) LoadContext(name string) bool {
 	c.CurrentContext = name
 	c.Context = c.Contexts[name]
 	return true
+}
+
+// Regtest holds the regtest settings.
+type Regtest struct {
+	Host string
+}
+
+// WithRegtest initialises regtest.
+func (c *Config) WithRegtest() *Config {
+	viper.SetDefault(CfgRegtestHost, "http://node1:18332")
+	c.Regtest = &Regtest{
+		Host: viper.GetString(CfgRegtestHost),
+	}
+
+	return c
 }

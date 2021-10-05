@@ -34,7 +34,7 @@ func init() {
 
 func envelopeCreate(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
-	rt := regtest.NewRegtest(&http.Client{})
+	rt := regtest.NewRegtest(&http.Client{}, cfg.Regtest)
 	txSvc := service.NewTxService(rt)
 	mpSvc := service.NewMerkleProofStore(rt)
 	spvEnvelopeBuilder, err := spv.NewEnvelopeCreator(txSvc, mpSvc)

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
-	"github.com/labstack/gommon/log"
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/libsv/payd/cli/config"
@@ -70,15 +70,15 @@ func initConfig() {
 	createConfig := err != nil && os.IsNotExist(err)
 
 	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(err)
-	}
+	_ = viper.ReadInConfig()
 
 	cfg = config.NewConfig().
 		WithPayd().
 		WithP4().
 		WithAccount().
+		WithRegtest().
 		WithContexts()
 
 	if createConfig {

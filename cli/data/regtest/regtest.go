@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/libsv/payd/cli/config"
 	"github.com/libsv/payd/cli/models"
 	"github.com/pkg/errors"
 )
@@ -28,13 +29,15 @@ const (
 )
 
 type regtest struct {
-	c *http.Client
+	c   *http.Client
+	cfg *config.Regtest
 }
 
 // NewRegtest returns a new regtest.
-func NewRegtest(c *http.Client) models.Regtest {
+func NewRegtest(c *http.Client, cfg *config.Regtest) models.Regtest {
 	return &regtest{
-		c: c,
+		c:   c,
+		cfg: cfg,
 	}
 }
 
@@ -153,7 +156,7 @@ func (r *regtest) performRPC(ctx context.Context, method string, out interface{}
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		"http://localhost:18332",
+		r.cfg.Host,
 		bytes.NewReader(data),
 	)
 	if err != nil {

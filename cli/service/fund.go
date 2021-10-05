@@ -28,7 +28,7 @@ func NewFundService(rt models.Regtest, ps models.PaymentStore, sec spv.EnvelopeC
 // Fund a wallet with a given amount of satoshis.
 func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.PaymentACK, error) {
 	tx := bt.NewTx()
-	for _, o := range payReq.Outputs {
+	for _, o := range payReq.Destinations.Outputs {
 		s, err := bscript.NewFromHexString(o.Script)
 		if err != nil {
 			return nil, err
@@ -112,7 +112,7 @@ func (f *fund) Fund(ctx context.Context, payReq models.PaymentRequest) (*models.
 
 func (f *fund) FundedTx(ctx context.Context, payReq models.PaymentRequest) (*bt.Tx, error) {
 	tx := bt.NewTx()
-	for _, o := range payReq.Outputs {
+	for _, o := range payReq.Destinations.Outputs {
 		s, err := bscript.NewFromHexString(o.Script)
 		if err != nil {
 			return nil, err

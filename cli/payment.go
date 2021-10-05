@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
@@ -108,8 +109,8 @@ func paymentRequest(cmd *cobra.Command, args []string) error {
 
 func paymentBuild(cmd *cobra.Command, args []string) error {
 	var rdr io.Reader = os.Stdin
-	if requestJSON != "" {
-		rdr = bytes.NewBufferString(requestJSON)
+	if len(args) > 0 && args[0] != "" {
+		rdr = bytes.NewBufferString(strings.Join(args, ""))
 	}
 
 	var payReq models.PaymentRequest
@@ -141,7 +142,7 @@ func paymentBuild(cmd *cobra.Command, args []string) error {
 		})
 	}
 
-	rt := regtest.NewRegtest(&http.Client{})
+	rt := regtest.NewRegtest(&http.Client{}, cfg.Regtest)
 	spvb, err := spv.NewEnvelopeCreator(service.NewTxService(rt), service.NewMerkleProofStore(rt))
 	if err != nil {
 		return err
@@ -168,8 +169,8 @@ func paymentBuild(cmd *cobra.Command, args []string) error {
 
 func paymentSend(cmd *cobra.Command, args []string) error {
 	var rdr io.Reader = os.Stdin
-	if requestJSON != "" {
-		rdr = bytes.NewBufferString(requestJSON)
+	if len(args) > 0 && args[0] != "" {
+		rdr = bytes.NewBufferString(strings.Join(args, ""))
 	}
 
 	var paySend models.PaymentSendArgs
