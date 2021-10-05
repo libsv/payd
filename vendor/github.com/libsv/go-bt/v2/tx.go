@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/libsv/go-bk/crypto"
+
 	"github.com/libsv/go-bt/v2/bscript"
 )
 
@@ -36,6 +37,8 @@ lock_time        if non-zero and sequence numbers are < 0xFFFFFFFF: block height
 
 // Sentinel errors for transactions.
 var (
+
+	// ErrInvalidTxID is used for an invalid txID
 	ErrInvalidTxID = errors.New("invalid TxID")
 )
 
@@ -51,14 +54,14 @@ type Tx struct {
 }
 
 type txJSON struct {
-	Version  uint32    `json:"version"`
-	LockTime uint32    `json:"locktime"`
-	TxID     string    `json:"txid"`
-	Hash     string    `json:"hash"`
-	Size     int       `json:"size"`
-	Hex      string    `json:"hex"`
-	Inputs   []*Input  `json:"vin"`
-	Outputs  []*Output `json:"vout"`
+	Version  uint32        `json:"version"`
+	LockTime uint32        `json:"locktime"`
+	TxID     string        `json:"txid"`
+	Hash     string        `json:"hash"`
+	Size     int           `json:"size"`
+	Hex      string        `json:"hex"`
+	Inputs   []*Input      `json:"vin"`
+	Outputs  []*outputJSON `json:"vout"`
 }
 
 // MarshalJSON will serialise a transaction to json.
@@ -66,14 +69,20 @@ func (tx *Tx) MarshalJSON() ([]byte, error) {
 	if tx == nil {
 		return nil, errors.New("tx is nil so cannot be marshalled")
 	}
+	oo := make([]*outputJSON, 0, len(tx.Outputs))
 	for i, o := range tx.Outputs {
-		o.index = i
+		out, err := o.toJSON()
+		if err != nil {
+			return nil, err
+		}
+		out.Index = i
+		oo = append(oo, out)
 	}
 	txj := txJSON{
 		Version:  tx.Version,
 		LockTime: tx.LockTime,
 		Inputs:   tx.Inputs,
-		Outputs:  tx.Outputs,
+		Outputs:  oo,
 		TxID:     tx.TxID(),
 		Hash:     tx.TxID(),
 		Size:     len(tx.Bytes()),
@@ -97,8 +106,16 @@ func (tx *Tx) UnmarshalJSON(b []byte) error {
 		*tx = *t
 		return nil
 	}
+	oo := make([]*Output, 0, len(txj.Outputs))
+	for _, o := range txj.Outputs {
+		out, err := o.toOutput()
+		if err != nil {
+			return err
+		}
+		oo = append(oo, out)
+	}
 	tx.Inputs = txj.Inputs
-	tx.Outputs = txj.Outputs
+	tx.Outputs = oo
 	tx.LockTime = txj.LockTime
 	tx.Version = txj.Version
 	return nil
@@ -106,7 +123,7 @@ func (tx *Tx) UnmarshalJSON(b []byte) error {
 
 // NewTx creates a new transaction object with default values.
 func NewTx() *Tx {
-	return &Tx{Version: 1, LockTime: 0}
+	return &Tx{Version: 1, LockTime: 0, Inputs: make([]*Input, 0)}
 }
 
 // NewTxFromString takes a toBytesHelper string representation of a bitcoin transaction
@@ -139,7 +156,6 @@ func NewTxFromBytes(b []byte) (*Tx, error) {
 // Despite the name, this is not actually reading a stream in the true sense: it is a byte slice that contains
 // many transactions one after another.
 func NewTxFromStream(b []byte) (*Tx, int, error) {
-
 	if len(b) < 10 {
 		return nil, 0, fmt.Errorf("too short to be a tx - even an empty tx has 10 bytes")
 	}
@@ -176,7 +192,6 @@ func NewTxFromStream(b []byte) (*Tx, int, error) {
 		if err != nil {
 			return nil, 0, err
 		}
-		output.index = int(i)
 		offset += size
 		t.AddOutput(output)
 	}
