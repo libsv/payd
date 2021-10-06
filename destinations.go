@@ -34,6 +34,7 @@ type DestinationCreate struct {
 // required to construct a transaction.
 type Destination struct {
 	SPVRequired bool         `json:"spvRequired"`
+	Network     string       `json:"network"`
 	Outputs     []Output     `json:"outputs"`
 	Fees        *bt.FeeQuote `json:"fees"`
 }

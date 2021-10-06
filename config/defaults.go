@@ -21,6 +21,7 @@ func SetupDefaults() {
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
+	viper.SetDefault(EnvBicoinNetwork, NetworkRegtest)
 
 	// logging
 	viper.SetDefault(EnvLogLevel, "info")
