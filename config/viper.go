@@ -31,6 +31,7 @@ func (c *Config) WithDeployment(appName string) *Config {
 		Region:      viper.GetString(EnvRegion),
 		Version:     viper.GetString(EnvVersion),
 		Commit:      viper.GetString(EnvCommit),
+		Network:     NetworkType(viper.GetString(EnvBicoinNetwork)),
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
 	}
