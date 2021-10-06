@@ -37,7 +37,7 @@ func ErrorHandler(err error, c echo.Context) {
 		internalErr := errs.NewErrInternal(err, nil)
 		log.Error(internalErr)
 
-		c.JSON(http.StatusInternalServerError, errResp{
+		_ = c.JSON(http.StatusInternalServerError, errResp{
 			ID:      internalErr.ID(),
 			Title:   "Internal Server Error",
 			Code:    "500",
