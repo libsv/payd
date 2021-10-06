@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -26,20 +25,29 @@ func ErrorHandler(err error, c echo.Context) {
 		return
 	}
 
-	// Internal error, log it to a system and return small detail
-	if !lathos.IsClientError(err) {
-		log.Error(errs.NewErrInternal(err, nil))
-		_ = c.String(http.StatusInternalServerError, fmt.Sprintf("%+v", err))
-		return
-	}
-	var clientErr lathos.ClientError
-	errors.As(err, &clientErr)
-	resp := struct {
+	type errResp struct {
 		ID      string `json:"id"`
 		Code    string `json:"code"`
 		Title   string `json:"title"`
 		Message string `json:"message"`
-	}{
+	}
+
+	// Internal error, log it to a system and convert the error to an internal err.
+	if !lathos.IsClientError(err) {
+		internalErr := errs.NewErrInternal(err, nil)
+		log.Error(internalErr)
+
+		c.JSON(http.StatusInternalServerError, errResp{
+			ID:      internalErr.ID(),
+			Title:   "Internal Server Error",
+			Code:    "500",
+			Message: internalErr.Message(),
+		})
+		return
+	}
+	var clientErr lathos.ClientError
+	errors.As(err, &clientErr)
+	resp := errResp{
 		ID:      clientErr.ID(),
 		Code:    clientErr.Code(),
 		Title:   clientErr.Title(),

@@ -601,6 +601,8 @@ github.com/theflyingcodr/govalidator v0.0.2 h1:ahGtcJIwDVN9VdWRMbNPbiKnlikX4gC2P
 github.com/theflyingcodr/govalidator v0.0.2/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
 github.com/theflyingcodr/lathos v0.0.4 h1:YVHIsHLdCMrVyCqkZpBUQL2WekR1iuz8xpz101ZUWAk=
 github.com/theflyingcodr/lathos v0.0.4/go.mod h1:68tGFEbAqAzydWDb1KEJZPQY57l3hH32GXO11Hf1zGQ=
+github.com/theflyingcodr/lathos v0.0.5 h1:XmJvKBjzBdJWXsrtkkzl1XuWEzNMdJ1pKOozR91OrgY=
+github.com/theflyingcodr/lathos v0.0.5/go.mod h1:68tGFEbAqAzydWDb1KEJZPQY57l3hH32GXO11Hf1zGQ=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e h1:gfOQ8DVRKwc97bXeR6I6ogosWhFi4mredpUtZcx/gvg=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod h1:g9qbiDvB47WyrRnNu2t2gMZFNHKnatsYRxsGZbCi4EM=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
