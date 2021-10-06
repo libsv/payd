@@ -2,6 +2,7 @@ package payd
 
 import (
 	"context"
+	"time"
 
 	"github.com/libsv/go-bt/v2"
 	validator "github.com/theflyingcodr/govalidator"
@@ -36,6 +37,8 @@ type Destination struct {
 	SPVRequired bool         `json:"spvRequired"`
 	Outputs     []Output     `json:"outputs"`
 	Fees        *bt.FeeQuote `json:"fees"`
+	CreatedAt   time.Time    `json:"createdAt"`
+	ExpiresAt   time.Time    `json:"expiresAt"`
 }
 
 // Output contains a single locking script

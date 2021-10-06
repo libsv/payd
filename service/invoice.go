@@ -94,9 +94,11 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if req.Satoshis <= 1000 {
 		req.SPVRequired = false
 	}
+	timestamp := time.Now().UTC()
+	req.CreatedAt = timestamp
 	if req.ExpiresAt.IsZero() {
 		// set to default expiry hours
-		req.ExpiresAt = null.TimeFrom(time.Now().Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
+		req.ExpiresAt = null.TimeFrom(timestamp.Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
 	}
 	inv, err := i.store.InvoiceCreate(ctx, req)
 	if err != nil {
