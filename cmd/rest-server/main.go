@@ -127,7 +127,7 @@ func main() {
 
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
+	destSvc := service.NewDestinationsService(cfg.Deployment, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{})).

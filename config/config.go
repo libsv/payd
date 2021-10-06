@@ -19,6 +19,7 @@ const (
 	EnvVersion              = "env.version"
 	EnvCommit               = "env.commit"
 	EnvBuildDate            = "env.builddate"
+	EnvBicoinNetwork        = "env.bitcoin.network"
 	EnvLogLevel             = "log.level"
 	EnvDb                   = "db.type"
 	EnvDbSchema             = "db.schema.path"
@@ -40,6 +41,17 @@ const (
 	LogWarn  = "warn"
 )
 
+// NetworkType is used to restrict the networks we can support.
+type NetworkType string
+
+// Supported bitcoin network types.
+const (
+	NetworkRegtest NetworkType = "regtest"
+	NetworkSTN     NetworkType = "stn"
+	NetworkTestnet NetworkType = "testnet"
+	NetworkMainet  NetworkType = "mainnet"
+)
+
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
 
 // DbType is used to restrict the dbs we can support.
@@ -51,6 +63,8 @@ const (
 	DBMySQL    DbType = "mysql"
 	DBPostgres DbType = "postgres"
 )
+
+var reNetworks = regexp.MustCompile(`^(regtest|stn|testnet|mainnet)$`)
 
 // Config returns strongly typed config values.
 type Config struct {
@@ -70,6 +84,9 @@ func (c *Config) Validate() error {
 	if c.Db != nil {
 		vl = vl.Validate("db.type", validator.MatchString(string(c.Db.Type), reDbType))
 	}
+	if c.Deployment != nil {
+		vl = vl.Validate("deployment.network", validator.MatchString(string(c.Deployment.Network), reNetworks))
+	}
 	return vl.Err()
 }
 
@@ -81,6 +98,7 @@ type Deployment struct {
 	Region      string
 	Version     string
 	Commit      string
+	Network     NetworkType
 	BuildDate   time.Time
 }
 

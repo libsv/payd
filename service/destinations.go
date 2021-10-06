@@ -8,6 +8,7 @@ import (
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -20,6 +21,7 @@ const (
 )
 
 type destinations struct {
+	deployCfg  *config.Deployment
 	privKeySvc payd.PrivateKeyService
 	destRdrWtr payd.DestinationsReaderWriter
 	derivRdr   payd.DerivationReader
@@ -28,8 +30,9 @@ type destinations struct {
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader) *destinations {
+func NewDestinationsService(deployCfg *config.Deployment, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader) *destinations {
 	return &destinations{
+		deployCfg:  deployCfg,
 		privKeySvc: privKeySvc,
 		destRdrWtr: destRdrWtr,
 		derivRdr:   derivRdr,
@@ -150,6 +153,7 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 		return nil, errors.WithStack(err)
 	}
 	return &payd.Destination{
+		Network:     string(d.deployCfg.Network),
 		SPVRequired: invoice.SPVRequired,
 		Outputs:     outputs,
 		Fees:        fees,
