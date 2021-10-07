@@ -15,7 +15,7 @@ import (
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/data/http"
 	"github.com/pkg/errors"
-	validator "github.com/theflyingcodr/govalidator"
+	"github.com/theflyingcodr/lathos/errs"
 )
 
 type pay struct {
@@ -168,9 +168,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 		return txos, nil
 	}); err != nil {
 		if ok := errors.Is(err, bt.ErrInsufficientFunds); ok {
-			return nil, validator.ErrValidation{
-				"account": []string{bt.ErrInsufficientFunds.Error()},
-			}
+			return nil, errs.NewErrUnprocessable("F001", bt.ErrInsufficientFunds.Error())
 		}
 		return nil, errors.Wrapf(err, "failed to fund tx for payment %s", req.PayToURL)
 	}
