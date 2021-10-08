@@ -157,6 +157,8 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 		SPVRequired: invoice.SPVRequired,
 		Outputs:     outputs,
 		Fees:        fees,
+		CreatedAt:   invoice.CreatedAt,
+		ExpiresAt:   invoice.ExpiresAt.ValueOrZero(),
 	}, nil
 }
 

@@ -71,6 +71,8 @@ type InvoiceCreate struct {
 	// like 'invoice for oranges'.
 	// MaxLength is 1024 characters.
 	Description null.String `json:"description" db:"description"`
+	// CreatedAt is the timestamp when the invoice was created.
+	CreatedAt time.Time `json:"-" db:"created_at"`
 	// ExpiresAt is an optional param that can be passed to set an expiration
 	// date on an invoice, after which, payments will not be accepted.
 	ExpiresAt null.Time `json:"expiresAt" db:"expires_at"`
