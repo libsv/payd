@@ -182,7 +182,7 @@ var doc = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "204": {
                         "description": ""
                     },
                     "404": {
@@ -241,7 +241,7 @@ var doc = `{
                     }
                 ],
                 "responses": {
-                    "204": {
+                    "201": {
                         "description": ""
                     }
                 }
@@ -348,18 +348,6 @@ var doc = `{
                 }
             }
         },
-        "null.String": {
-            "type": "object",
-            "properties": {
-                "string": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if String is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
         "payd.ClientError": {
             "type": "object",
             "properties": {
@@ -386,7 +374,7 @@ var doc = `{
             "properties": {
                 "description": {
                     "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
-                    "$ref": "#/definitions/null.String"
+                    "type": "string"
                 },
                 "expiresAt": {
                     "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
@@ -394,7 +382,7 @@ var doc = `{
                 },
                 "reference": {
                     "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
-                    "$ref": "#/definitions/null.String"
+                    "type": "string"
                 },
                 "satoshis": {
                     "description": "Satoshis is the total amount this invoice is to pay.",

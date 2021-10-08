@@ -66,11 +66,11 @@ type InvoiceCreate struct {
 	// Reference is an identifier that can be used to link the
 	// payd invoice with an external system.
 	// MaxLength is 32 characters.
-	Reference null.String `json:"reference" db:"payment_reference"`
+	Reference null.String `json:"reference" db:"payment_reference" swaggertype:"primitive,string"`
 	// Description is an optional text field that can have some further info
 	// like 'invoice for oranges'.
 	// MaxLength is 1024 characters.
-	Description null.String `json:"description" db:"description"`
+	Description null.String `json:"description" db:"description" swaggertype:"primitive,string"`
 	// CreatedAt is the timestamp when the invoice was created.
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	// ExpiresAt is an optional param that can be passed to set an expiration

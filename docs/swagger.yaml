@@ -13,14 +13,6 @@ definitions:
       signature:
         type: string
     type: object
-  null.String:
-    properties:
-      string:
-        type: string
-      valid:
-        description: Valid is true if String is not NULL
-        type: boolean
-    type: object
   payd.ClientError:
     properties:
       code:
@@ -39,22 +31,22 @@ definitions:
   payd.InvoiceCreate:
     properties:
       description:
-        $ref: '#/definitions/null.String'
         description: |-
           Description is an optional text field that can have some further info
           like 'invoice for oranges'.
           MaxLength is 1024 characters.
+        type: string
       expiresAt:
         description: |-
           ExpiresAt is an optional param that can be passed to set an expiration
           date on an invoice, after which, payments will not be accepted.
         type: string
       reference:
-        $ref: '#/definitions/null.String'
         description: |-
           Reference is an identifier that can be used to link the
           payd invoice with an external system.
           MaxLength is 32 characters.
+        type: string
       satoshis:
         description: Satoshis is the total amount this invoice is to pay.
         type: integer
@@ -179,7 +171,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "204":
           description: ""
         "404":
           description: returned if the paymentID has not been found
@@ -235,7 +227,7 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
+        "201":
           description: ""
       summary: Make a payment
       tags:
