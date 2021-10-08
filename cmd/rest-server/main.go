@@ -95,7 +95,6 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.RequestID())
-	e.Use(paydMiddleware.DebugDumpBody(log.DEBUG))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
@@ -127,7 +126,7 @@ func main() {
 
 	// setup services
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
+	destSvc := service.NewDestinationsService(cfg.Deployment, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 
 	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
