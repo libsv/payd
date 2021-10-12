@@ -35,7 +35,7 @@ func (p *payment) Request(ctx context.Context, args models.PaymentRequestArgs) (
 		_ = resp.Body.Close()
 	}()
 
-	if err := checkError(resp, http.StatusCreated); err != nil {
+	if err := checkError(resp, http.StatusOK); err != nil {
 		return nil, err
 	}
 
