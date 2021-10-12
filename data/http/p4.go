@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/libsv/payd"
+	"github.com/theflyingcodr/lathos/errs"
 )
 
 type p4 struct {
@@ -25,20 +26,20 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 	if err != nil {
 		return nil, err
 	}
-	res, err := p.c.Do(req)
+	resp, err := p.c.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer func() {
-		_ = res.Body.Close()
+		_ = resp.Body.Close()
 	}()
 
-	if res.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code %d", res.StatusCode)
+	if resp.StatusCode != http.StatusCreated {
+		return nil, p.handleErr(ctx, resp)
 	}
 
 	var payRec payd.PaymentRequestResponse
-	if err = json.NewDecoder(res.Body).Decode(&payRec); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&payRec); err != nil {
 		return nil, err
 	}
 
@@ -66,7 +67,7 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 	}()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+		return nil, p.handleErr(ctx, resp)
 	}
 
 	var ack payd.PaymentACK
@@ -75,4 +76,32 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 	}
 
 	return &ack, nil
+}
+
+func (p *p4) handleErr(ctx context.Context, resp *http.Response) error {
+	errResp := &struct {
+		ID      string `json:"id"`
+		Code    string `json:"code"`
+		Title   string `json:"title"`
+		Message string `json:"message"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
+		return err
+	}
+
+	switch resp.StatusCode {
+	case http.StatusUnauthorized:
+		return errs.NewErrNotAuthenticated(errResp.Code, errResp.Message)
+	case http.StatusForbidden:
+		return errs.NewErrNotAuthorised(errResp.Code, errResp.Message)
+	case http.StatusNotFound:
+		return errs.NewErrNotFound(errResp.Code, errResp.Message)
+	case http.StatusConflict:
+		return errs.NewErrDuplicate(errResp.Code, errResp.Message)
+	case http.StatusUnprocessableEntity:
+		return errs.NewErrUnprocessable(errResp.Code, errResp.Message)
+	}
+
+	return errs.NewErrInternal(errors.New(errResp.Message), nil)
 }
