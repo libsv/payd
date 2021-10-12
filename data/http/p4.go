@@ -35,7 +35,7 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 	}()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, p.handleErr(ctx, resp)
+		return nil, p.handleErr(resp)
 	}
 
 	var payRec payd.PaymentRequestResponse
@@ -67,7 +67,7 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 	}()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, p.handleErr(ctx, resp)
+		return nil, p.handleErr(resp)
 	}
 
 	var ack payd.PaymentACK
@@ -78,7 +78,7 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 	return &ack, nil
 }
 
-func (p *p4) handleErr(ctx context.Context, resp *http.Response) error {
+func (p *p4) handleErr(resp *http.Response) error {
 	errResp := &struct {
 		ID      string `json:"id"`
 		Code    string `json:"code"`
