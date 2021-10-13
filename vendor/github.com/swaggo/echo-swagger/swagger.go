@@ -3,11 +3,12 @@ package echoSwagger
 import (
 	"html/template"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"sync"
 
 	"github.com/labstack/echo/v4"
-	"github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 
@@ -55,7 +56,7 @@ var WrapHandler = EchoWrapHandler()
 func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 	var once sync.Once
 
-	handler := swaggerFiles.Handler
+	h := swaggerFiles.Handler
 
 	config := &Config{
 		URL:          "doc.json",
@@ -72,19 +73,33 @@ func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(indexTemplate)
 
-	var re = regexp.MustCompile(`(.*)(index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[?|.]*`)
+	var re = regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
 
 	return func(c echo.Context) error {
-		var matches []string
-		if matches = re.FindStringSubmatch(c.Request().RequestURI); len(matches) != 3 {
-			return c.String(http.StatusNotFound, "404 page not found")
-		}
+		matches := re.FindStringSubmatch(c.Request().RequestURI)
 		path := matches[2]
+
 		once.Do(func() {
-			handler.Prefix = matches[1]
+			h.Prefix = matches[1]
 		})
 
+		switch filepath.Ext(path) {
+		case ".html":
+			c.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
+		case ".css":
+			c.Response().Header().Set("Content-Type", "text/css; charset=utf-8")
+		case ".js":
+			c.Response().Header().Set("Content-Type", "application/javascript")
+		case ".json":
+			c.Response().Header().Set("Content-Type", "application/json; charset=utf-8")
+		case ".png":
+			c.Response().Header().Set("Content-Type", "image/png")
+		}
+
+		defer c.Response().Flush()
 		switch path {
+		case "":
+			c.Redirect(301, h.Prefix+"index.html")
 		case "index.html":
 			_ = index.Execute(c.Response().Writer, config)
 		case "doc.json":
@@ -95,10 +110,9 @@ func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 				return nil
 			}
 
-			c.Response().Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 			_, _ = c.Response().Writer.Write([]byte(doc))
 		default:
-			handler.ServeHTTP(c.Response().Writer, c.Request())
+			h.ServeHTTP(c.Response().Writer, c.Request())
 		}
 
 		return nil

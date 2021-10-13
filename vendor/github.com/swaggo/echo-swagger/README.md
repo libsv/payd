@@ -2,9 +2,10 @@
 
 echo middleware to automatically generate RESTful API documentation with Swagger 2.0.
 
-[![Travis branch](https://img.shields.io/travis/swaggo/echo-swagger/master.svg)](https://travis-ci.com/swaggo/echo-swagger)
+[![Build Status](https://github.com/swaggo/echo-swagger/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/features/actions)
 [![Codecov branch](https://img.shields.io/codecov/c/github/swaggo/echo-swagger/master.svg)](https://codecov.io/gh/swaggo/echo-swagger)
 [![Go Report Card](https://goreportcard.com/badge/github.com/swaggo/echo-swagger)](https://goreportcard.com/report/github.com/swaggo/echo-swagger)
+[![Release](https://img.shields.io/github/release/swaggo/echo-swagger.svg?style=flat-square)](https://github.com/swaggo/echo-swagger/releases)
 
 
 ## Usage
@@ -69,3 +70,17 @@ func main() {
 
 ![swagger_index.html](https://user-images.githubusercontent.com/8943871/36250587-40834072-1279-11e8-8bb7-02a2e2fdd7a7.png)
 
+Note: If you are using Gzip middleware you should add the swagger endpoint to skipper
+
+### Example
+
+```
+e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Skipper: func(c echo.Context) bool {
+			if strings.Contains(c.Request().URL.Path, "swagger") {
+				return true
+			}
+			return false
+		},
+	}))
+```
