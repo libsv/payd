@@ -33,7 +33,7 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 		_ = res.Body.Close()
 	}()
 
-	if res.StatusCode != http.StatusCreated {
+	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
 
