@@ -31,7 +31,7 @@ func (m *minercraftMapi) Broadcast(ctx context.Context, tx *bt.Tx) error {
 		&minercraft.Transaction{
 			RawTx:              tx.String(),
 			CallBackURL:        "http://" + m.svrCfg.Hostname + "/api/v1/proofs/" + tx.TxID(),
-			CallBackToken:      "",
+			CallBackToken:      m.cfg.Token,
 			MerkleFormat:       "TSC",
 			CallBackEncryption: "",
 			MerkleProof:        true,
