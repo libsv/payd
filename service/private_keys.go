@@ -63,7 +63,7 @@ func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*bip32.E
 		return nil, errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}
 	if key == nil {
-		return nil, errors.Wrap(err, "key not found")
+		return nil, errors.New("key not found")
 	}
 
 	xKey, err := bip32.NewKeyFromString(key.Xprv)

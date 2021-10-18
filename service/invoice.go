@@ -28,6 +28,7 @@ type destinationCreator interface {
 // This invoicing system is separate to the protocol server itself but added here
 // as a very basic example.
 type invoice struct {
+	timeSvc    payd.TimestampService
 	store      payd.InvoiceReaderWriter
 	destSvc    destinationCreator
 	cfg        *config.Server
@@ -36,13 +37,14 @@ type invoice struct {
 }
 
 // NewInvoice will setup and return a new invoice service.
-func NewInvoice(cfg *config.Server, wallCfg *config.Wallet, store payd.InvoiceReaderWriter, destSvc destinationCreator, transacter payd.Transacter) *invoice {
+func NewInvoice(cfg *config.Server, wallCfg *config.Wallet, store payd.InvoiceReaderWriter, destSvc destinationCreator, transacter payd.Transacter, timeSvc payd.TimestampService) *invoice {
 	return &invoice{
 		cfg:        cfg,
 		wallCfg:    wallCfg,
 		store:      store,
 		destSvc:    destSvc,
 		transacter: transacter,
+		timeSvc:    timeSvc,
 	}
 }
 
@@ -79,7 +81,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	id, err := h.Encode([]int{time.Now().Nanosecond()})
+	id, err := h.Encode([]int{i.timeSvc.Nanosecond()})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -94,7 +96,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if req.Satoshis <= 1000 {
 		req.SPVRequired = false
 	}
-	timestamp := time.Now().UTC()
+	timestamp := i.timeSvc.NowUTC()
 	req.CreatedAt = timestamp
 	if req.ExpiresAt.IsZero() {
 		// set to default expiry hours

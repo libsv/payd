@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/binary"
 
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
@@ -27,10 +25,11 @@ type destinations struct {
 	derivRdr   payd.DerivationReader
 	invRdr     payd.InvoiceReader
 	feeRdr     payd.FeeReader
+	seed       payd.SeedService
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(deployCfg *config.Deployment, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader) *destinations {
+func NewDestinationsService(deployCfg *config.Deployment, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader, seed payd.SeedService) *destinations {
 	return &destinations{
 		deployCfg:  deployCfg,
 		privKeySvc: privKeySvc,
@@ -38,6 +37,7 @@ func NewDestinationsService(deployCfg *config.Deployment, privKeySvc payd.Privat
 		derivRdr:   derivRdr,
 		invRdr:     invRdr,
 		feeRdr:     feeRdr,
+		seed:       seed,
 	}
 }
 
@@ -61,9 +61,9 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 		// TODO - run in a go routine when we start splitting
 		var path string
 		for { // attempt to create a unique derivation path
-			seed, err := randUint64()
+			seed, err := d.seed.Uint64()
 			if err != nil {
-				return nil, errors.New("failed to create seed for derivation path")
+				return nil, errors.Wrap(err, "failed to create seed for derivation path")
 			}
 			path = bip32.DerivePath(seed)
 			exists, err := d.derivRdr.DerivationPathExists(ctx, payd.DerivationExistsArgs{
@@ -144,7 +144,7 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 	g.Go(func() error {
 		f, err := d.feeRdr.Fees(ctx)
 		if err != nil {
-			return errors.Wrap(err, "failed to get fees when creating destinations")
+			return errors.Wrap(err, "failed to get fees when getting destinations")
 		}
 		fees = f
 		return nil
@@ -160,12 +160,4 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 		CreatedAt:   invoice.CreatedAt,
 		ExpiresAt:   invoice.ExpiresAt.ValueOrZero(),
 	}, nil
-}
-
-func randUint64() (uint64, error) {
-	var b [8]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return 0, err
-	}
-	return binary.LittleEndian.Uint64(b[:]), nil
 }

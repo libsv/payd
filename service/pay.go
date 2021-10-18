@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 
@@ -26,10 +24,11 @@ type pay struct {
 	pk      payd.PrivateKeyService
 	spvc    spv.EnvelopeCreator
 	svrCfg  *config.Server
+	seed    payd.SeedService
 }
 
 // NewPayService returns a pay service.
-func NewPayService(txoWtr payd.TxoWriter, txWtr payd.TransactionWriter, destWtr payd.DestinationsWriter, p4 http.P4, pk payd.PrivateKeyService, spvc spv.EnvelopeCreator, svrCfg *config.Server) payd.PayService {
+func NewPayService(txoWtr payd.TxoWriter, txWtr payd.TransactionWriter, destWtr payd.DestinationsWriter, p4 http.P4, pk payd.PrivateKeyService, spvc spv.EnvelopeCreator, svrCfg *config.Server, seed payd.SeedService) payd.PayService {
 	return &pay{
 		txoWtr:  txoWtr,
 		txWtr:   txWtr,
@@ -38,6 +37,7 @@ func NewPayService(txoWtr payd.TxoWriter, txWtr payd.TransactionWriter, destWtr 
 		pk:      pk,
 		spvc:    spvc,
 		svrCfg:  svrCfg,
+		seed:    seed,
 	}
 }
 
@@ -82,12 +82,11 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 		return nil, errors.Wrap(err, "failed to retrieve private key")
 	}
 
-	var b [8]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return nil, errors.Wrap(err, "failed to generate seed")
+	seed, err := p.seed.Uint64()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed for derivation path")
 	}
 
-	seed := binary.LittleEndian.Uint64(b[:])
 	derivationPath := bip32.DerivePath(seed)
 	pubKey, err := privKey.DerivePublicKeyFromPath(derivationPath)
 	if err != nil {

@@ -125,11 +125,12 @@ func main() {
 	}
 
 	// setup services
+	seedSvc := service.NewSeedService()
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(cfg.Deployment, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore)
+	destSvc := service.NewDestinationsService(cfg.Deployment, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 
-	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{})).
+	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())).
 		RegisterRoutes(g)
 	thttp.NewBalance(service.NewBalance(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
@@ -137,7 +138,7 @@ func main() {
 	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
 	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
 	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, sqlLiteStore, sqlLiteStore,
-		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), privKeySvc, spvc, cfg.Server)).RegisterRoutes(g)
+		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), privKeySvc, spvc, cfg.Server, seedSvc)).RegisterRoutes(g)
 
 	// create master private key if it doesn't exist
 	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
