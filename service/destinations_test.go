@@ -2,7 +2,6 @@ package service_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -91,7 +90,6 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			}(),
 			derivationPathExistsFunc: func(ctx context.Context, args payd.DerivationExistsArgs) (bool, error) {
 				n, err := bip32.DeriveNumber(args.Path)
-				fmt.Println(n)
 				return n < 2, err
 			},
 			destinationsCreateFunc: destinationsToOutputs,
