@@ -232,7 +232,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 
 	// Create a tx in the data store with the sent tx's information.
 	if err = p.txWtr.TransactionCreate(ctx, txCreate); err != nil {
-		return nil, errors.Wrap(err, "failed to created transaction for change output")
+		return nil, errors.Wrap(err, "failed to create transaction for change output")
 	}
 
 	// Mark the reserved utxos as spent.
