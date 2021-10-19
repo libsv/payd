@@ -152,7 +152,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			},
 			expErr: errors.New("failed to create seed for derivation path: no seed 4 u"),
 		},
-		"error on derivation path existance check is reported": {
+		"error on derivation path existence check is reported": {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,

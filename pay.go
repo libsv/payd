@@ -34,6 +34,7 @@ type P4Destination struct {
 	Outputs []P4Output `json:"outputs"`
 }
 
+// MerchantData p4 from a p4 server.
 type MerchantData struct {
 	Avatar           string            `json:"avatar"`
 	Name             string            `json:"name"`
