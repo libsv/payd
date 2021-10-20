@@ -34,6 +34,16 @@ type P4Destination struct {
 	Outputs []P4Output `json:"outputs"`
 }
 
+// MerchantData p4 from a p4 server.
+type MerchantData struct {
+	Avatar           string            `json:"avatar"`
+	Name             string            `json:"name"`
+	Email            string            `json:"email"`
+	Address          string            `json:"address"`
+	PaymentReference string            `json:"paymentReference"`
+	ExtendedData     map[string]string `json:"extendedData"`
+}
+
 // PaymentRequestResponse a payment request from p4.
 type PaymentRequestResponse struct {
 	Network             string        `json:"network"`
@@ -42,15 +52,8 @@ type PaymentRequestResponse struct {
 	ExpirationTimestamp time.Time     `json:"expirationTimestamp"`
 	PaymentURL          string        `json:"paymentURL"`
 	Memo                string        `json:"memo"`
-	MerchantData        struct {
-		Avatar           string            `json:"avatar"`
-		Name             string            `json:"name"`
-		Email            string            `json:"email"`
-		Address          string            `json:"address"`
-		PaymentReference string            `json:"paymentReference"`
-		ExtendedData     map[string]string `json:"extendedData"`
-	} `json:"merchantData"`
-	Fee *bt.FeeQuote `json:"fees"`
+	MerchantData        MerchantData  `json:"merchantData"`
+	Fee                 *bt.FeeQuote  `json:"fees"`
 }
 
 // PaymentACK an ack response from P4.

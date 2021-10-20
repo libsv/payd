@@ -90,6 +90,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	txos := make([]*payd.TxoCreate, 0)
 	// get total of outputs that we know about
 	txID := tx.TxID()
+	// TODO: simple dust limit check
 	for i, o := range tx.Outputs {
 		if output, ok := outputs[o.LockingScript.String()]; ok {
 			if o.Satoshis != output.Satoshis {
@@ -99,6 +100,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 					},
 				}
 			}
+
 			total += output.Satoshis
 			txos = append(txos, &payd.TxoCreate{
 				Outpoint:      fmt.Sprintf("%s%d", txID, i),
