@@ -35,6 +35,8 @@ const (
 	// SnakeCase indicates using SnakeCase strategy for struct field.
 	SnakeCase = "snakecase"
 
+	acceptAttr      = "@accept"
+	produceAttr     = "@produce"
 	scopeAttrPrefix = "@scope."
 )
 
@@ -300,10 +302,10 @@ func (parser *Parser) ParseGeneralAPIInfo(mainAPIFile string) error {
 	parser.swagger.Swagger = "2.0"
 
 	for _, comment := range fileTree.Comments {
-		if !isGeneralAPIComment(comment) {
+		comments := strings.Split(comment.Text(), "\n")
+		if !isGeneralAPIComment(comments) {
 			continue
 		}
-		comments := strings.Split(comment.Text(), "\n")
 		err := parseGeneralAPIInfo(parser, comments)
 		if err != nil {
 			return err
@@ -318,13 +320,13 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 
 	// parsing classic meta data model
 	for i, commentLine := range comments {
-		attribute := strings.ToLower(strings.Split(commentLine, " ")[0])
+		attribute := strings.Split(commentLine, " ")[0]
 		value := strings.TrimSpace(commentLine[len(attribute):])
 		multilineBlock := false
 		if previousAttribute == attribute {
 			multilineBlock = true
 		}
-		switch attribute {
+		switch strings.ToLower(attribute) {
 		case "@version":
 			parser.swagger.Info.Version = value
 		case "@title":
@@ -360,6 +362,16 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 			parser.swagger.Host = value
 		case "@basepath":
 			parser.swagger.BasePath = value
+		case acceptAttr:
+			err := parser.ParseAcceptComment(value)
+			if err != nil {
+				return err
+			}
+		case produceAttr:
+			err := parser.ParseProduceComment(value)
+			if err != nil {
+				return err
+			}
 		case "@schemes":
 			parser.swagger.Schemes = getSchemes(commentLine)
 		case "@tag.name":
@@ -460,7 +472,10 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 				if strings.Contains(extensionName, "logo") {
 					parser.swagger.Info.Extensions.Add(extensionName, valueJSON)
 				} else {
-					parser.swagger.AddExtension(extensionName, valueJSON)
+					if parser.swagger.Extensions == nil {
+						parser.swagger.Extensions = make(map[string]interface{})
+					}
+					parser.swagger.Extensions[attribute[1:]] = valueJSON
 				}
 			}
 		}
@@ -470,8 +485,18 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 	return nil
 }
 
-func isGeneralAPIComment(comment *ast.CommentGroup) bool {
-	for _, commentLine := range strings.Split(comment.Text(), "\n") {
+// ParseAcceptComment parses comment for given `accept` comment string.
+func (parser *Parser) ParseAcceptComment(commentLine string) error {
+	return parseMimeTypeList(commentLine, &parser.swagger.Consumes, "%v accept type can't be accepted")
+}
+
+// ParseProduceComment parses comment for given `produce` comment string.
+func (parser *Parser) ParseProduceComment(commentLine string) error {
+	return parseMimeTypeList(commentLine, &parser.swagger.Produces, "%v produce type can't be accepted")
+}
+
+func isGeneralAPIComment(comments []string) bool {
+	for _, commentLine := range comments {
 		attribute := strings.ToLower(strings.Split(commentLine, " ")[0])
 		switch attribute {
 		// The @summary, @router, @success,@failure  annotation belongs to Operation
@@ -733,7 +758,7 @@ func (parser *Parser) getTypeSchema(typeName string, file *ast.File, ref bool) (
 		return PrimitiveSchema(schemaType), nil
 	}
 
-	typeSpecDef := parser.packages.FindTypeSpec(typeName, file)
+	typeSpecDef := parser.packages.FindTypeSpec(typeName, file, parser.ParseDependency)
 	if typeSpecDef == nil {
 		return nil, fmt.Errorf("cannot find type definition: %s", typeName)
 	}
@@ -986,6 +1011,7 @@ type structField struct {
 	exampleValue interface{}
 	maximum      *float64
 	minimum      *float64
+	multipleOf   *float64
 	maxLength    *int64
 	minLength    *int64
 	enums        []interface{}
@@ -1077,6 +1103,7 @@ func (parser *Parser) parseStructField(file *ast.File, field *ast.Field) (map[st
 	}
 	eleSchema.Maximum = structField.maximum
 	eleSchema.Minimum = structField.minimum
+	eleSchema.MultipleOf = structField.multipleOf
 	eleSchema.MaxLength = structField.maxLength
 	eleSchema.MinLength = structField.minLength
 	eleSchema.Enum = structField.enums
@@ -1269,6 +1296,12 @@ func (parser *Parser) parseFieldTag(field *ast.Field, types []string) (*structFi
 			return nil, err
 		}
 		structField.minimum = minimum
+
+		multipleOf, err := getFloatTag(structTag, "multipleOf")
+		if err != nil {
+			return nil, err
+		}
+		structField.multipleOf = multipleOf
 	}
 	if structField.schemaType == STRING || structField.arrayType == STRING {
 		maxLength, err := getIntTag(structTag, "maxLength")

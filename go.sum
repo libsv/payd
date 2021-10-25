@@ -595,8 +595,8 @@ github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14/go.mod h1:gxQT6pBGRuI
 github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 h1:+iNTcqQJy0OZ5jk6a5NLib47eqXK8uYcPX+O4+cBpEM=
 github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2/go.mod h1:lKJPbtWzJ9JhsTN1k1gZgleJWY/cqq0psdoMmaThG3w=
 github.com/swaggo/swag v1.7.0/go.mod h1:BdPIL73gvS9NBsdi7M1JOxLvlbfvNRaBP8m6WT6Aajo=
-github.com/swaggo/swag v1.7.3 h1:ucB7irEdRrhjmW+Z1Ss4GjO68oPKQFjSgOR8BCAvcbU=
-github.com/swaggo/swag v1.7.3/go.mod h1:zD8h6h4SPv7t3l+4BKdRquqW1ASWjKZgT6Qv9z3kNqI=
+github.com/swaggo/swag v1.7.4 h1:up+ixy8yOqJKiFcuhMgkuYuF4xnevuhnFAXXF8OSfNg=
+github.com/swaggo/swag v1.7.4/go.mod h1:zD8h6h4SPv7t3l+4BKdRquqW1ASWjKZgT6Qv9z3kNqI=
 github.com/theflyingcodr/govalidator v0.0.2 h1:ahGtcJIwDVN9VdWRMbNPbiKnlikX4gC2PWkz/MkJFCs=
 github.com/theflyingcodr/govalidator v0.0.2/go.mod h1:E6v0mkRcAVMTa7pC8VkUOtoE8WQ9zQ4/fOwrvtwhOM0=
 github.com/theflyingcodr/lathos v0.0.5 h1:XmJvKBjzBdJWXsrtkkzl1XuWEzNMdJ1pKOozR91OrgY=

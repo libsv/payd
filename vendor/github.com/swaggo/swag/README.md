@@ -89,6 +89,7 @@ OPTIONS:
    --parseInternal                        Parse go files in internal packages, disabled by default (default: false)
    --generatedTime                        Generate timestamp at the top of docs.go, disabled by default (default: false)
    --parseDepth value                     Dependency parse depth (default: 100)
+   --instanceName value                   Set the swagger document instance name (default: "swagger")
    --help, -h                             show help (default: false)
 ```
 
@@ -345,6 +346,8 @@ $ swag init
 | license.url  | A URL to the license used for the API. MUST be in the format of a URL.                       | // @license.url http://www.apache.org/licenses/LICENSE-2.0.html |
 | host        | The host (name or ip) serving the API.     | // @host localhost:8080         |
 | BasePath    | The base path on which the API is served. | // @BasePath /api/v1             |
+| accept      | A list of MIME types the APIs can consume. Note that Accept only affects operations with a request body, such as POST, PUT and PATCH.  Value MUST be as described under [Mime Types](#mime-types).                     | // @accept json |
+| produce     | A list of MIME types the APIs can produce. Value MUST be as described under [Mime Types](#mime-types).                     | // @produce json |
 | query.collection.format | The default collection(array) param format in query,enums:csv,multi,pipes,tsv,ssv. If not set, csv is the default.| // @query.collection.format multi
 | schemes     | The transfer protocol for the operation that separated by spaces. | // @schemes http https |
 | x-name      | The extension key, must be start by x- and take only json value | // @x-example-key {"key": "value"} |
@@ -375,7 +378,7 @@ When a short string in your documentation is insufficient, or you need images, c
 | id          | A unique string used to identify the operation. Must be unique among all API operations.                                   |
 | tags        | A list of tags to each API operation that separated by commas.                                                             |
 | summary     | A short summary of what the operation does.                                                                                |
-| accept      | A list of MIME types the APIs can consume. Value MUST be as described under [Mime Types](#mime-types).                     |
+| accept      | A list of MIME types the APIs can consume. Note that Accept only affects operations with a request body, such as POST, PUT and PATCH.  Value MUST be as described under [Mime Types](#mime-types).                     |
 | produce     | A list of MIME types the APIs can produce. Value MUST be as described under [Mime Types](#mime-types).                     |
 | param       | Parameters that separated by spaces. `param name`,`param type`,`data type`,`is mandatory?`,`comment` `attribute(optional)` |
 | security    | [Security](#security) to each API operation.                                                                               |
@@ -458,6 +461,8 @@ Besides that, `swag` also accepts aliases for some MIME Types as follows:
 // @Param int query int false "int valid" minimum(1) maximum(10)
 // @Param default query string false "string default" default(A)
 // @Param collection query []string false "string collection" collectionFormat(multi)
+// @Param extensions query []string false "string collection" extensions(x-example=test,x-nullable)
+
 ```
 
 It also works for the struct fields:
@@ -478,17 +483,18 @@ Field Name | Type | Description
 <a name="parameterDefault"></a>default | * | Declares the value of the parameter that the server will use if none is provided, for example a "count" to control the number of results per page might default to 100 if not supplied by the client in the request. (Note: "default" has no meaning for required parameters.)  See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-6.2. Unlike JSON Schema this value MUST conform to the defined [`type`](#parameterType) for this parameter.
 <a name="parameterMaximum"></a>maximum | `number` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.1.2.
 <a name="parameterMinimum"></a>minimum | `number` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.1.3.
+<a name="parameterMultipleOf"></a>multipleOf | `number` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.1.1.
 <a name="parameterMaxLength"></a>maxLength | `integer` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.2.1.
 <a name="parameterMinLength"></a>minLength | `integer` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.2.2.
 <a name="parameterEnums"></a>enums | [\*] | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.5.1.
 <a name="parameterFormat"></a>format | `string` | The extending format for the previously mentioned [`type`](#parameterType). See [Data Type Formats](https://swagger.io/specification/v2/#dataTypeFormat) for further details.
 <a name="parameterCollectionFormat"></a>collectionFormat | `string` |Determines the format of the array if type array is used. Possible values are: <ul><li>`csv` - comma separated values `foo,bar`. <li>`ssv` - space separated values `foo bar`. <li>`tsv` - tab separated values `foo\tbar`. <li>`pipes` - pipe separated values <code>foo&#124;bar</code>. <li>`multi` - corresponds to multiple parameter instances instead of multiple values for a single instance `foo=bar&foo=baz`. This is valid only for parameters [`in`](#parameterIn) "query" or "formData". </ul> Default value is `csv`.
+<a name="parameterExtensions"></a>extensions | `string` | Add extension to parameters.
 
 ### Future
 
 Field Name | Type | Description
 ---|:---:|---
-<a name="parameterMultipleOf"></a>multipleOf | `number` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.1.1.
 <a name="parameterPattern"></a>pattern | `string` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.2.3.
 <a name="parameterMaxItems"></a>maxItems | `integer` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.3.2.
 <a name="parameterMinItems"></a>minItems | `integer` | See https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-5.3.3.
