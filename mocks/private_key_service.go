@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that PrivateKeyServiceMock does implement payd.PrivateKeyService.

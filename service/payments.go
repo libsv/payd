@@ -151,7 +151,7 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 		}
 	}
 	// Broadcast the transaction
-	if err := p.broadcaster.Broadcast(ctx, tx); err != nil {
+	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{InvoiceID: inv.ID}, tx); err != nil {
 		// set as failed
 		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
 			log.Error(err)

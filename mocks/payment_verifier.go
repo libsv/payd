@@ -5,10 +5,11 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bc"
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
-	"sync"
 )
 
 // Ensure, that PaymentVerifierMock does implement spv.PaymentVerifier.

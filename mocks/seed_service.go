@@ -4,8 +4,9 @@
 package mocks
 
 import (
-	"github.com/libsv/payd"
 	"sync"
+
+	"github.com/libsv/payd"
 )
 
 // Ensure, that SeedServiceMock does implement payd.SeedService.
