@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/data/http"
-	"sync"
 )
 
 // Ensure, that P4Mock does implement http.P4.

@@ -23,7 +23,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		destinationsFunc        func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
 		txCreateFunc            func(context.Context, payd.TransactionCreate) error
 		proofCallbackCreateFunc func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error
-		broadcastFunc           func(context.Context, *bt.Tx) error
+		broadcastFunc           func(context.Context, payd.BroadcastArgs, *bt.Tx) error
 		txUpdateStateFunc       func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error
 		commitFunc              func(context.Context) error
 		req                     payd.PaymentCreate
@@ -56,7 +56,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
 				return nil
 			},
-			broadcastFunc: func(context.Context, *bt.Tx) error {
+			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
 				return nil
 			},
 			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {
@@ -97,7 +97,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
 				return nil
 			},
-			broadcastFunc: func(context.Context, *bt.Tx) error {
+			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
 				return nil
 			},
 			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {
@@ -373,7 +373,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
 				return nil
 			},
-			broadcastFunc: func(context.Context, *bt.Tx) error {
+			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
 				return errors.New("broadcast error")
 			},
 			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {
@@ -412,7 +412,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
 				return nil
 			},
-			broadcastFunc: func(context.Context, *bt.Tx) error {
+			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
 				return nil
 			},
 			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {

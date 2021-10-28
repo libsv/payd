@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that BroadcastWriterMock does implement payd.BroadcastWriter.
@@ -20,7 +21,7 @@ var _ payd.BroadcastWriter = &BroadcastWriterMock{}
 //
 // 		// make and configure a mocked payd.BroadcastWriter
 // 		mockedBroadcastWriter := &BroadcastWriterMock{
-// 			BroadcastFunc: func(ctx context.Context, tx *bt.Tx) error {
+// 			BroadcastFunc: func(ctx context.Context, args payd.BroadcastArgs, tx *bt.Tx) error {
 // 				panic("mock out the Broadcast method")
 // 			},
 // 		}
@@ -31,7 +32,7 @@ var _ payd.BroadcastWriter = &BroadcastWriterMock{}
 // 	}
 type BroadcastWriterMock struct {
 	// BroadcastFunc mocks the Broadcast method.
-	BroadcastFunc func(ctx context.Context, tx *bt.Tx) error
+	BroadcastFunc func(ctx context.Context, args payd.BroadcastArgs, tx *bt.Tx) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,6 +40,8 @@ type BroadcastWriterMock struct {
 		Broadcast []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+			// Args is the args argument value.
+			Args payd.BroadcastArgs
 			// Tx is the tx argument value.
 			Tx *bt.Tx
 		}
@@ -47,33 +50,37 @@ type BroadcastWriterMock struct {
 }
 
 // Broadcast calls BroadcastFunc.
-func (mock *BroadcastWriterMock) Broadcast(ctx context.Context, tx *bt.Tx) error {
+func (mock *BroadcastWriterMock) Broadcast(ctx context.Context, args payd.BroadcastArgs, tx *bt.Tx) error {
 	if mock.BroadcastFunc == nil {
 		panic("BroadcastWriterMock.BroadcastFunc: method is nil but BroadcastWriter.Broadcast was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
-		Tx  *bt.Tx
+		Ctx  context.Context
+		Args payd.BroadcastArgs
+		Tx   *bt.Tx
 	}{
-		Ctx: ctx,
-		Tx:  tx,
+		Ctx:  ctx,
+		Args: args,
+		Tx:   tx,
 	}
 	mock.lockBroadcast.Lock()
 	mock.calls.Broadcast = append(mock.calls.Broadcast, callInfo)
 	mock.lockBroadcast.Unlock()
-	return mock.BroadcastFunc(ctx, tx)
+	return mock.BroadcastFunc(ctx, args, tx)
 }
 
 // BroadcastCalls gets all the calls that were made to Broadcast.
 // Check the length with:
 //     len(mockedBroadcastWriter.BroadcastCalls())
 func (mock *BroadcastWriterMock) BroadcastCalls() []struct {
-	Ctx context.Context
-	Tx  *bt.Tx
+	Ctx  context.Context
+	Args payd.BroadcastArgs
+	Tx   *bt.Tx
 } {
 	var calls []struct {
-		Ctx context.Context
-		Tx  *bt.Tx
+		Ctx  context.Context
+		Args payd.BroadcastArgs
+		Tx   *bt.Tx
 	}
 	mock.lockBroadcast.RLock()
 	calls = mock.calls.Broadcast

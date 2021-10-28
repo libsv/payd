@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tonicpow/go-minercraft"
 
+	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 )
 
@@ -25,12 +26,12 @@ func NewMapi(cfg *config.MApi, svrCfg *config.Server, client *minercraft.Client)
 
 // Broadcast will submit a transaction to mapi for inclusion in a block.
 // Any errors will be returned, no error denotes success.
-func (m *minercraftMapi) Broadcast(ctx context.Context, tx *bt.Tx) error {
+func (m *minercraftMapi) Broadcast(ctx context.Context, args payd.BroadcastArgs, tx *bt.Tx) error {
 	resp, err := m.client.SubmitTransaction(ctx,
 		m.client.MinerByName(m.cfg.MinerName),
 		&minercraft.Transaction{
 			RawTx:              tx.String(),
-			CallBackURL:        "http://" + m.svrCfg.Hostname + "/api/v1/proofs/" + tx.TxID(),
+			CallBackURL:        "http://" + m.svrCfg.Hostname + "/api/v1/proofs/" + tx.TxID() + "?i=" + args.InvoiceID,
 			CallBackToken:      m.cfg.Token,
 			MerkleFormat:       "TSC",
 			CallBackEncryption: "",
