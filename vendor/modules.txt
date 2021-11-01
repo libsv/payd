@@ -106,7 +106,7 @@ github.com/libsv/go-bk/bip32
 github.com/libsv/go-bk/chaincfg
 github.com/libsv/go-bk/crypto
 github.com/libsv/go-bk/envelope
-# github.com/libsv/go-bt v1.0.1
+# github.com/libsv/go-bt v1.0.3
 ## explicit; go 1.15
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
@@ -196,7 +196,7 @@ github.com/theflyingcodr/govalidator
 ## explicit; go 1.17
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/tonicpow/go-minercraft v0.3.1
+# github.com/tonicpow/go-minercraft v0.3.2
 ## explicit; go 1.15
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0
