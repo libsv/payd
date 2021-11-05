@@ -46,6 +46,7 @@ type Txo struct {
 // To save calls, Txos can be included to also add in the same transaction.
 type TransactionCreate struct {
 	InvoiceID string       `db:"invoice_id"`
+	RefundTo  null.String  `db:"refund_to"`
 	TxID      string       `db:"tx_id"`
 	TxHex     string       `db:"tx_hex"`
 	Outputs   []*TxoCreate `db:"-"`

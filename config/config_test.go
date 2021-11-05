@@ -64,42 +64,42 @@ func Test_ConfigValidateNetwork(t *testing.T) {
 	}{
 		"valid deployment network config (mainnet) should return no errors": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: NetworkMainet,
 				},
 			},
 			err: nil,
 		}, "valid deployment network config (testnet) should return no errors": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: NetworkTestnet,
 				},
 			},
 			err: nil,
 		}, "valid deployment network config (stn) should return no errors": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: NetworkSTN,
 				},
 			},
 			err: nil,
 		}, "valid deployment network config (regtest) should return no errors": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: NetworkRegtest,
 				},
 			},
 			err: nil,
 		}, "deployment network type within other word should fail": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: "btestneth",
 				},
 			},
 			err: errors.New("[deployment.network: value btestneth failed to meet requirements]"),
 		}, "invalid deployment network config should error": {
 			cfg: &Config{
-				Deployment: &Deployment{
+				Wallet: &Wallet{
 					Network: "blah",
 				},
 			},

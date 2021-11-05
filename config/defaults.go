@@ -21,7 +21,6 @@ func SetupDefaults() {
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
-	viper.SetDefault(EnvBicoinNetwork, NetworkRegtest)
 
 	// logging
 	viper.SetDefault(EnvLogLevel, "info")
@@ -38,9 +37,15 @@ func SetupDefaults() {
 
 	// p4
 	viper.SetDefault(EnvP4Timeout, 30)
+	viper.SetDefault(EnvP4Host, "p4:8442")
 
 	// wallet
-	viper.SetDefault(EnvNetwork, "regtest")
+	viper.SetDefault(EnvNetwork, string(NetworkRegtest))
 	viper.SetDefault(EnvWalletSpvRequired, true)
 	viper.SetDefault(EnvPaymentExpiry, 24)
+
+	// mapi
+	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
+	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
+	viper.SetDefault(EnvMAPIToken, "")
 }

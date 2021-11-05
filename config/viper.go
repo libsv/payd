@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -31,7 +32,6 @@ func (c *Config) WithDeployment(appName string) *Config {
 		Region:      viper.GetString(EnvRegion),
 		Version:     viper.GetString(EnvVersion),
 		Commit:      viper.GetString(EnvCommit),
-		Network:     NetworkType(viper.GetString(EnvBicoinNetwork)),
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
 	}
@@ -66,9 +66,8 @@ func (c *Config) WithHeadersClient() *Config {
 
 // WithWallet sets up and returns merchant wallet configuration.
 func (c *Config) WithWallet() *Config {
-
 	c.Wallet = &Wallet{
-		Network:            viper.GetString(EnvNetwork),
+		Network:            NetworkType(viper.GetString(EnvNetwork)),
 		SPVRequired:        viper.GetBool(EnvWalletSpvRequired),
 		PaymentExpiryHours: viper.GetInt64(EnvPaymentExpiry),
 	}
@@ -78,20 +77,24 @@ func (c *Config) WithWallet() *Config {
 // WithP4 sets up and return p4 interface configuration.
 func (c *Config) WithP4() *Config {
 	c.P4 = &P4{
-		Timeout: viper.GetInt(EnvP4Timeout),
+		ServerHost: viper.GetString(EnvP4Host),
+		Timeout:    viper.GetInt(EnvP4Timeout),
 	}
 	return c
 }
 
 // WithMapi will setup Mapi settings.
 func (c *Config) WithMapi() *Config {
-	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
-	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
-	viper.SetDefault(EnvMAPIToken, "")
 	c.Mapi = &MApi{
 		MinerName: viper.GetString(EnvMAPIMinerName),
 		URL:       viper.GetString(EnvMAPIURL),
 		Token:     viper.GetString(EnvMAPIToken),
 	}
+	return c
+}
+
+// WithSocket will setup Mapi settings.
+func (c *Config) WithSocket() *Config {
+	c.Socket = &Socket{ClientIdentifier: uuid.NewString()}
 	return c
 }

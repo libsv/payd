@@ -19,7 +19,7 @@ const (
 	EnvVersion              = "env.version"
 	EnvCommit               = "env.commit"
 	EnvBuildDate            = "env.builddate"
-	EnvBicoinNetwork        = "env.bitcoin.network"
+	EnvBitcoinNetwork       = "env.bitcoin.network"
 	EnvLogLevel             = "log.level"
 	EnvDb                   = "db.type"
 	EnvDbSchema             = "db.schema.path"
@@ -31,6 +31,7 @@ const (
 	EnvWalletSpvRequired    = "wallet.spvrequired"
 	EnvPaymentExpiry        = "wallet.paymentexpiry"
 	EnvP4Timeout            = "p4.timeout"
+	EnvP4Host               = "p4.host"
 	EnvMAPIMinerName        = "mapi.minername"
 	EnvMAPIURL              = "mapi.minerurl"
 	EnvMAPIToken            = "mapi.token"
@@ -51,6 +52,10 @@ const (
 	NetworkTestnet NetworkType = "testnet"
 	NetworkMainet  NetworkType = "mainnet"
 )
+
+func (n NetworkType) String() string {
+	return string(n)
+}
 
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
 
@@ -76,6 +81,7 @@ type Config struct {
 	Wallet        *Wallet
 	P4            *P4
 	Mapi          *MApi
+	Socket        *Socket
 }
 
 // Validate will ensure the config matches certain parameters.
@@ -84,8 +90,8 @@ func (c *Config) Validate() error {
 	if c.Db != nil {
 		vl = vl.Validate("db.type", validator.MatchString(string(c.Db.Type), reDbType))
 	}
-	if c.Deployment != nil {
-		vl = vl.Validate("deployment.network", validator.MatchString(string(c.Deployment.Network), reNetworks))
+	if c.Wallet != nil {
+		vl = vl.Validate("wallet.network", validator.MatchString(string(c.Wallet.Network), reNetworks))
 	}
 	return vl.Err()
 }
@@ -98,7 +104,6 @@ type Deployment struct {
 	Region      string
 	Version     string
 	Commit      string
-	Network     NetworkType
 	BuildDate   time.Time
 }
 
@@ -142,14 +147,15 @@ type HeadersClient struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network            string
+	Network            NetworkType
 	SPVRequired        bool
 	PaymentExpiryHours int64
 }
 
 // P4 contains information relating to a p4 interactions.
 type P4 struct {
-	Timeout int
+	Timeout    int
+	ServerHost string
 }
 
 // MApi contains MAPI connection settings.
@@ -157,6 +163,11 @@ type MApi struct {
 	MinerName string
 	URL       string
 	Token     string
+}
+
+// Socket contains the socket config for this server if running sockets.
+type Socket struct {
+	ClientIdentifier string
 }
 
 // ConfigurationLoader will load configuration items
@@ -170,4 +181,5 @@ type ConfigurationLoader interface {
 	WithWallet() *Config
 	WithP4() *Config
 	WithHeadersClient() *Config
+	WithSocket() *Config
 }

@@ -3,9 +3,7 @@ package payd
 import (
 	"context"
 	"net/url"
-	"time"
 
-	"github.com/libsv/go-bt/v2"
 	validator "github.com/theflyingcodr/govalidator"
 )
 
@@ -36,33 +34,32 @@ type P4Destination struct {
 
 // MerchantData p4 from a p4 server.
 type MerchantData struct {
-	Avatar           string            `json:"avatar"`
-	Name             string            `json:"name"`
-	Email            string            `json:"email"`
-	Address          string            `json:"address"`
-	PaymentReference string            `json:"paymentReference"`
-	ExtendedData     map[string]string `json:"extendedData"`
+	Avatar           string                 `json:"avatar"`
+	Name             string                 `json:"name"`
+	Email            string                 `json:"email"`
+	Address          string                 `json:"address"`
+	PaymentReference string                 `json:"paymentReference"`
+	ExtendedData     map[string]interface{} `json:"extendedData"`
 }
 
-// PaymentRequestResponse a payment request from p4.
-type PaymentRequestResponse struct {
-	Network             string        `json:"network"`
-	Destinations        P4Destination `json:"destinations"`
-	CreationTimestamp   time.Time     `json:"creationTimestamp"`
-	ExpirationTimestamp time.Time     `json:"expirationTimestamp"`
-	PaymentURL          string        `json:"paymentURL"`
-	Memo                string        `json:"memo"`
-	MerchantData        MerchantData  `json:"merchantData"`
-	Fee                 *bt.FeeQuote  `json:"fees"`
-}
-
-// PaymentACK an ack response from P4.
+// PaymentACK message used in BIP270.
+// See https://github.com/moneybutton/bips/blob/master/bip-0270.mediawiki#paymentack
 type PaymentACK struct {
-	Payment Payment `json:"payment"`
-	Memo    string  `json:"memo"`
+	Payment PaymentCreate `json:"payment"`
+	Memo    string        `json:"memo,omitempty"`
+	// A number indicating why the transaction was not accepted. 0 or undefined indicates no error.
+	// A 1 or any other positive integer indicates an error. The errors are left undefined for now;
+	// it is recommended only to use “1” and to fill the memo with a textual explanation about why
+	// the transaction was not accepted until further numbers are defined and standardised.
+	Error int `json:"error,omitempty"`
 }
 
 // PayService for sending payments to another wallet.
 type PayService interface {
 	Pay(ctx context.Context, req PayRequest) (*PaymentACK, error)
+}
+
+// PayWriter will send a payment to another wallet or p4 server.
+type PayWriter interface {
+	Pay(ctx context.Context, req PayRequest) error
 }

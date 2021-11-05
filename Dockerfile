@@ -1,9 +1,5 @@
 FROM golang:1.17.1-buster as builder
-
-WORKDIR /app
-COPY . .
-
-RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" ./cmd/rest-server
+ARG binary
 
 # Create appuser.
 ENV USER=appuser
@@ -17,9 +13,14 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
+WORKDIR /app
+COPY . .
+
+RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/$binary
+
 FROM bitnami/minideb:buster
 
-COPY --from=builder /app/rest-server /bin/
+COPY --from=builder /app/server /bin/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
@@ -32,4 +33,4 @@ USER appuser:appuser
 
 EXPOSE 8443
 
-CMD ["rest-server"]
+CMD ["server"]

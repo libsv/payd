@@ -1,32 +1,21 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/libsv/go-bc/spv"
-	docs "github.com/libsv/payd/docs"
-	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"github.com/tonicpow/go-minercraft"
 
-	"github.com/libsv/payd/data/mapi"
+	"github.com/libsv/payd/cmd/internal"
+	"github.com/libsv/payd/docs"
+
 	_ "github.com/libsv/payd/docs"
 
 	"github.com/labstack/gommon/log"
-	"github.com/spf13/viper"
 
 	"github.com/libsv/payd/config/databases"
-	paydSQL "github.com/libsv/payd/data/sqlite"
-	"github.com/libsv/payd/service"
 	thttp "github.com/libsv/payd/transports/http"
 
 	"github.com/libsv/payd/config"
-	dataHttp "github.com/libsv/payd/data/http"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 )
 
@@ -60,6 +49,7 @@ const banner = `
 //	- http
 //	- https
 func main() {
+	println("rest server")
 	println("\033[32m" + banner + "\033[0m")
 	config.SetupDefaults()
 	cfg := config.NewViperConfig(appname).
@@ -101,73 +91,20 @@ func main() {
 	}))
 	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
 
-	// setup stores
-	mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
-		{
-			Name:  cfg.Mapi.MinerName,
-			Token: cfg.Mapi.Token,
-			URL:   cfg.Mapi.URL,
-		},
-	})
-	if err != nil {
-		log.Fatal(mapiCli)
-	}
-	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
-	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
-	if err != nil {
-		log.Fatalf("failed to create spv client %w", err)
-	}
+	// setup deps
+	services := internal.SetupRestDeps(cfg, db)
 
-	spvc, err := spv.NewEnvelopeCreator(sqlLiteStore, sqlLiteStore)
-	if err != nil {
-		log.Fatalf("failed to create spv verifier %w", err)
-	}
-
-	// setup services
-	seedSvc := service.NewSeedService()
-	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(cfg.Deployment, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
-	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
-
-	thttp.NewInvoice(service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())).
+	thttp.NewInvoice(services.InvoiceService).
 		RegisterRoutes(g)
-	thttp.NewBalance(service.NewBalance(sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewProofs(service.NewProofsService(sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewDestinations(destSvc).RegisterRoutes(g)
-	thttp.NewPayments(paymentSvc).RegisterRoutes(g)
-	thttp.NewOwnersHandler(service.NewOwnerService(sqlLiteStore)).RegisterRoutes(g)
-	thttp.NewPayHandler(service.NewPayService(sqlLiteStore, sqlLiteStore, sqlLiteStore,
-		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), privKeySvc, spvc, cfg.Server, seedSvc)).RegisterRoutes(g)
-
-	// create master private key if it doesn't exist
-	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
-		log.Fatal(errors.Wrap(err, "failed to create master key"))
-	}
-
-	// create master private key if it doesn't exist
-	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
-		log.Fatal(errors.Wrap(err, "failed to create master key"))
-	}
+	thttp.NewBalance(services.BalanceService).RegisterRoutes(g)
+	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
+	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
+	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
+	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
+	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
 
 	if cfg.Deployment.IsDev() {
-		printDev(e)
+		internal.PrintDev(e)
 	}
 	e.Logger.Fatal(e.Start(cfg.Server.Port))
-}
-
-// printDev outputs some useful dev information such as http routes
-// and current settings being used.
-func printDev(e *echo.Echo) {
-	fmt.Println("==================================")
-	fmt.Println("DEV mode, printing http routes:")
-	for _, r := range e.Routes() {
-		fmt.Printf("%s: %s\n", r.Method, r.Path)
-	}
-	fmt.Println("==================================")
-	fmt.Println("DEV mode, printing settings:")
-	for _, v := range viper.AllKeys() {
-		fmt.Printf("%s: %v\n", v, viper.Get(v))
-	}
-	fmt.Println("==================================")
 }

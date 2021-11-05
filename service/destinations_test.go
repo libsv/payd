@@ -7,8 +7,10 @@ import (
 
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
+	"github.com/libsv/payd/internal"
 	"github.com/libsv/payd/mocks"
 	"github.com/libsv/payd/service"
 	"github.com/pkg/errors"
@@ -24,7 +26,10 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 		oo := make([]payd.Output, len(dests))
 		for i, dest := range dests {
 			oo[i] = payd.Output{
-				LockingScript:  dest.Script,
+				LockingScript: func() *bscript.Script {
+					s, _ := bscript.NewFromHexString(dest.Script)
+					return s
+				}(),
 				Satoshis:       dest.Satoshis,
 				DerivationPath: dest.DerivationPath,
 				State:          "pending",
@@ -67,7 +72,10 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
-					LockingScript:  "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 					Satoshis:       1000,
 					DerivationPath: "2147483648/2147483648/2147483648",
 					State:          "pending",
@@ -104,7 +112,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
-					LockingScript:  "76a9141a4cc80bc3ee6567cb37f9c5121841a5f8e0b87d88ac",
+					LockingScript:  internal.StringToScript("76a9141a4cc80bc3ee6567cb37f9c5121841a5f8e0b87d88ac"),
 					Satoshis:       1000,
 					DerivationPath: "2147483648/2147483648/2147483650",
 					State:          "pending",
@@ -272,7 +280,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 
 			if test.expDestination != nil {
 				assert.NotNil(t, dests)
-				assert.Equal(t, *test.expDestination, *dests)
+				assert.Equal(t, test.expDestination, dests)
 			} else {
 				assert.Nil(t, dests)
 			}
@@ -311,8 +319,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
@@ -322,8 +333,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 				Network:     string(config.NetworkMainet),
 				SPVRequired: true,
 				Outputs: []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
@@ -349,8 +363,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
@@ -360,8 +377,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 				Network:     string(config.NetworkTestnet),
 				SPVRequired: true,
 				Outputs: []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
@@ -386,8 +406,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
@@ -396,8 +419,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			expDestination: &payd.Destination{
 				Network: string(config.NetworkMainet),
 				Outputs: []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
@@ -422,8 +448,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
@@ -432,8 +461,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			expDestination: &payd.Destination{
 				Network: string(config.NetworkMainet),
 				Outputs: []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 2),
@@ -452,8 +484,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
@@ -505,8 +540,11 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return []payd.Output{{
-					Satoshis:      1000,
-					LockingScript: "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
+					Satoshis: 1000,
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
 				}}, nil
 			},
 			feesFunc: func(context.Context) (*bt.FeeQuote, error) {

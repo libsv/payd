@@ -11,4 +11,6 @@ const (
 	RouteV1Proofs      = "api/v1/proofs/:txid"
 	RouteV1Destination = "api/v1/destinations/:invoiceID"
 	RouteV1Payment     = "api/v1/payments/:invoiceID"
+
+	RouteV1Connect = "api/v1/socket/connect/:invoiceID"
 )
