@@ -112,7 +112,7 @@ github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
 github.com/libsv/go-bt/crypto
 github.com/libsv/go-bt/sighash
-# github.com/libsv/go-bt/v2 v2.0.0-beta.9
+# github.com/libsv/go-bt/v2 v2.0.0-beta.10
 ## explicit; go 1.16
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
