@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/payd/cmd/internal"
 	"github.com/libsv/payd/config/databases"
+	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/docs"
 	_ "github.com/libsv/payd/docs"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
@@ -120,14 +121,16 @@ func main() {
 		metricsMW,
 		smw.Logger(smw.NewLoggerConfig()),
 		socMiddleware.IgnoreMyMessages(cfg.Socket),
-		socMiddleware.WithAppIDPayD())
+		socMiddleware.WithAppIDPayD()).
+		WithErrorHandler(socMiddleware.ErrorHandler).
+		WithServerErrorHandler(socMiddleware.ErrorMsgHandler)
 
 	services := internal.SetupSocketDeps(cfg, db, c)
 
 	// client handlers
-	tsoc.NewPaymentRequest(services.PaymentRequestService, services.EnvelopeService).RegisterListeners(c)
+	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, services.PaymentRequestService, services.EnvelopeService).RegisterListeners(c)
 	tsoc.NewPayments(services.PaymentService).RegisterListeners(c)
-	tsoc.NewProofs(services.ProofService).RegisterListeners(c)
+	tsoc.NewProofs(services.ProofService, c).RegisterListeners(c)
 
 	// rest handlers
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
@@ -135,6 +138,13 @@ func main() {
 	thttp.NewInvoice(services.InvoiceService).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
 	thttp.NewBalance(services.BalanceService).RegisterRoutes(g)
+	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
+	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
+	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
+	if cfg.Deployment.Environment == "local" {
+		// ugly endpoint for regtest topup - local only!
+		thttp.NewTransactions(services.TransactionService).RegisterRoutes(g)
+	}
 
 	e.Logger.Fatal(e.Start(cfg.Server.Port))
 }

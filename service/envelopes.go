@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bk/bip32"
@@ -16,23 +17,27 @@ import (
 
 type envelopes struct {
 	pkSvc   payd.PrivateKeyService
+	destWtr payd.DestinationsWriter
 	txoWtr  payd.TxoWriter
+	txWtr   payd.TransactionWriter
 	seedSvc payd.SeedService
 	spvc    spv.EnvelopeCreator
 }
 
 // NewEnvelopes will setup and return an Envelope service, used to create spv envelopes.
-func NewEnvelopes(pkSvc payd.PrivateKeyService, txoWtr payd.TxoWriter, seedSvc payd.SeedService, spvc spv.EnvelopeCreator) *envelopes {
+func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter, txWtr payd.TransactionWriter, txoWtr payd.TxoWriter, seedSvc payd.SeedService, spvc spv.EnvelopeCreator) *envelopes {
 	return &envelopes{
 		pkSvc:   pkSvc,
+		destWtr: destWtr,
 		txoWtr:  txoWtr,
+		txWtr:   txWtr,
 		seedSvc: seedSvc,
 		spvc:    spvc,
 	}
 }
 
 // Envelope will create and return a new Envelope.
-func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*payd.Envelope, error) {
+func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
 	// Retrieve private key and build change utxo in advance of making any calls, so that
 	// if something internal goes wrong we don't make a premature request to the receiver's
 	// p4 server, creating unneeded traffic.
@@ -110,15 +115,59 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req pa
 	if err = tx.SignAll(ctx, signer); err != nil {
 		return nil, errors.Wrapf(err, "failed to sign tx %s", tx.String())
 	}
-	// Create the spv envelope for the tx.
-	spvEnvelope, err := e.spvc.CreateEnvelope(ctx, tx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
+
+	spvEnvelope := &spv.Envelope{
+		RawTx: tx.String(),
+		TxID:  tx.TxID(),
 	}
-	return &payd.Envelope{
-		SPVEnvelope: spvEnvelope,
-		Change:      *changeOutput,
-	}, nil
+
+	if req.SPVRequired {
+		// Create the spv envelope for the tx.
+		s, err := e.spvc.CreateEnvelope(ctx, tx)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
+		}
+		spvEnvelope = s
+	}
+
+	txCreate := payd.TransactionCreate{
+		TxID:  tx.TxID(),
+		TxHex: tx.String(),
+	}
+	// Only insert change utxo if change exists.
+	if changeOutput.LockingScript.Equals(tx.Outputs[tx.OutputCount()-1].LockingScript) {
+		oo, err := e.destWtr.DestinationsCreate(ctx, payd.DestinationsCreateArgs{},
+			[]payd.DestinationCreate{{
+				Script:         changeOutput.LockingScript.String(),
+				DerivationPath: changeOutput.DerivationPath,
+				Keyname:        keyname,
+				Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
+			}})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create destination for change output")
+		}
+		txCreate.Outputs = []*payd.TxoCreate{{
+			TxID:          txCreate.TxID,
+			Outpoint:      fmt.Sprintf("%s%d", txCreate.TxID, tx.OutputCount()-1),
+			Vout:          uint64(tx.OutputCount() - 1),
+			DestinationID: oo[0].ID,
+		}}
+	}
+
+	// Create a tx in the data store with the sent tx's information.
+	if err = e.txWtr.TransactionCreate(ctx, txCreate); err != nil {
+		return nil, errors.Wrap(err, "failed to create transaction for change output")
+	}
+
+	// Mark the reserved utxos as spent.
+	if err = e.txoWtr.UTXOSpend(ctx, payd.UTXOSpend{
+		SpendingTxID: txCreate.TxID,
+		Reservation:  args.PayToURL,
+	}); err != nil {
+		return nil, errors.Wrap(err, "failed to mark utxos as spent")
+	}
+
+	return spvEnvelope, nil
 }
 
 // changeScript will create and return a change locking script.

@@ -6,11 +6,13 @@ import (
 
 // Common messages.
 const (
-	MessageJoinSuccess  = "join.success"
-	MessageLeaveSuccess = "leave.success"
-	MessageGetInfo      = "get.info"
-	MessageInfo         = "info"
-	MessageError        = "error"
+	MessageJoinSuccess    = "join.success"
+	MessageLeaveSuccess   = "leave.success"
+	MessageGetInfo        = "get.info"
+	MessageInfo           = "info"
+	MessageError          = "error"
+	MessageChannelExpired = "channel.expired"
+	MessageChannelClosed  = "channel.closed"
 )
 
 // HandlerFunc defines listeners on both the server and clients.
@@ -26,10 +28,16 @@ type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 // The message can be handled, logged, and returned to clients.
 type ServerErrorHandlerFunc func(msg Message, e error) *ErrorMessage
 
-// ClientErrorHandlerFunc defines the client side error handler. This is triggered
-// when a listener returns an error and allows a global way of managing errors.
-// This is executed after middleware.
-type ClientErrorHandlerFunc func(msg *ErrorMessage)
+// ClientErrorHandlerFunc is raised when the client itself returns an error
+// when processing a message.
+// It can be logged, retried etc.
+type ClientErrorHandlerFunc func(err error, msg *Message)
+
+// ClientErrorMsgHandlerFunc is triggered when a server returns an error
+// message in response to a client message.
+// It will contain the detail of the error and the client can decide to log,
+// re-send or do something else.
+type ClientErrorMsgHandlerFunc func(err ErrorMessage)
 
 // ErrorDetail is returned as the message body in the event of an error.
 type ErrorDetail struct {

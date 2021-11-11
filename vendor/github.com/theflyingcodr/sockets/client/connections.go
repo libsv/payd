@@ -68,11 +68,11 @@ func (c *Client) listen(client *connection) {
 				continue
 			}
 			if body["type"] == sockets.MessageError {
-				var errMsg *sockets.ErrorMessage
+				var errMsg sockets.ErrorMessage
 				if err := json.Unmarshal(bb, &errMsg); err != nil {
 					continue
 				}
-				c.errHandler(errMsg)
+				c.serverErrHandler(errMsg)
 				continue
 			}
 			var msg *sockets.Message
@@ -94,11 +94,7 @@ func (c *Client) listen(client *connection) {
 			// exec middleware and then handler.
 			resp, err := middleware.ExecMiddlewareChain(fn, c.middleware)(ctx, msg)
 			if err != nil {
-				if resp != nil {
-					c.errHandler(resp.ToError(err))
-					continue
-				}
-				c.errHandler(msg.ToError(err))
+				c.errHandler(err, msg)
 				continue
 			}
 			if resp != nil {

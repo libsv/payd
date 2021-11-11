@@ -9,6 +9,7 @@ services:
       DB_SCHEMA_PATH: "migrations"
       LOG_LEVEL: "debug"
       P4_HOST: "ws://p4:8445/ws"
+      MAPI_CALLBACK_HOST: "http://p4:8445"
     volumes:
       - payd-data:/paydb
     ports:
@@ -26,6 +27,7 @@ services:
       SERVER_PORT: :28443
       LOG_LEVEL: "debug"
       P4_HOST: "ws://p4:8445/ws"
+      MAPI_CALLBACK_HOST: "http://p4:8445"
     volumes:
       - merchant-data:/paydb
     ports:

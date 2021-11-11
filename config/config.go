@@ -35,6 +35,7 @@ const (
 	EnvMAPIMinerName        = "mapi.minername"
 	EnvMAPIURL              = "mapi.minerurl"
 	EnvMAPIToken            = "mapi.token"
+	EnvMAPICallbackHost     = "mapi.callback.host"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -160,9 +161,10 @@ type P4 struct {
 
 // MApi contains MAPI connection settings.
 type MApi struct {
-	MinerName string
-	URL       string
-	Token     string
+	MinerName    string
+	URL          string
+	Token        string
+	CallbackHost string
 }
 
 // Socket contains the socket config for this server if running sockets.

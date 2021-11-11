@@ -76,7 +76,8 @@ type TransactionArgs struct {
 
 // TransactionStateUpdate contains information to update a tx.
 type TransactionStateUpdate struct {
-	State TxState `db:"state"`
+	State      TxState     `db:"state"`
+	FailReason null.String `db:"fail_reason"`
 }
 
 // TransactionWriter will add and update transaction data.
@@ -84,4 +85,16 @@ type TransactionWriter interface {
 	TransactionCreate(ctx context.Context, req TransactionCreate) error
 	// TransactionUpdateState can be used to change a tx state (failed, broadcast).
 	TransactionUpdateState(ctx context.Context, args TransactionArgs, req TransactionStateUpdate) error
+}
+
+type TransactionSubmitArgs struct {
+	InvoiceID string `param:"invoiceid"`
+}
+
+type TransactionSubmit struct {
+	TxHex string `param:"txHex"`
+}
+
+type TransactionService interface {
+	Submit(ctx context.Context, args TransactionSubmitArgs, req TransactionSubmit) error
 }

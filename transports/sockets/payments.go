@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/libsv/payd"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
-	"github.com/theflyingcodr/sockets/client"
-
-	"github.com/libsv/payd"
 )
 
 type payments struct {
@@ -22,8 +20,8 @@ func NewPayments(svc payd.PaymentsService) *payments {
 }
 
 // RegisterListeners will setup a listener for payments.
-func (p *payments) RegisterListeners(c *client.Client) {
-	c = c.RegisterListener(RoutePayment, p.create).
+func (p *payments) RegisterListeners(c sockets.Client) {
+	c.RegisterListener(RoutePayment, p.create).
 		RegisterListener(RoutePaymentACK, p.ack)
 }
 
@@ -36,8 +34,9 @@ func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.M
 	if err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req); err != nil {
 		log.Err(err).Msg("failed to create payment, returning ack")
 		_ = resp.WithBody(payd.PaymentACK{
-			Memo:  err.Error(),
-			Error: 1,
+			Payment: req,
+			Memo:    err.Error(),
+			Error:   1,
 		})
 		return resp, nil
 	}
@@ -56,8 +55,28 @@ func (p *payments) ack(ctx context.Context, msg *sockets.Message) (*sockets.Mess
 	if err := msg.Bind(&req); err != nil {
 		return nil, errors.Wrap(err, "failed to bind request")
 	}
+
 	if req.Error > 0 {
+		// ack the error
+		log.Err(p.svc.Ack(ctx, payd.AckArgs{
+			InvoiceID: msg.ChannelID(),
+			TxID:      req.Payment.SPVEnvelope.TxID,
+		}, payd.Ack{
+			Failed: true,
+			Reason: req.Memo,
+		})).Msg("failed to updated tx state")
 		return nil, fmt.Errorf("failed to send payment, code: %d reason: %s", req.Error, req.Memo)
+	}
+
+	// handle the success
+	if err := p.svc.Ack(ctx, payd.AckArgs{
+		InvoiceID: msg.ChannelID(),
+		TxID:      req.Payment.SPVEnvelope.TxID,
+	}, payd.Ack{
+		Failed: false,
+		Reason: "",
+	}); err != nil {
+		return nil, err
 	}
 	log.Info().Msgf("payment success for %s", msg.ChannelID())
 	return msg.NoContent()

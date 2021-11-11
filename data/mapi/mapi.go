@@ -15,13 +15,12 @@ import (
 type minercraftMapi struct {
 	client *minercraft.Client
 	cfg    *config.MApi
-	svrCfg *config.Server
 	fq     *bt.FeeQuote
 }
 
 // NewMapi will setup and return a new MAPI minercraftMapi data store.
-func NewMapi(cfg *config.MApi, svrCfg *config.Server, client *minercraft.Client) *minercraftMapi {
-	return &minercraftMapi{client: client, cfg: cfg, svrCfg: svrCfg, fq: bt.NewFeeQuote()}
+func NewMapi(cfg *config.MApi, client *minercraft.Client) *minercraftMapi {
+	return &minercraftMapi{client: client, cfg: cfg, fq: bt.NewFeeQuote()}
 }
 
 // Broadcast will submit a transaction to mapi for inclusion in a block.
@@ -31,9 +30,9 @@ func (m *minercraftMapi) Broadcast(ctx context.Context, args payd.BroadcastArgs,
 		m.client.MinerByName(m.cfg.MinerName),
 		&minercraft.Transaction{
 			RawTx:              tx.String(),
-			CallBackURL:        "http://" + m.svrCfg.Hostname + "/api/v1/proofs/" + tx.TxID() + "?i=" + args.InvoiceID,
+			CallBackURL:        m.cfg.CallbackHost + "/api/v1/proofs/" + tx.TxID() + "?i=" + args.InvoiceID,
 			CallBackToken:      m.cfg.Token,
-			MerkleFormat:       "TSC",
+			MerkleFormat:       minercraft.MerkleFormatTSC,
 			CallBackEncryption: "",
 			MerkleProof:        true,
 			DsCheck:            true,

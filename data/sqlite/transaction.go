@@ -39,7 +39,7 @@ const (
 
 	sqlTransactionUpdateState = `
 		UPDATE transactions
-		SET state = ?
+		SET state = ?, fail_reason = ?, updated_at = ?
 		WHERE tx_id = ?
 	`
 
@@ -153,7 +153,7 @@ func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.Tran
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
-	result, err := tx.Exec(sqlTransactionUpdateState, req.State, args.TxID)
+	result, err := tx.Exec(sqlTransactionUpdateState, req.State, req.FailReason, time.Now().UTC(), args.TxID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update transactionId '%s' state to '%s'", args.TxID, req.State)
 	}

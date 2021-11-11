@@ -3,9 +3,11 @@ package middleware
 import (
 	"context"
 
+	"github.com/rs/zerolog/log"
+	"github.com/theflyingcodr/sockets"
+
 	"github.com/libsv/payd/config"
 	tsoc "github.com/libsv/payd/transports/sockets"
-	"github.com/theflyingcodr/sockets"
 )
 
 // IgnoreMyMessages will drop any messages received on the socket that are sent
@@ -45,4 +47,34 @@ func WithAppIDPayD() sockets.MiddlewareFunc {
 			return resp, err
 		}
 	}
+}
+
+// ErrorHandler will receive an error and the message that triggered the error.
+//
+// You can inspect the error, log it etc and if you want to send the error to
+// the sender for them to also handle, return a struct with error details.
+// If the return is nil no message will be sent back to the sender.
+func ErrorHandler(err error, msg *sockets.Message) {
+	log.Error().Err(err).
+		Str("originKey", msg.Key()).
+		Str("correlationID", msg.CorrelationID).
+		Str("channelID", msg.ChannelID()).
+		Msg("server error received")
+}
+
+// ErrorHandler will receive an error and the message that triggered the error.
+//
+// You can inspect the error, log it etc and if you want to send the error to
+// the sender for them to also handle, return a struct with error details.
+// If the return is nil no message will be sent back to the sender.
+func ErrorMsgHandler(errMsg sockets.ErrorMessage) {
+	var err sockets.ErrorDetail
+	_ = errMsg.Bind(&err)
+	log.Error().
+		RawJSON("errorDetail", errMsg.ErrorBody).
+		Str("originKey", errMsg.OriginKey).
+		Str("correlationID", errMsg.CorrelationID).
+		Str("channelID", errMsg.ChannelID).
+		RawJSON("originBody", errMsg.OriginBody).
+		Msg("server error received")
 }

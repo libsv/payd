@@ -16,7 +16,7 @@ func SetupDefaults() {
 	viper.SetDefault(EnvServerSwaggerHost, "localhost:8443")
 
 	// deployment
-	viper.SetDefault(EnvEnvironment, "dev")
+	viper.SetDefault(EnvEnvironment, "local")
 	viper.SetDefault(EnvRegion, "test")
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
@@ -41,7 +41,7 @@ func SetupDefaults() {
 
 	// wallet
 	viper.SetDefault(EnvNetwork, string(NetworkRegtest))
-	viper.SetDefault(EnvWalletSpvRequired, true)
+	viper.SetDefault(EnvWalletSpvRequired, false)
 	viper.SetDefault(EnvPaymentExpiry, 24)
 
 	// mapi

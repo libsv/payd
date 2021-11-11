@@ -46,7 +46,7 @@ func SetupRestDeps(cfg *config.Config, db *sqlx.DB) *RestDeps {
 		log.Fatal(mapiCli)
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv client %s", err)
@@ -61,9 +61,8 @@ func SetupRestDeps(cfg *config.Config, db *sqlx.DB) *RestDeps {
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
-	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, seedSvc, spvc)
-	paySvc := service.NewPayService(sqlLiteStore, sqlLiteStore, sqlLiteStore,
-		dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server)
+	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
+	paySvc := service.NewPayService(dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	proofSvc := service.NewProofsService(sqlLiteStore)
@@ -98,6 +97,7 @@ type SocketDeps struct {
 	OwnerService          payd.OwnerService
 	PaymentRequestService payd.PaymentRequestService
 	ConnectService        payd.ConnectService
+	TransactionService    payd.TransactionService
 }
 
 // SetupSocketDeps will setup dependencies used in the socket server.
@@ -113,7 +113,7 @@ func SetupSocketDeps(cfg *config.Config, db *sqlx.DB, c *client.Client) *SocketD
 		log.Fatal(mapiCli)
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	mapiStore := mapi.NewMapi(cfg.Mapi, cfg.Server, mapiCli)
+	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		log.Fatalf("failed to create spv client %s", err)
@@ -128,7 +128,7 @@ func SetupSocketDeps(cfg *config.Config, db *sqlx.DB, c *client.Client) *SocketD
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
 	paymentSvc := service.NewPayments(spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
-	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, seedSvc, spvc)
+	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c))
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
@@ -136,6 +136,7 @@ func SetupSocketDeps(cfg *config.Config, db *sqlx.DB, c *client.Client) *SocketD
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc)
+	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 
 	// create master private key if it doesn't exist
 	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
@@ -153,5 +154,6 @@ func SetupSocketDeps(cfg *config.Config, db *sqlx.DB, c *client.Client) *SocketD
 		OwnerService:          ownerSvc,
 		PaymentRequestService: paymentReqSvc,
 		ConnectService:        connectService,
+		TransactionService:    transactionService,
 	}
 }

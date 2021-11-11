@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bc/spv"
@@ -10,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	lathos "github.com/theflyingcodr/lathos/errs"
+	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
 )
@@ -17,7 +19,7 @@ import (
 type payments struct {
 	paymentVerify spv.PaymentVerifier
 	txWtr         payd.TransactionWriter
-	invRdr        payd.InvoiceReader
+	invRdr        payd.InvoiceReaderWriter
 	destRdr       payd.DestinationsReader
 	transacter    payd.Transacter
 	callbackWtr   payd.ProofCallbackWriter
@@ -26,7 +28,7 @@ type payments struct {
 }
 
 // NewPayments will setup and return a payments service.
-func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReader, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
+func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
 	svc := &payments{
 		paymentVerify: paymentVerify,
 		invRdr:        invRdr,
@@ -135,13 +137,8 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
 		RefundTo:  req.RefundTo,
-		TxHex: func() string {
-			if inv.SPVRequired {
-				return req.SPVEnvelope.RawTx
-			}
-			return req.RawTX.ValueOrZero()
-		}(),
-		Outputs: txos,
+		TxHex:     req.SPVEnvelope.RawTx,
+		Outputs:   txos,
 	}); err != nil {
 		return errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", args.InvoiceID)
 	}
@@ -161,17 +158,43 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	// Update tx state to broadcast
+	// Just logging errors here as I don't want to roll back tx now tx is broadcast.
 	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxBroadcast}); err != nil {
+		log.Error(err)
+	}
+	// set invoice as paid
+	if _, err := p.invRdr.InvoiceUpdate(ctx, payd.InvoiceUpdateArgs{InvoiceID: args.InvoiceID}, payd.InvoiceUpdatePaid{
+		PaymentReceivedAt: time.Now().UTC(),
+		RefundTo:          req.RefundTo.ValueOrZero(),
+	}); err != nil {
 		log.Error(err)
 	}
 
 	return p.transacter.Commit(ctx)
 }
 
+// Ack will handle an acknowledgement after a payment has been processed.
+func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) error {
+	err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: args.TxID}, payd.TransactionStateUpdate{
+		State: func() payd.TxState {
+			if req.Failed {
+				return payd.StateTxFailed
+			}
+			return payd.StateTxBroadcast
+		}(),
+		FailReason: func() null.String {
+			if req.Reason == "" {
+				return null.String{}
+			}
+			return null.StringFrom(req.Reason)
+		}(),
+	})
+	return errors.Wrap(err, "failed to update transaction state after payment ack")
+}
+
 func (p *payments) paymentVerifyOpts(verifySPV bool, fq *bt.FeeQuote) []spv.VerifyOpt {
-	opts := []spv.VerifyOpt{spv.VerifyFees(fq)}
-	if !verifySPV {
-		opts = append(opts, spv.NoVerifySPV())
+	if verifySPV {
+		return []spv.VerifyOpt{spv.VerifyFees(fq), spv.VerifySPV()}
 	}
-	return opts
+	return []spv.VerifyOpt{spv.NoVerifySPV(), spv.NoVerifyFees()}
 }

@@ -19,14 +19,15 @@ type opts struct {
 	pongWait        time.Duration
 	pingPeriod      time.Duration
 	maxMessageBytes int64
+	channelTimeout  time.Duration
 }
 
 func defaultOpts() *opts {
 	o := &opts{
-		writeTimeout: 2 * time.Second,
-		pongWait:     60 * time.Second,
-
+		writeTimeout:    2 * time.Second,
+		pongWait:        60 * time.Second,
 		maxMessageBytes: 512,
+		channelTimeout:  time.Duration(-1), // no timeout
 	}
 	o.pingPeriod = (o.pongWait * 9) / 10
 	return o
@@ -70,6 +71,27 @@ func WithMaxMessageSize(s int64) OptFunc {
 	}
 }
 
+// WithChannelTimeout will setup the server with a timeout that
+// is set on each channel as it is created.
+//
+// Default is to NOT expire, adding this will cause the server to
+// automatically close the channels and emit a channel.expired message to each client.
+func WithChannelTimeout(t time.Duration) OptFunc {
+	return func(c *opts) {
+		c.channelTimeout = t
+	}
+}
+
+// WithNoChannelTimeout will setup the server so it won't ever expire
+// channels, leaving it up to clients to disconnect.
+//
+// This is the default option.
+func WithNoChannelTimeout() OptFunc {
+	return func(c *opts) {
+		c.channelTimeout = time.Duration(-1)
+	}
+}
+
 // SocketServer is a central point that connects peers together.
 // It manages connections and channels as well as sending of messages
 // to peers.
@@ -89,6 +111,7 @@ type SocketServer struct {
 	directSender       chan sender
 	close              chan struct{}
 	done               chan struct{}
+	channelCloser      chan string
 	opts               *opts
 	onRegister         func(clientID, channelID string)
 	onDeRegister       func(clientID, channelID string)
@@ -128,6 +151,10 @@ func New(opts ...OptFunc) *SocketServer {
 }
 
 func (s *SocketServer) channelManager() {
+	ticker := time.NewTicker(time.Minute)
+	defer func() {
+		ticker.Stop()
+	}()
 	for {
 		select {
 		case <-s.close:
@@ -163,7 +190,11 @@ func (s *SocketServer) channelManager() {
 			s.clientConnections[u.clientID] = u.connection
 			ch, ok := s.channels[u.channelID]
 			if !ok {
-				ch = newChannel(u.channelID)
+				if s.opts.channelTimeout == -1 {
+					ch = newChannel(u.channelID, time.Time{})
+				} else {
+					ch = newChannel(u.channelID, time.Now().Add(s.opts.channelTimeout).UTC())
+				}
 				s.channels[u.channelID] = ch
 				s.onChannelCreate(u.channelID)
 			}
@@ -222,6 +253,33 @@ func (s *SocketServer) channelManager() {
 				}
 				go func() { ch.send <- m.msg }()
 			}
+		case <-ticker.C:
+			for channelID, channel := range s.channels {
+				if channel.expires.IsZero() { // doesn't expire
+					continue
+				}
+				if channel.expires.UTC().After(time.Now().UTC()) { // not yet expired
+					continue
+				}
+				// expired
+				clients := channel.expire()
+				delete(s.channels, channelID)
+				for _, client := range clients {
+					delete(s.clientConnections, client)
+				}
+				s.onChannelClose(channelID)
+			}
+		case channelID := <-s.channelCloser:
+			ch := s.channels[channelID]
+			if ch == nil {
+				continue
+			}
+			clients := ch.close()
+			for _, client := range clients {
+				delete(s.clientConnections, client)
+			}
+			delete(s.channels, channelID)
+			s.onChannelClose(channelID)
 		}
 	}
 }
@@ -280,11 +338,17 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 		clientID:   clientID,
 		connection: c,
 	}
+	// send the client a join success message
+	channel := s.channels[channelID]
 	log.Debug().Msgf("client %s added to channelID %s", clientID, channelID)
 	defer func() {
 		s.unregisterClient(channelID, clientID)
 		log.Debug().Msgf("removed clientID %s", clientID)
 	}()
+	joinMsg := sockets.NewMessage(sockets.MessageJoinSuccess, clientID, channelID)
+	if !channel.expires.IsZero() { // add the expiry header
+		joinMsg.Headers.Add(sockets.HeaderChannelExpiry, channel.expires.UTC().Format(time.RFC3339))
+	}
 	s.BroadcastDirect(clientID, sockets.NewMessage(sockets.MessageJoinSuccess, clientID, channelID))
 
 	log.Info().Msgf("connection with clientID %s added, listening for messages", clientID)
@@ -339,6 +403,11 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 		log.Debug().Msgf("channel message sent")
 	}
 	return nil
+}
+
+// CloseChannel will close a channel and close all connections within.
+func (s *SocketServer) CloseChannel(channelID string) {
+	s.channelCloser <- channelID
 }
 
 // WithErrorHandler can be used to overwrite the default error handler.

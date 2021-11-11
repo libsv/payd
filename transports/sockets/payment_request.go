@@ -7,28 +7,29 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
-	"github.com/theflyingcodr/sockets/client"
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
 )
 
 type paymentRequest struct {
-	prSvc  payd.PaymentRequestService
-	envSvc payd.EnvelopeService
+	transacter payd.Transacter
+	prSvc      payd.PaymentRequestService
+	envSvc     payd.EnvelopeService
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest socket listener.
-func NewPaymentRequest(svc payd.PaymentRequestService, envSvc payd.EnvelopeService) *paymentRequest {
+func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService) *paymentRequest {
 	return &paymentRequest{
-		prSvc:  svc,
-		envSvc: envSvc,
+		transacter: transacter,
+		prSvc:      svc,
+		envSvc:     envSvc,
 	}
 }
 
 // RegisterListeners will setup a listener for payments.
-func (p *paymentRequest) RegisterListeners(c *client.Client) {
-	c = c.RegisterListener(RoutePaymentRequestCreate, p.create).
+func (p *paymentRequest) RegisterListeners(c sockets.Client) {
+	c.RegisterListener(RoutePaymentRequestCreate, p.create).
 		RegisterListener(RoutePaymentRequestResponse, p.response)
 }
 
@@ -57,18 +58,22 @@ func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*s
 		RefundTo:     null.String{}, // TODO - read users paymail
 		Memo:         req.Memo,
 	}
+	// TODO : fix this, shouldn't be in this layer
+	ctx = p.transacter.WithTx(ctx)
+	defer func() {
+		_ = p.transacter.Rollback(ctx)
+	}()
 	env, err := p.envSvc.Envelope(ctx, payd.EnvelopeArgs{PayToURL: msg.ChannelID()}, req)
 	if err != nil {
 		return nil, err
 	}
-	if req.SPVRequired {
-		payment.SPVEnvelope = env.SPVEnvelope
-	} else {
-		payment.RawTX = null.StringFrom(env.SPVEnvelope.RawTx)
-	}
+	payment.SPVEnvelope = env
 	resp := msg.NewFrom(RoutePayment)
 	if err := resp.WithBody(&payment); err != nil {
 		return nil, err
+	}
+	if err := p.transacter.Commit(ctx); err != nil {
+		return nil, errors.Wrap(err, "failed to commit transaction")
 	}
 	return resp, nil
 }

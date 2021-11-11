@@ -86,9 +86,10 @@ func (c *Config) WithP4() *Config {
 // WithMapi will setup Mapi settings.
 func (c *Config) WithMapi() *Config {
 	c.Mapi = &MApi{
-		MinerName: viper.GetString(EnvMAPIMinerName),
-		URL:       viper.GetString(EnvMAPIURL),
-		Token:     viper.GetString(EnvMAPIToken),
+		MinerName:    viper.GetString(EnvMAPIMinerName),
+		URL:          viper.GetString(EnvMAPIURL),
+		Token:        viper.GetString(EnvMAPIToken),
+		CallbackHost: viper.GetString(EnvMAPICallbackHost),
 	}
 	return c
 }

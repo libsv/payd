@@ -26,7 +26,7 @@ func (d *destinations) RegisterRoutes(g *echo.Group) {
 // destination will return destinations by invoiceID, or a 404 if none found.
 // @Summary Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
 // @Description Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
-// @Tags Destinations
+// @Tags Destinations, Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"

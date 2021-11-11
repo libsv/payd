@@ -783,12 +783,8 @@ github.com/theflyingcodr/lathos v0.0.5 h1:XmJvKBjzBdJWXsrtkkzl1XuWEzNMdJ1pKOozR9
 github.com/theflyingcodr/lathos v0.0.5/go.mod h1:68tGFEbAqAzydWDb1KEJZPQY57l3hH32GXO11Hf1zGQ=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e h1:gfOQ8DVRKwc97bXeR6I6ogosWhFi4mredpUtZcx/gvg=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod h1:g9qbiDvB47WyrRnNu2t2gMZFNHKnatsYRxsGZbCi4EM=
-github.com/theflyingcodr/sockets v0.0.3-beta h1:gcjE/ilmXqKTxs6owFRBkSowH8FeDj+cpn76GBnXkKI=
-github.com/theflyingcodr/sockets v0.0.3-beta/go.mod h1:qvjSzBXbxI85gVpyXjTktCv8YQHSUggvA/hNVQ1+RNg=
-github.com/theflyingcodr/sockets v0.0.4-beta h1:L5fDV2QqNTqN3+vC7TShP7aUMSZHByqMBk+MK4lizSw=
-github.com/theflyingcodr/sockets v0.0.4-beta/go.mod h1:qvjSzBXbxI85gVpyXjTktCv8YQHSUggvA/hNVQ1+RNg=
-github.com/theflyingcodr/sockets v0.0.5-beta h1:pfCw1DMftWKSxvPa+9I9bnoRp9/e1j3QLolq16qGw6c=
-github.com/theflyingcodr/sockets v0.0.5-beta/go.mod h1:qvjSzBXbxI85gVpyXjTktCv8YQHSUggvA/hNVQ1+RNg=
+github.com/theflyingcodr/sockets v0.0.8-beta h1:CMm6xUzmuqQx3TouMQnkngsapNsLtrGEKYdXE0EOE8g=
+github.com/theflyingcodr/sockets v0.0.8-beta/go.mod h1:qvjSzBXbxI85gVpyXjTktCv8YQHSUggvA/hNVQ1+RNg=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tonicpow/go-minercraft v0.3.2 h1:EHXN4ACidCW3Gyljz2P6btXJ8VMX9/u61MoO59/KIlM=

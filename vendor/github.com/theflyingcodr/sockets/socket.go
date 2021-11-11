@@ -9,17 +9,33 @@ import (
 	"github.com/google/uuid"
 )
 
+// common headers.
+const (
+	HeaderChannelExpiry = "X-Channel-Expires"
+)
+
 // Client can be used to implement a client which will send and listen
 // to messages on channels.
 type Client interface {
-	WithJoinRoomSuccessListener(l HandlerFunc) Client
-	WithMiddleware(mws ...MiddlewareFunc) Client
-	WithJoinRoomFailedListener(l HandlerFunc) Client
-	WithErrorHandler(e ClientErrorHandlerFunc) Client
-	Close()
 	JoinChannel(host, channelID string, headers http.Header) error
 	LeaveChannel(channelID string, headers http.Header)
 	RegisterListener(msgType string, fn HandlerFunc) Client
+}
+
+// ClientPublisher can be implemented to allow a client to send messages
+// to a connected server and channel.
+type ClientPublisher interface {
+	Publish(req Request)
+}
+
+// ServerDirectBroadcaster is used to send a message from a server directly to a client.
+type ServerDirectBroadcaster interface {
+	BroadcastDirect(clientID string, msg *Message)
+}
+
+// ServerChannelBroadcaster is used to send a message from a server to all clients connected to a channel.
+type ServerChannelBroadcaster interface {
+	Broadcast(channelID string, msg *Message)
 }
 
 // Request is used to send a message to a channel with a specific key.
@@ -173,16 +189,6 @@ func (m *Message) WithBody(v interface{}) error {
 // NoContent is a helper that can be used to return an empty message from a listener.
 func (m *Message) NoContent() (*Message, error) {
 	return nil, nil
-}
-
-// DirectBroadcaster is used to send a message directly to a client.
-type DirectBroadcaster interface {
-	BroadcastDirect(clientID string, msg *Message)
-}
-
-// ChannelBroadcaster is used to send a message to all clients connected to a channel.
-type ChannelBroadcaster interface {
-	Broadcast(channelID string, msg *Message)
 }
 
 // ErrorMessage is a message type returned on error, it contains
