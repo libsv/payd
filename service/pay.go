@@ -22,11 +22,12 @@ type pay struct {
 }
 
 // NewPayService returns a pay service.
-func NewPayService(p4 http.P4, spvc payd.EnvelopeService, svrCfg *config.Server) payd.PayService {
+func NewPayService(storeTx payd.Transacter, p4 http.P4, spvc payd.EnvelopeService, svrCfg *config.Server) payd.PayService {
 	return &pay{
-		p4:     p4,
-		spvc:   spvc,
-		svrCfg: svrCfg,
+		storeTx: storeTx,
+		p4:      p4,
+		spvc:    spvc,
+		svrCfg:  svrCfg,
 	}
 }
 

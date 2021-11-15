@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
@@ -55,14 +56,26 @@ func WithAppIDPayD() sockets.MiddlewareFunc {
 // the sender for them to also handle, return a struct with error details.
 // If the return is nil no message will be sent back to the sender.
 func ErrorHandler(err error, msg *sockets.Message) {
+	if err == nil {
+		return
+	}
+	if msg == nil {
+		log.Error().Err(err).
+			Str("reason", err.Error()).
+			Str("trace", fmt.Sprintf("%v", err)).
+			Msg("unexpected client error received")
+		return
+	}
 	log.Error().Err(err).
+		Str("reason", err.Error()).
+		Str("trace", fmt.Sprintf("%v", err)).
 		Str("originKey", msg.Key()).
 		Str("correlationID", msg.CorrelationID).
 		Str("channelID", msg.ChannelID()).
-		Msg("server error received")
+		Msg("unexpected client error message received")
 }
 
-// ErrorHandler will receive an error and the message that triggered the error.
+// ErrorMsgHandler will receive an error and the message that triggered the error.
 //
 // You can inspect the error, log it etc and if you want to send the error to
 // the sender for them to also handle, return a struct with error details.

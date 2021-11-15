@@ -96,14 +96,14 @@ func Test_ConfigValidateNetwork(t *testing.T) {
 					Network: "btestneth",
 				},
 			},
-			err: errors.New("[deployment.network: value btestneth failed to meet requirements]"),
+			err: errors.New("[wallet.network: value btestneth failed to meet requirements]"),
 		}, "invalid deployment network config should error": {
 			cfg: &Config{
 				Wallet: &Wallet{
 					Network: "blah",
 				},
 			},
-			err: errors.New("[deployment.network: value blah failed to meet requirements]"),
+			err: errors.New("[wallet.network: value blah failed to meet requirements]"),
 		},
 	}
 	for name, test := range tests {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	lathos "github.com/theflyingcodr/lathos/errs"
@@ -17,6 +17,7 @@ import (
 )
 
 type payments struct {
+	l             log.Logger
 	paymentVerify spv.PaymentVerifier
 	txWtr         payd.TransactionWriter
 	invRdr        payd.InvoiceReaderWriter
@@ -28,8 +29,9 @@ type payments struct {
 }
 
 // NewPayments will setup and return a payments service.
-func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
+func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
 	svc := &payments{
+		l:             l,
 		paymentVerify: paymentVerify,
 		invRdr:        invRdr,
 		destRdr:       destRdr,
@@ -152,7 +154,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{InvoiceID: inv.ID}, tx); err != nil {
 		// set as failed
 		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
-			log.Error(err)
+			p.l.Error(err, "failed to update tx after failed broadcast")
 		}
 		return errors.Wrap(err, "failed to broadcast tx")
 	}
@@ -160,14 +162,14 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	// Update tx state to broadcast
 	// Just logging errors here as I don't want to roll back tx now tx is broadcast.
 	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxBroadcast}); err != nil {
-		log.Error(err)
+		p.l.Error(err, "failed to update tx to broadcast state")
 	}
 	// set invoice as paid
 	if _, err := p.invRdr.InvoiceUpdate(ctx, payd.InvoiceUpdateArgs{InvoiceID: args.InvoiceID}, payd.InvoiceUpdatePaid{
 		PaymentReceivedAt: time.Now().UTC(),
 		RefundTo:          req.RefundTo.ValueOrZero(),
 	}); err != nil {
-		log.Error(err)
+		p.l.Error(err, "failed to update invoice to paid")
 	}
 
 	return p.transacter.Commit(ctx)

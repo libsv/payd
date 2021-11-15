@@ -87,14 +87,18 @@ type TransactionWriter interface {
 	TransactionUpdateState(ctx context.Context, args TransactionArgs, req TransactionStateUpdate) error
 }
 
+// TransactionSubmitArgs are used to identify a tx.
 type TransactionSubmitArgs struct {
 	InvoiceID string `param:"invoiceid"`
 }
 
+// TransactionSubmit contains the request to store the tx.
 type TransactionSubmit struct {
 	TxHex string `param:"txHex"`
 }
 
+// TransactionService is used to handle transactions.
 type TransactionService interface {
+	// Submit is for testing only and allows a finalised tx to be stored.
 	Submit(ctx context.Context, args TransactionSubmitArgs, req TransactionSubmit) error
 }

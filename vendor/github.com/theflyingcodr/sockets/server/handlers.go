@@ -24,16 +24,26 @@ func (s *SocketServer) RegisterChannelHandler(name string, fn sockets.HandlerFun
 
 // defaultErrorHandler will simply log the error and then add some details
 // to the message body before returning to the client the message was sent from.
-func defaultErrorHandler(msg sockets.Message, e error) *sockets.ErrorMessage {
-	log.Error().
+func defaultErrorHandler(msg *sockets.Message, e error) *sockets.ErrorMessage {
+	if e == nil {
+		return nil
+	}
+	if msg == nil {
+		log.Error().Err(e).
+			Str("reason", e.Error()).
+			Str("trace", fmt.Sprintf("%v", e)).
+			Msg("unexpected error received")
+		return nil
+	}
+	log.Error().Err(e).
 		Str("id", msg.ID()).
 		Str("trace", fmt.Sprintf("%v", e)).
 		Str("msgType", msg.Key()).
-		Err(e)
-
+		Msg("unexpected error message received")
 	return msg.ToError(sockets.ErrorDetail{
 		Title:       "unexpected server error",
 		Description: e.Error(),
 		ErrCode:     "500",
 	})
+
 }

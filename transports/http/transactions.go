@@ -13,10 +13,12 @@ type transactions struct {
 	svc payd.TransactionService
 }
 
+// NewTransactions will setup and return a new transactions handler.
 func NewTransactions(svc payd.TransactionService) *transactions {
 	return &transactions{svc: svc}
 }
 
+// RegisterRoutes will setup http endpoints.
 func (t *transactions) RegisterRoutes(g *echo.Group) {
 	g.POST(RouteV1Transaction, t.submit)
 }

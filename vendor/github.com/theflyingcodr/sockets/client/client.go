@@ -20,20 +20,19 @@ type opts struct {
 	reconnectTimeout  time.Duration
 	writeTimeout      time.Duration
 	pongWait          time.Duration
-	pingPeriod        int
 	maxMessageBytes   int64
 }
 
 func defaultOpts() *opts {
-	return &opts{
+	o := &opts{
 		reconnect:         false,
 		reconnectAttempts: 3,
 		reconnectTimeout:  30 * time.Second,
 		writeTimeout:      2 * time.Second,
 		pongWait:          60 * time.Second,
-		pingPeriod:        int((60 * time.Second * 9) / 10),
 		maxMessageBytes:   512,
 	}
+	return o
 }
 
 // OptFunc defines a functional option to pass to the client at setup time.
@@ -90,14 +89,6 @@ func WithWriteTimeout(t time.Duration) OptFunc {
 func WithPongTimeout(t time.Duration) OptFunc {
 	return func(c *opts) {
 		c.pongWait = t
-	}
-}
-
-// WithPingPeriod will define the break between pings to the server.
-// This should always be less than PongTimeout.
-func WithPingPeriod(i int) OptFunc {
-	return func(c *opts) {
-		c.pingPeriod = i
 	}
 }
 
@@ -160,8 +151,8 @@ func New(opts ...OptFunc) *Client {
 		opts:             o,
 	}
 	cli.RegisterListener(sockets.MessageJoinSuccess, cli.joinSuccess)
-	cli.RegisterListener(sockets.MessageChannelExpired, channelExpired)
-	cli.RegisterListener(sockets.MessageChannelClosed, channelClosed)
+	cli.RegisterListener(sockets.MessageChannelExpired, cli.channelExpired)
+	cli.RegisterListener(sockets.MessageChannelClosed, cli.channelClosed)
 	go cli.channelManager()
 	return cli
 }
@@ -356,9 +347,8 @@ func (c *Client) Publish(req sockets.Request) error {
 }
 
 // RegisterListener will add a new listener to the client.
-func (c *Client) RegisterListener(msgType string, fn sockets.HandlerFunc) sockets.Client {
+func (c *Client) RegisterListener(msgType string, fn sockets.HandlerFunc) {
 	c.Lock()
 	defer c.Unlock()
 	c.listeners[msgType] = fn
-	return c
 }

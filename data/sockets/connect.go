@@ -2,7 +2,6 @@ package sockets
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/theflyingcodr/sockets/client"
@@ -23,7 +22,6 @@ func NewConnect(cfg *config.P4, cli *client.Client) *connect {
 
 // Connect will join payd with a socket server and kick off the payment process.
 func (c *connect) Connect(ctx context.Context, args payd.ConnectArgs) error {
-	fmt.Println(c.cfg.ServerHost)
 	if err := c.cli.JoinChannel(c.cfg.ServerHost, args.InvoiceID, nil); err != nil {
 		return errors.Wrapf(err, "failed to connect to channel")
 	}

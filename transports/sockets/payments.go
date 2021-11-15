@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
+	"github.com/theflyingcodr/sockets/client"
 )
 
 type payments struct {
@@ -20,9 +21,9 @@ func NewPayments(svc payd.PaymentsService) *payments {
 }
 
 // RegisterListeners will setup a listener for payments.
-func (p *payments) RegisterListeners(c sockets.Client) {
-	c.RegisterListener(RoutePayment, p.create).
-		RegisterListener(RoutePaymentACK, p.ack)
+func (p *payments) RegisterListeners(c *client.Client) {
+	c.RegisterListener(RoutePayment, p.create)
+	c.RegisterListener(RoutePaymentACK, p.ack)
 }
 
 func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {

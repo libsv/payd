@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 
@@ -12,11 +13,23 @@ import (
 //
 // You can inspect the error, log it etc or retry handling the message.
 func defaultErrorHandler(err error, msg *sockets.Message) {
+	if err == nil {
+		return
+	}
+	if msg == nil {
+		log.Error().Err(err).
+			Str("reason", err.Error()).
+			Str("trace", fmt.Sprintf("%v", err)).
+			Msg("unexpected client error received")
+		return
+	}
 	log.Error().Err(err).
+		Str("reason", err.Error()).
+		Str("trace", fmt.Sprintf("%v", err)).
 		Str("originKey", msg.Key()).
 		Str("correlationID", msg.CorrelationID).
 		Str("channelID", msg.ChannelID()).
-		Msg("client error received")
+		Msg("unexpected client error message received")
 }
 
 // defaultErrorMsgHandler will receive an error and the message that triggered the error.
@@ -43,12 +56,14 @@ func (c *Client) joinSuccess(ctx context.Context, msg *sockets.Message) (*socket
 	return msg.NoContent()
 }
 
-func channelExpired(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
+func (c *Client) channelExpired(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
 	log.Debug().Msgf("channel expired %s", msg.ChannelID())
+	c.LeaveChannel(msg.ChannelID(), nil)
 	return msg.NoContent()
 }
 
-func channelClosed(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
+func (c *Client) channelClosed(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
 	log.Debug().Msgf("channel closed %s", msg.ChannelID())
+	c.LeaveChannel(msg.ChannelID(), nil)
 	return msg.NoContent()
 }

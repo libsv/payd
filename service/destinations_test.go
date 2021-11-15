@@ -293,7 +293,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 	fq := bt.NewFeeQuote()
 	tests := map[string]struct {
 		args             payd.DestinationsArgs
-		cfg              *config.Deployment
+		cfg              *config.Wallet
 		invoiceFunc      func(context.Context, payd.InvoiceArgs) (*payd.Invoice, error)
 		destinationsFunc func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
 		feesFunc         func(context.Context) (*bt.FeeQuote, error)
@@ -301,7 +301,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 		expDestination   *payd.Destination
 	}{
 		"successful destinations network get": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{
@@ -345,7 +345,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 		},
 		"successful destinations network get on testnet": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkTestnet,
 			},
 			args: payd.DestinationsArgs{
@@ -389,7 +389,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 		},
 		"successful destinations network get spv not required": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{
@@ -431,7 +431,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 		},
 		"successful get with 2 hr expiry": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{
@@ -473,7 +473,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			},
 		},
 		"error with invoice is reported": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{
@@ -497,7 +497,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			expErr: errors.New("failed to get invoice for invoiceID 'abc123' when getting destinations: outsilent"),
 		},
 		"error with destinations is reported": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{
@@ -522,7 +522,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 			expErr: errors.New("failed to read destinations for invoiceID 'abc123': destination unknown"),
 		},
 		"error on fees is reported": {
-			cfg: &config.Deployment{
+			cfg: &config.Wallet{
 				Network: config.NetworkMainet,
 			},
 			args: payd.DestinationsArgs{

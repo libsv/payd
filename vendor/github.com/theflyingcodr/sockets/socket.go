@@ -19,7 +19,7 @@ const (
 type Client interface {
 	JoinChannel(host, channelID string, headers http.Header) error
 	LeaveChannel(channelID string, headers http.Header)
-	RegisterListener(msgType string, fn HandlerFunc) Client
+	RegisterListener(msgType string, fn HandlerFunc)
 }
 
 // ClientPublisher can be implemented to allow a client to send messages
@@ -256,10 +256,10 @@ func isNil(i interface{}) bool {
 	if i == nil {
 		return true
 	}
-	// nolint: exhaustive // don't catering for everything... yet
 	switch reflect.TypeOf(i).Kind() {
 	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
 		return reflect.ValueOf(i).IsNil()
+	default:
+		return false
 	}
-	return false
 }

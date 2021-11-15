@@ -11,7 +11,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo/v4 v4.6.1
-	github.com/labstack/gommon v0.3.0
 	github.com/libsv/go-bk v0.1.4
 	github.com/libsv/go-bt/v2 v2.0.0-beta.9
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -66,7 +65,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/theflyingcodr/sockets v0.0.8-beta
+	github.com/theflyingcodr/sockets v0.0.10-beta
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
@@ -82,6 +81,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

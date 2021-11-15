@@ -2,12 +2,13 @@ package server
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
 	"github.com/theflyingcodr/sockets"
@@ -199,6 +200,7 @@ func (s *SocketServer) channelManager() {
 				s.onChannelCreate(u.channelID)
 			}
 			ch.conns[u.clientID] = u.connection
+			u.registered <- nil
 			s.onRegister(u.clientID, u.channelID)
 		case m := <-s.channelSender:
 			log.Debug().Msg("running channel sender")
@@ -261,10 +263,13 @@ func (s *SocketServer) channelManager() {
 				if channel.expires.UTC().After(time.Now().UTC()) { // not yet expired
 					continue
 				}
+				log.Debug().
+					Msgf("channel %s expired, closing connections", channelID)
 				// expired
 				clients := channel.expire()
 				delete(s.channels, channelID)
 				for _, client := range clients {
+					s.onDeRegister(client, channelID)
 					delete(s.clientConnections, client)
 				}
 				s.onChannelClose(channelID)
@@ -276,6 +281,7 @@ func (s *SocketServer) channelManager() {
 			}
 			clients := ch.close()
 			for _, client := range clients {
+				s.onDeRegister(client, channelID)
 				delete(s.clientConnections, client)
 			}
 			delete(s.channels, channelID)
@@ -333,10 +339,15 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 	}
 	go c.writer()
 	log.Debug().Msgf("adding clientID %s connection to channelID %s", clientID, channelID)
+	registered := make(chan error)
 	s.register <- register{
 		channelID:  channelID,
 		clientID:   clientID,
 		connection: c,
+		registered: registered,
+	}
+	if err := <-registered; err != nil {
+		return fmt.Errorf("failed to join channel %w", err)
 	}
 	// send the client a join success message
 	channel := s.channels[channelID]
@@ -356,11 +367,16 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 	for {
 		var m *sockets.Message
 		if err := conn.ReadJSON(&m); err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Error().Msgf("error: %v", err)
+			log.Debug().Msg("clsoe error received, handling")
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+				log.Error().Msgf("unexpected client %s close error: %v", clientID, err)
+			} else {
+				log.Info().Msgf("client %s closed connection, exiting listener", clientID)
 			}
+			s.unregisterClient(channelID, clientID)
 			break
 		}
+
 		m.ClientID = clientID
 		ctx := context.Background()
 		log.Debug().Msg("message received")
@@ -372,7 +388,7 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 		log.Debug().Msgf("executing handler for message %s", m.Key())
 		resp, err := middleware.ExecMiddlewareChain(hndlr, s.middleware)(ctx, m)
 		if err != nil {
-			errMsg := s.errHandler(*m, err)
+			errMsg := s.errHandler(m, errors.WithStack(err))
 			if errMsg == nil {
 				continue
 			}
@@ -470,6 +486,7 @@ type register struct {
 	channelID  string
 	clientID   string
 	connection *connection
+	registered chan error
 }
 
 type unregister struct {

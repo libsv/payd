@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
+	"github.com/theflyingcodr/sockets/client"
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
@@ -28,9 +29,9 @@ func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestServic
 }
 
 // RegisterListeners will setup a listener for payments.
-func (p *paymentRequest) RegisterListeners(c sockets.Client) {
-	c.RegisterListener(RoutePaymentRequestCreate, p.create).
-		RegisterListener(RoutePaymentRequestResponse, p.response)
+func (p *paymentRequest) RegisterListeners(c *client.Client) {
+	c.RegisterListener(RoutePaymentRequestCreate, p.create)
+	c.RegisterListener(RoutePaymentRequestResponse, p.response)
 }
 
 func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {

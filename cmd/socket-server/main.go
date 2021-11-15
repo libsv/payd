@@ -1,21 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"github.com/libsv/payd/cmd/internal"
 	"github.com/libsv/payd/config/databases"
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/docs"
 	_ "github.com/libsv/payd/docs"
+	"github.com/libsv/payd/log"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 	socMiddleware "github.com/libsv/payd/transports/sockets/middleware"
-
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/theflyingcodr/sockets/client"
 	smw "github.com/theflyingcodr/sockets/middleware"
@@ -69,17 +68,18 @@ func main() {
 		WithP4().
 		WithMapi().
 		WithSocket()
+	log := log.NewZero(cfg.Logging)
 	// validate the config, fail if it fails.
 	if err := cfg.Validate(); err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "config validation failed")
 	}
-	config.SetupLog(cfg.Logging)
-	log.Infof("\n------Environment: %s -----\n", cfg.Server)
+
+	log.Infof("------Environment: %v -----", cfg.Server)
 
 	// setup db
-	db, err := databases.NewDbSetup().SetupDb(cfg.Db)
+	db, err := databases.NewDbSetup().SetupDb(log, cfg.Db)
 	if err != nil {
-		log.Fatalf("failed to setup database: %s", err)
+		log.Fatalf(err, "failed to setup database")
 	}
 	// nolint:errcheck // dont care about error.
 	defer db.Close()
@@ -98,7 +98,7 @@ func main() {
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
-	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
+	e.HTTPErrorHandler = paydMiddleware.ErrorHandler(log)
 	p := prometheus.NewPrometheus("paydsockets", nil)
 	p.Use(e)
 	if cfg.Deployment.IsDev() {
@@ -114,7 +114,7 @@ func main() {
 	s.WithMiddleware(smw.PanicHandler, smw.Timeout(smw.NewTimeoutConfig()), metricsMW)
 
 	// socket client server
-	c := client.New(client.WithMaxMessageSize(10000))
+	c := client.New(client.WithMaxMessageSize(10000), client.WithPongTimeout(360*time.Second))
 	defer c.Close()
 	c.WithMiddleware(smw.PanicHandler,
 		smw.Timeout(smw.NewTimeoutConfig()),
@@ -125,12 +125,15 @@ func main() {
 		WithErrorHandler(socMiddleware.ErrorHandler).
 		WithServerErrorHandler(socMiddleware.ErrorMsgHandler)
 
-	services := internal.SetupSocketDeps(cfg, db, c)
+	services := internal.SetupSocketDeps(cfg, log, db, c)
 
 	// client handlers
-	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, services.PaymentRequestService, services.EnvelopeService).RegisterListeners(c)
-	tsoc.NewPayments(services.PaymentService).RegisterListeners(c)
-	tsoc.NewProofs(services.ProofService, c).RegisterListeners(c)
+	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, services.PaymentRequestService, services.EnvelopeService).
+		RegisterListeners(c)
+	tsoc.NewPayments(services.PaymentService).
+		RegisterListeners(c)
+	tsoc.NewProofs(services.ProofService, c).
+		RegisterListeners(c)
 
 	// rest handlers
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
@@ -163,8 +166,6 @@ func wsHandler(svr *server.SocketServer) echo.HandlerFunc {
 		if err := svr.Listen(ws, c.Param("channelID")); err != nil {
 			return err
 		}
-
-		fmt.Println("exiting listener")
 		return nil
 	}
 }

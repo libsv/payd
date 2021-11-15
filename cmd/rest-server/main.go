@@ -8,11 +8,9 @@ import (
 	"github.com/libsv/payd/cmd/internal"
 	"github.com/libsv/payd/docs"
 
-	_ "github.com/libsv/payd/docs"
-
-	"github.com/labstack/gommon/log"
-
 	"github.com/libsv/payd/config/databases"
+	_ "github.com/libsv/payd/docs"
+	"github.com/libsv/payd/log"
 	thttp "github.com/libsv/payd/transports/http"
 
 	"github.com/libsv/payd/config"
@@ -61,15 +59,15 @@ func main() {
 		WithWallet().
 		WithP4().
 		WithMapi()
+	log := log.NewZero(cfg.Logging)
 	// validate the config, fail if it fails.
 	if err := cfg.Validate(); err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "validation errors")
 	}
-	config.SetupLog(cfg.Logging)
-	log.Infof("\n------Environment: %s -----\n", cfg.Server)
-	db, err := databases.NewDbSetup().SetupDb(cfg.Db)
+	log.Infof("------Environment: %v -----", cfg.Server)
+	db, err := databases.NewDbSetup().SetupDb(log, cfg.Db)
 	if err != nil {
-		log.Fatalf("failed to setup database: %s", err)
+		log.Fatal(err, "failed to setup database")
 	}
 	// nolint:errcheck // dont care about error.
 	defer db.Close()
@@ -89,10 +87,10 @@ func main() {
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
-	e.HTTPErrorHandler = paydMiddleware.ErrorHandler
+	e.HTTPErrorHandler = paydMiddleware.ErrorHandler(log)
 
 	// setup deps
-	services := internal.SetupRestDeps(cfg, db)
+	services := internal.SetupRestDeps(cfg, log, db)
 
 	thttp.NewInvoice(services.InvoiceService).
 		RegisterRoutes(g)

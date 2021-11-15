@@ -7,6 +7,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/payd"
 )
 
@@ -20,7 +21,7 @@ var _ payd.EnvelopeService = &EnvelopeServiceMock{}
 //
 // 		// make and configure a mocked payd.EnvelopeService
 // 		mockedEnvelopeService := &EnvelopeServiceMock{
-// 			EnvelopeFunc: func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*payd.Envelope, error) {
+// 			EnvelopeFunc: func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
 // 				panic("mock out the Envelope method")
 // 			},
 // 		}
@@ -31,7 +32,7 @@ var _ payd.EnvelopeService = &EnvelopeServiceMock{}
 // 	}
 type EnvelopeServiceMock struct {
 	// EnvelopeFunc mocks the Envelope method.
-	EnvelopeFunc func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*payd.Envelope, error)
+	EnvelopeFunc func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -49,7 +50,7 @@ type EnvelopeServiceMock struct {
 }
 
 // Envelope calls EnvelopeFunc.
-func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*payd.Envelope, error) {
+func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
 	if mock.EnvelopeFunc == nil {
 		panic("EnvelopeServiceMock.EnvelopeFunc: method is nil but EnvelopeService.Envelope was just called")
 	}

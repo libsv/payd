@@ -17,6 +17,7 @@ type transactions struct {
 	invRdr     payd.InvoiceReaderWriter
 }
 
+// NewTransactions will setup and return a new Transaction service.
 func NewTransactions(transacter payd.Transacter, destRdr payd.DestinationsReaderWriter, tWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter) *transactions {
 	return &transactions{
 		transacter: transacter,
@@ -26,6 +27,7 @@ func NewTransactions(transacter payd.Transacter, destRdr payd.DestinationsReader
 	}
 }
 
+// Submit will add a finalised tx to the data store.
 func (t *transactions) Submit(ctx context.Context, args payd.TransactionSubmitArgs, req payd.TransactionSubmit) error {
 	ctx = t.transacter.WithTx(ctx)
 	defer func() {

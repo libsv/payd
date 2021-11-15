@@ -8,11 +8,11 @@ import (
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/log"
 	"github.com/libsv/payd/mocks"
 	"github.com/libsv/payd/service"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/guregu/null.v3"
 )
 
 func TestPaymentsService_PaymentCreate(t *testing.T) {
@@ -72,7 +72,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: payd.PaymentCreate{
-				RawTX: null.StringFrom("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"),
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -120,7 +120,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 				},
 			},
-			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq)},
+			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.VerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxBroadcast,
 		},
@@ -337,7 +337,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: payd.PaymentCreate{
-				RawTX: null.StringFrom("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"),
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -375,7 +375,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: payd.PaymentCreate{
-				RawTX: null.StringFrom("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"),
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 				ProofCallbacks: map[string]payd.ProofCallback{
 					"wow": {},
 				},
@@ -419,7 +419,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: payd.PaymentCreate{
-				RawTX: null.StringFrom("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"),
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxFailed,
@@ -464,7 +464,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: payd.PaymentCreate{
-				RawTX: null.StringFrom("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"),
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxBroadcast,
@@ -476,6 +476,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			svc := service.NewPayments(
+				log.Noop{},
 				&mocks.PaymentVerifierMock{
 					VerifyPaymentFunc: func(ctx context.Context, envelope *spv.Envelope, opts ...spv.VerifyOpt) (*bt.Tx, error) {
 						assert.Equal(t, len(test.expVerifyOpts), len(opts))
@@ -494,6 +495,9 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				},
 				&mocks.InvoiceReaderWriterMock{
 					InvoiceFunc: test.invoiceFunc,
+					InvoiceUpdateFunc: func(ctx context.Context, args payd.InvoiceUpdateArgs, req payd.InvoiceUpdatePaid) (*payd.Invoice, error) {
+						return nil, nil
+					},
 				},
 				&mocks.DestinationsReaderWriterMock{
 					DestinationsFunc: test.destinationsFunc,

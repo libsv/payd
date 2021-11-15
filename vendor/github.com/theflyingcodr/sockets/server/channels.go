@@ -1,9 +1,12 @@
 package server
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/theflyingcodr/sockets"
+	"github.com/theflyingcodr/sockets/internal"
 )
 
 type channel struct {
@@ -24,10 +27,15 @@ func newChannel(id string, expires time.Time) *channel {
 // expire will expire all connections in the channel and return a list of affected clientIDs.
 func (c *channel) expire() []string {
 	clients := make([]string, 0)
+	fmt.Println("total cons", len(c.conns))
 	for clientID, conn := range c.conns {
-		_ = conn.ws.WriteJSON(sockets.NewMessage(sockets.MessageChannelExpired, clientID, c.id))
+		fmt.Println("sending expired message")
+		_ = internal.WriteJSON(conn.ws, time.Minute, sockets.NewMessage(sockets.MessageChannelExpired, clientID, c.id))
+		fmt.Println("sending close message")
+		_ = conn.ws.WriteControl(websocket.CloseMessage, nil, time.Now().Add(60*time.Second))
 		_ = conn.ws.Close()
 		clients = append(clients, clientID)
+		delete(c.conns, clientID)
 	}
 	return clients
 }

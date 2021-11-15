@@ -20,15 +20,13 @@ type PaymentCreate struct {
 	MerchantData User `json:"merchantData"`
 	// RefundTo is a paymail to send a refund to should a refund be necessary.
 	// Maximum length is 100 characters
-	RefundTo null.String `json:"refundTo"  swaggertype:"primitive,string" example:"me@paymail.com"`
+	RefundTo null.String `json:"refundTo" swaggertype:"primitive,string" example:"me@paymail.com"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo" example:"for invoice 123456"`
 	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
 	// Should be available if SPVRequired is set to true in the paymentRequest.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
 	SPVEnvelope *spv.Envelope `json:"spvEnvelope"`
-	// RawTX should be sent if SPVRequired is set to false in the payment request.
-	RawTX null.String `json:"rawTx"`
 	// ProofCallbacks are optional and can be supplied when the sender wants to receive
 	// a merkleproof for the transaction they are submitting as part of the SPV Envelope.
 	//
@@ -40,8 +38,8 @@ type PaymentCreate struct {
 // Validate will ensure the users request is correct.
 func (p PaymentCreate) Validate(spvRequired bool) error {
 	v := validator.New().
-		Validate("spvEnvelope/rawTx", func() error {
-			if p.RawTX.IsZero() && p.SPVEnvelope == nil {
+		Validate("spvEnvelope", func() error {
+			if p.SPVEnvelope == nil || p.SPVEnvelope.TxID == "" {
 				return errors.New("either an SPVEnvelope or a rawTX are required")
 			}
 			return nil
@@ -89,11 +87,13 @@ type ProofCallback struct {
 	Token string
 }
 
+// AckArgs are used to identify a payment we are acknowledging.
 type AckArgs struct {
 	InvoiceID string
 	TxID      string
 }
 
+// Ack contains the status of the payment.
 type Ack struct {
 	Failed bool
 	Reason string

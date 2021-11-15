@@ -26,7 +26,7 @@ type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 // ServerErrorHandlerFunc defines an error handler for a server.
 //
 // The message can be handled, logged, and returned to clients.
-type ServerErrorHandlerFunc func(msg Message, e error) *ErrorMessage
+type ServerErrorHandlerFunc func(msg *Message, e error) *ErrorMessage
 
 // ClientErrorHandlerFunc is raised when the client itself returns an error
 // when processing a message.
