@@ -62,6 +62,11 @@ View documentation on hosting your own [mAPI server](https://github.com/bitcoin-
   - `FastestQuote()` asks all miners and returns the fastest quote response
   - `BestQuote()` gets all quotes from miners and return the best rate/quote
   - `CalculateFee()` returns the fee for a given transaction
+- Public Available Miners:
+  - [TAAl](https://tpow.app/a0f9475a)
+  - [Mempool](https://tpow.app/361a5570)
+  - [Matterpool](https://tpow.app/66b32fae)
+  - [GorillaPool](https://tpow.app/43adc27e)
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
@@ -155,8 +160,8 @@ View the [examples](examples)
 
 ## Maintainers
 | [<img src="https://github.com/mrz1836.png" height="50" alt="MrZ" />](https://github.com/mrz1836) |
-|:---:|
-| [MrZ](https://github.com/mrz1836) |
+|:------------------------------------------------------------------------------------------------:|
+|                                [MrZ](https://github.com/mrz1836)                                 |
 
 <br/>
 
