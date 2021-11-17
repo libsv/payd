@@ -25,9 +25,9 @@ require (
 	github.com/swaggo/swag v1.7.4
 	github.com/theflyingcodr/govalidator v0.1.3
 	github.com/theflyingcodr/lathos v0.0.5
-	github.com/tonicpow/go-minercraft v0.3.2
+	github.com/tonicpow/go-minercraft v0.3.4
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/tools v0.1.6 // indirect
 	gopkg.in/guregu/null.v3 v3.5.0
@@ -50,7 +50,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/libsv/go-bc v0.1.7
-	github.com/libsv/go-bt v1.0.3 // indirect
+	github.com/libsv/go-bt v1.0.4 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

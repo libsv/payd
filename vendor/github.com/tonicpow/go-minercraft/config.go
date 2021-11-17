@@ -5,7 +5,7 @@ import "time"
 const (
 
 	// version is the current package version
-	version = "v0.3.2"
+	version = "v0.3.4"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-minercraft: " + version
@@ -34,6 +34,9 @@ const (
 
 	// MinerMatterpool is the name of the known miner for "Matterpool"
 	MinerMatterpool = "Matterpool"
+
+	// MinerGorillaPool is the name of the known miner for "GorillaPool"
+	MinerGorillaPool = "GorillaPool"
 )
 
 // KnownMiners is a pre-filled list of known miners
@@ -58,6 +61,12 @@ const KnownMiners = `
    "miner_id": "0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087",
    "token": "",
    "url": "https://merchantapi.matterpool.io"
+  },
+  {
+   "name": "GorillaPool",
+   "miner_id": "03ad780153c47df915b3d2e23af727c68facaca4facd5f155bf5018b979b9aeb83",
+   "token": "",
+   "url": "https://merchantapi.gorillapool.io"
   }
 ]
 `
