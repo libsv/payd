@@ -31,6 +31,7 @@ type RestDeps struct {
 	BalanceService     payd.BalanceService
 	ProofService       payd.ProofsService
 	OwnerService       payd.OwnerService
+	TransactionService payd.TransactionService
 }
 
 // SetupRestDeps will setup dependencies used in the rest server.
@@ -68,6 +69,8 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 
+	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
+
 	// create master private key if it doesn't exist
 	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
 		l.Fatal(err, "failed to create master key")
@@ -82,6 +85,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
 		BalanceService:     balanceSvc,
 		ProofService:       proofSvc,
 		OwnerService:       ownerSvc,
+		TransactionService: transactionService,
 	}
 }
 

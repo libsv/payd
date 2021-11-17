@@ -49,7 +49,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/labstack/echo-contrib v0.11.0
 	github.com/libsv/go-bc v0.1.7
 	github.com/libsv/go-bt v1.0.3 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect

@@ -1,5 +1,4 @@
 FROM golang:1.17.1-buster as builder
-ARG binary
 
 # Create appuser.
 ENV USER=appuser
@@ -16,7 +15,7 @@ RUN adduser \
 WORKDIR /app
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/$binary
+RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/server
 
 FROM bitnami/minideb:buster
 

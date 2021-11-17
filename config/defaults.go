@@ -48,4 +48,11 @@ func SetupDefaults() {
 	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
 	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
 	viper.SetDefault(EnvMAPIToken, "")
+
+	// Socket settings
+	viper.SetDefault(EnvSocketMaxMessageBytes, 10000)
+
+	// Transport settings
+	viper.SetDefault(EnvTransportHTTPEnabled, true)
+	viper.SetDefault(EnvTransportSocketsEnabled, true)
 }

@@ -1,20 +1,18 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
+	"context"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/libsv/payd/cmd/internal"
-	"github.com/libsv/payd/docs"
+	"github.com/theflyingcodr/sockets/client"
 
+	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/config/databases"
 	_ "github.com/libsv/payd/docs"
 	"github.com/libsv/payd/log"
-	thttp "github.com/libsv/payd/transports/http"
-
-	"github.com/libsv/payd/config"
-	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 )
 
 const appname = "payd"
@@ -58,7 +56,10 @@ func main() {
 		WithHeadersClient().
 		WithWallet().
 		WithP4().
-		WithMapi()
+		WithMapi().
+		WithSocket().
+		WithTransports().
+		Load()
 	log := log.NewZero(cfg.Logging)
 	// validate the config, fail if it fails.
 	if err := cfg.Validate(); err != nil {
@@ -72,37 +73,44 @@ func main() {
 	// nolint:errcheck // dont care about error.
 	defer db.Close()
 
-	e := echo.New()
-	e.HideBanner = true
-	g := e.Group("/")
+	e := internal.SetupEcho(log)
+
 	if cfg.Server.SwaggerEnabled {
-		docs.SwaggerInfo.Host = cfg.Server.SwaggerHost
-		e.GET("/swagger/*", echoSwagger.WrapHandler)
+		internal.SetupSwagger(*cfg.Server, e)
 	}
-	// Middleware
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
-	e.Use(middleware.RequestID())
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
-	e.HTTPErrorHandler = paydMiddleware.ErrorHandler(log)
 
-	// setup deps
-	services := internal.SetupRestDeps(cfg, log, db)
+	// setup transports
+	if cfg.Transports.HTTPEnabled {
+		internal.SetupHTTPEndpoints(*cfg.Deployment, internal.SetupRestDeps(cfg, log, db), e)
+	}
 
-	thttp.NewInvoice(services.InvoiceService).
-		RegisterRoutes(g)
-	thttp.NewBalance(services.BalanceService).RegisterRoutes(g)
-	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
-	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
-	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
-	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
-	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
+	if cfg.Transports.SocketsEnabled {
+		// socket client server
+		c := client.New(client.WithMaxMessageSize(10000), client.WithPongTimeout(360*time.Second))
+		defer c.Close()
+		deps := internal.SetupSocketDeps(cfg, log, db, c)
+		internal.SetupSocketClient(*cfg.Socket, deps, c)
+
+		// overwrite the http endpoints
+		internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, e)
+	}
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)
 	}
-	e.Logger.Fatal(e.Start(cfg.Server.Port))
+	go func() {
+		log.Error(e.Start(cfg.Server.Port), "echo server failed")
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		log.Error(err, "")
+	}
 }

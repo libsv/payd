@@ -7,27 +7,34 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ViperConfig contains viper based configuration data.
+type ViperConfig struct {
+	*Config
+}
+
 // NewViperConfig will setup and return a new viper based configuration handler.
-func NewViperConfig(appname string) *Config {
+func NewViperConfig(appname string) *ViperConfig {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	return &Config{}
+	return &ViperConfig{
+		Config: &Config{},
+	}
 }
 
 // WithServer will setup the web server configuration if required.
-func (c *Config) WithServer() *Config {
-	c.Server = &Server{
+func (v *ViperConfig) WithServer() ConfigurationLoader {
+	v.Server = &Server{
 		Port:           viper.GetString(EnvServerPort),
 		Hostname:       viper.GetString(EnvServerHost),
 		SwaggerEnabled: viper.GetBool(EnvServerSwaggerEnabled),
 		SwaggerHost:    viper.GetString(EnvServerSwaggerHost),
 	}
-	return c
+	return v
 }
 
 // WithDeployment sets up the deployment configuration if required.
-func (c *Config) WithDeployment(appName string) *Config {
-	c.Deployment = &Deployment{
+func (v *ViperConfig) WithDeployment(appName string) ConfigurationLoader {
+	v.Deployment = &Deployment{
 		Environment: viper.GetString(EnvEnvironment),
 		Region:      viper.GetString(EnvRegion),
 		Version:     viper.GetString(EnvVersion),
@@ -35,67 +42,81 @@ func (c *Config) WithDeployment(appName string) *Config {
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
 	}
-	return c
+	return v
 }
 
 // WithLog sets up and returns log config.
-func (c *Config) WithLog() *Config {
-	c.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}
-	return c
+func (v *ViperConfig) WithLog() ConfigurationLoader {
+	v.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}
+	return v
 }
 
 // WithDb sets up and returns database configuration.
-func (c *Config) WithDb() *Config {
-	c.Db = &Db{
+func (v *ViperConfig) WithDb() ConfigurationLoader {
+	v.Db = &Db{
 		Type:       DbType(viper.GetString(EnvDb)),
 		Dsn:        viper.GetString(EnvDbDsn),
 		SchemaPath: viper.GetString(EnvDbSchema),
 		MigrateDb:  viper.GetBool(EnvDbMigrate),
 	}
-	return c
+	return v
 }
 
 // WithHeadersClient sets up and returns headers client configuration.
-func (c *Config) WithHeadersClient() *Config {
-	c.HeadersClient = &HeadersClient{
+func (v *ViperConfig) WithHeadersClient() ConfigurationLoader {
+	v.HeadersClient = &HeadersClient{
 		Address: viper.GetString(EnvHeadersClientAddress),
 		Timeout: viper.GetInt(EnvHeadersClientTimeout),
 	}
-	return c
+	return v
 }
 
 // WithWallet sets up and returns merchant wallet configuration.
-func (c *Config) WithWallet() *Config {
-	c.Wallet = &Wallet{
+func (v *ViperConfig) WithWallet() ConfigurationLoader {
+	v.Wallet = &Wallet{
 		Network:            NetworkType(viper.GetString(EnvNetwork)),
 		SPVRequired:        viper.GetBool(EnvWalletSpvRequired),
 		PaymentExpiryHours: viper.GetInt64(EnvPaymentExpiry),
 	}
-	return c
+	return v
 }
 
 // WithP4 sets up and return p4 interface configuration.
-func (c *Config) WithP4() *Config {
-	c.P4 = &P4{
+func (v *ViperConfig) WithP4() ConfigurationLoader {
+	v.P4 = &P4{
 		ServerHost: viper.GetString(EnvP4Host),
 		Timeout:    viper.GetInt(EnvP4Timeout),
 	}
-	return c
+	return v
 }
 
 // WithMapi will setup Mapi settings.
-func (c *Config) WithMapi() *Config {
-	c.Mapi = &MApi{
+func (v *ViperConfig) WithMapi() ConfigurationLoader {
+	v.Mapi = &MApi{
 		MinerName:    viper.GetString(EnvMAPIMinerName),
 		URL:          viper.GetString(EnvMAPIURL),
 		Token:        viper.GetString(EnvMAPIToken),
 		CallbackHost: viper.GetString(EnvMAPICallbackHost),
 	}
-	return c
+	return v
 }
 
 // WithSocket will setup Mapi settings.
-func (c *Config) WithSocket() *Config {
-	c.Socket = &Socket{ClientIdentifier: uuid.NewString()}
-	return c
+func (v *ViperConfig) WithSocket() ConfigurationLoader {
+	v.Socket = &Socket{ClientIdentifier: uuid.NewString()}
+	return v
+}
+
+// WithTransports reads transport config.
+func (v *ViperConfig) WithTransports() ConfigurationLoader {
+	v.Transports = &Transports{
+		HTTPEnabled:    viper.GetBool(EnvTransportHTTPEnabled),
+		SocketsEnabled: viper.GetBool(EnvTransportSocketsEnabled),
+	}
+	return v
+}
+
+// Load will return the underlying config setup.
+func (v *ViperConfig) Load() *Config {
+	return v.Config
 }

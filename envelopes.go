@@ -4,11 +4,18 @@ import (
 	"context"
 
 	"github.com/libsv/go-bc/spv"
+	validator "github.com/theflyingcodr/govalidator"
 )
 
 // EnvelopeArgs identify where an envelope is being paid to.
 type EnvelopeArgs struct {
 	PayToURL string `json:"payToURL"`
+}
+
+// Validate will ensure that the args supplied are valid.
+func (e EnvelopeArgs) Validate() error {
+	return validator.New().
+		Validate("payToURL", validator.NotEmpty(e.PayToURL))
 }
 
 // EnvelopeService will create an spv envelope from a paymentRequest.
