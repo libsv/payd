@@ -122,7 +122,7 @@ github.com/libsv/go-bk/bip32
 github.com/libsv/go-bk/chaincfg
 github.com/libsv/go-bk/crypto
 github.com/libsv/go-bk/envelope
-# github.com/libsv/go-bt v1.0.3
+# github.com/libsv/go-bt v1.0.4
 ## explicit; go 1.15
 github.com/libsv/go-bt
 github.com/libsv/go-bt/bscript
@@ -246,7 +246,7 @@ github.com/theflyingcodr/sockets/client
 github.com/theflyingcodr/sockets/internal
 github.com/theflyingcodr/sockets/middleware
 github.com/theflyingcodr/sockets/server
-# github.com/tonicpow/go-minercraft v0.3.2
+# github.com/tonicpow/go-minercraft v0.3.4
 ## explicit; go 1.15
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0
@@ -258,7 +258,7 @@ github.com/valyala/fasttemplate
 # go.uber.org/atomic v1.9.0
 ## explicit; go 1.13
 go.uber.org/atomic
-# golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+# golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
