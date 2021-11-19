@@ -36,8 +36,8 @@ type derivationSigner struct {
 	masterPrivKey *bip32.ExtendedKey
 }
 
-// Signer returns a signer configured for a provided *bscript.Script.
-func (l derivationSigner) Signer(ctx context.Context, script *bscript.Script) (bt.Signer, error) {
+// Unlocker returns a signer configured for a provided *bscript.Script.
+func (l derivationSigner) Unlocker(ctx context.Context, script *bscript.Script) (bt.Unlocker, error) {
 	path, ok := l.pathMap[script]
 	if !ok {
 		return nil, errors.New("derivation path does not exist for script")
@@ -52,7 +52,7 @@ func (l derivationSigner) Signer(ctx context.Context, script *bscript.Script) (b
 		return nil, errors.Wrapf(err, "failed to create ec private key for script %s", script.String())
 	}
 
-	return &bt.LocalSigner{
+	return &bt.LocalUnlocker{
 		PrivateKey: privKey,
 	}, nil
 }
