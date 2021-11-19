@@ -3,21 +3,24 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/labstack/gommon/log"
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	lathos "github.com/theflyingcodr/lathos/errs"
+	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
 )
 
 type payments struct {
+	l             log.Logger
 	paymentVerify spv.PaymentVerifier
 	txWtr         payd.TransactionWriter
-	invRdr        payd.InvoiceReader
+	invRdr        payd.InvoiceReaderWriter
 	destRdr       payd.DestinationsReader
 	transacter    payd.Transacter
 	callbackWtr   payd.ProofCallbackWriter
@@ -26,8 +29,9 @@ type payments struct {
 }
 
 // NewPayments will setup and return a payments service.
-func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReader, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
+func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
 	svc := &payments{
+		l:             l,
 		paymentVerify: paymentVerify,
 		invRdr:        invRdr,
 		destRdr:       destRdr,
@@ -41,22 +45,22 @@ func NewPayments(paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter
 }
 
 // PaymentCreate will validate and store the payment.
-func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) error {
+func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArgs, req payd.PaymentCreate) error {
 	if err := validator.New().
-		Validate("invoiceID", validator.StrLength(req.InvoiceID, 1, 30)).Err(); err != nil {
+		Validate("invoiceID", validator.StrLength(args.InvoiceID, 1, 30)).Err(); err != nil {
 		return err
 	}
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
-	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: req.InvoiceID})
+	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID})
 	if err != nil {
-		return errors.Wrapf(err, "failed to get invoice with ID '%s'", req.InvoiceID)
+		return errors.Wrapf(err, "failed to get invoice with ID '%s'", args.InvoiceID)
 	}
 	if inv.State != payd.StateInvoicePending {
-		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", req.InvoiceID))
+		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
 	fq, err := p.feeRdr.Fees(ctx)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read fees for payment with id %s", req.InvoiceID)
+		return errors.Wrapf(err, "failed to read fees for payment with id %s", args.InvoiceID)
 	}
 
 	tx, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
@@ -77,15 +81,15 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	}
 
 	// get destinations
-	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: req.InvoiceID})
+	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.InvoiceID})
 	if err != nil {
-		return errors.Wrapf(err, "failed to get destinations with ID '%s'", req.InvoiceID)
+		return errors.Wrapf(err, "failed to get destinations with ID '%s'", args.InvoiceID)
 	}
 	// gather all outputs and add to a lookup map
 	var total uint64
 	outputs := map[string]payd.Output{}
 	for _, o := range oo {
-		outputs[o.LockingScript] = o
+		outputs[o.LockingScript.String()] = o
 	}
 	txos := make([]*payd.TxoCreate, 0)
 	// get total of outputs that we know about
@@ -132,45 +136,67 @@ func (p *payments) PaymentCreate(ctx context.Context, req payd.PaymentCreate) er
 	}()
 	// Store tx
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
-		InvoiceID: req.InvoiceID,
+		InvoiceID: args.InvoiceID,
 		TxID:      txID,
-		TxHex: func() string {
-			if inv.SPVRequired {
-				return req.SPVEnvelope.RawTx
-			}
-			return req.RawTX.ValueOrZero()
-		}(),
-		Outputs: txos,
+		RefundTo:  req.RefundTo,
+		TxHex:     req.SPVEnvelope.RawTx,
+		Outputs:   txos,
 	}); err != nil {
-		return errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", req.InvoiceID)
+		return errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", args.InvoiceID)
 	}
 	// Store callbacks if we have any
 	if len(req.ProofCallbacks) > 0 {
-		if err := p.callbackWtr.ProofCallBacksCreate(ctx, payd.ProofCallbackArgs{InvoiceID: req.InvoiceID}, req.ProofCallbacks); err != nil {
-			return errors.Wrapf(err, "failed to store proof callbacks for invoiceID '%s'", req.InvoiceID)
+		if err := p.callbackWtr.ProofCallBacksCreate(ctx, payd.ProofCallbackArgs{InvoiceID: args.InvoiceID}, req.ProofCallbacks); err != nil {
+			return errors.Wrapf(err, "failed to store proof callbacks for invoiceID '%s'", args.InvoiceID)
 		}
 	}
 	// Broadcast the transaction
 	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{InvoiceID: inv.ID}, tx); err != nil {
 		// set as failed
 		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
-			log.Error(err)
+			p.l.Error(err, "failed to update tx after failed broadcast")
 		}
 		return errors.Wrap(err, "failed to broadcast tx")
 	}
 
 	// Update tx state to broadcast
+	// Just logging errors here as I don't want to roll back tx now tx is broadcast.
 	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: txID}, payd.TransactionStateUpdate{State: payd.StateTxBroadcast}); err != nil {
-		log.Error(err)
+		p.l.Error(err, "failed to update tx to broadcast state")
+	}
+	// set invoice as paid
+	if _, err := p.invRdr.InvoiceUpdate(ctx, payd.InvoiceUpdateArgs{InvoiceID: args.InvoiceID}, payd.InvoiceUpdatePaid{
+		PaymentReceivedAt: time.Now().UTC(),
+		RefundTo:          req.RefundTo.ValueOrZero(),
+	}); err != nil {
+		p.l.Error(err, "failed to update invoice to paid")
 	}
 
 	return p.transacter.Commit(ctx)
 }
 
+// Ack will handle an acknowledgement after a payment has been processed.
+func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) error {
+	err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: args.TxID}, payd.TransactionStateUpdate{
+		State: func() payd.TxState {
+			if req.Failed {
+				return payd.StateTxFailed
+			}
+			return payd.StateTxBroadcast
+		}(),
+		FailReason: func() null.String {
+			if req.Reason == "" {
+				return null.String{}
+			}
+			return null.StringFrom(req.Reason)
+		}(),
+	})
+	return errors.Wrap(err, "failed to update transaction state after payment ack")
+}
+
 func (p *payments) paymentVerifyOpts(verifySPV bool, fq *bt.FeeQuote) []spv.VerifyOpt {
-	opts := []spv.VerifyOpt{spv.VerifyFees(fq)}
-	if !verifySPV {
-		opts = append(opts, spv.NoVerifySPV())
+	if verifySPV {
+		return []spv.VerifyOpt{spv.VerifyFees(fq), spv.VerifySPV()}
 	}
-	return opts
+	return []spv.VerifyOpt{spv.NoVerifySPV(), spv.NoVerifyFees()}
 }

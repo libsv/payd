@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/go-bt/v2/bscript"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
 )
@@ -48,8 +49,8 @@ type Destination struct {
 type Output struct {
 	ID uint64 `json:"-" db:"destination_id"`
 	// LockingScript is the P2PKH locking script used.
-	LockingScript string `json:"script" db:"locking_script"`
-	Satoshis      uint64 `json:"satoshis" db:"satoshis"`
+	LockingScript *bscript.Script `json:"script" db:"locking_script"`
+	Satoshis      uint64          `json:"satoshis" db:"satoshis"`
 	// DerivationPath is the deterministic path for this destination.
 	DerivationPath string `json:"-" db:"derivation_path"`
 	// State will indicate if this destination is still waiting on a tx to fulfil it (pending)

@@ -52,6 +52,7 @@ CREATE TABLE transactions (
     tx_id               CHAR(64) NOT NULL PRIMARY KEY
     ,tx_hex             TEXT NOT NULL
     ,state VARCHAR(10)  NOT NULL DEFAULT 'pending'
+    ,fail_reason        TEXT
     ,created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,deleted_at         TIMESTAMP

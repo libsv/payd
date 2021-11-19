@@ -2,6 +2,6 @@ version: "3.7"
 
 services:
   payd:
-    image: local.payd
+    image: local.payd-socket
     build:
       context: .

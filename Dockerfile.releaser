@@ -28,4 +28,4 @@ USER appuser:appuser
 
 EXPOSE 8443
 
-CMD ["payd-server"]
+CMD ["server"]

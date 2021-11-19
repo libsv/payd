@@ -12,6 +12,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
+	"gopkg.in/guregu/null.v3"
 )
 
 const (
@@ -38,13 +39,13 @@ const (
 
 	sqlTransactionUpdateState = `
 		UPDATE transactions
-		SET state = ?
+		SET state = ?, fail_reason = ?, updated_at = ?
 		WHERE tx_id = ?
 	`
 
 	sqlInvoiceSetPaid = `
 	UPDATE invoices 
-	SET payment_received_at = :timestamp, state = 'paid', updated_at = :timestamp
+	SET payment_received_at = :timestamp, refund_to=:refundto state = 'paid', updated_at = :timestamp
 	WHERE invoice_id = :invoice_id
 	`
 
@@ -87,11 +88,13 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 	}
 
 	invUpdate := struct {
-		Timestamp time.Time `db:"timestamp"`
-		InvoiceID string    `db:"invoice_id"`
+		Timestamp time.Time   `db:"timestamp"`
+		InvoiceID string      `db:"invoice_id"`
+		RefundTo  null.String `db:"refundto"`
 	}{
 		Timestamp: timestamp,
 		InvoiceID: req.InvoiceID,
+		RefundTo:  req.RefundTo,
 	}
 	if err = handleNamedExec(tx, sqlTransactionInvoiceCreate, req); err != nil {
 		return errors.Wrapf(err, "failed to create invoice mapping for tx %s invoice %s", req.TxID, req.InvoiceID)
@@ -150,7 +153,7 @@ func (s *sqliteStore) TransactionUpdateState(ctx context.Context, args payd.Tran
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
-	result, err := tx.Exec(sqlTransactionUpdateState, req.State, args.TxID)
+	result, err := tx.Exec(sqlTransactionUpdateState, req.State, req.FailReason, time.Now().UTC(), args.TxID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update transactionId '%s' state to '%s'", args.TxID, req.State)
 	}

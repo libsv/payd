@@ -31,7 +31,7 @@ create-alias:
 	@go run -race main.go create $(alias)
 
 install-linter:
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)bin v1.43.0
 
 install-swagger-gen:
 	@go get -d github.com/swaggo/swag/cmd/swag
@@ -55,6 +55,9 @@ run-compose-d:
 
 run-compose-dev:
 	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml up
+
+run-compose-local:
+	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up
 
 run-compose-testnet:
 	@docker-compose -f docker-compose.yml  -f docker-compose.testnet.yml up

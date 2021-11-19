@@ -1,0 +1,13 @@
+# List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
+tasks:
+  - init: |
+      sudo docker pull registry.jetbrains.team/p/prj/containers/projector-goland
+    command: |
+      sudo chown -R 1000:1000 .jetbrains
+      sudo docker run --rm -p 8887:8887 -v /workspace/sockets/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-goland
+
+
+# List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/
+ports:
+  - port: 3000
+    onOpen: open-preview

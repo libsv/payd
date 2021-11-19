@@ -16,12 +16,11 @@ func SetupDefaults() {
 	viper.SetDefault(EnvServerSwaggerHost, "localhost:8443")
 
 	// deployment
-	viper.SetDefault(EnvEnvironment, "dev")
+	viper.SetDefault(EnvEnvironment, "local")
 	viper.SetDefault(EnvRegion, "test")
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
-	viper.SetDefault(EnvBicoinNetwork, NetworkRegtest)
 
 	// logging
 	viper.SetDefault(EnvLogLevel, "info")
@@ -38,9 +37,22 @@ func SetupDefaults() {
 
 	// p4
 	viper.SetDefault(EnvP4Timeout, 30)
+	viper.SetDefault(EnvP4Host, "p4:8442")
 
 	// wallet
-	viper.SetDefault(EnvNetwork, "regtest")
-	viper.SetDefault(EnvWalletSpvRequired, true)
+	viper.SetDefault(EnvNetwork, string(NetworkRegtest))
+	viper.SetDefault(EnvWalletSpvRequired, false)
 	viper.SetDefault(EnvPaymentExpiry, 24)
+
+	// mapi
+	viper.SetDefault(EnvMAPIMinerName, "local-mapi")
+	viper.SetDefault(EnvMAPIURL, "http://mapi:80")
+	viper.SetDefault(EnvMAPIToken, "")
+
+	// Socket settings
+	viper.SetDefault(EnvSocketMaxMessageBytes, 10000)
+
+	// Transport settings
+	viper.SetDefault(EnvTransportHTTPEnabled, true)
+	viper.SetDefault(EnvTransportSocketsEnabled, true)
 }

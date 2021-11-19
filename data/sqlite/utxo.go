@@ -12,8 +12,13 @@ import (
 const (
 	sqlUTXOGet = `
 	SELECT t.outpoint, t.tx_id, t.vout, d.locking_script, d.satoshis, d.derivation_path
-	FROM txos t JOIN destinations d ON t.destination_id = d.destination_id
-	WHERE reserved_for IS NULL and spent_at IS NULL and spending_txid IS NULL
+	FROM txos t 
+	    INNER JOIN destinations d ON t.destination_id = d.destination_id 
+		INNER JOIN transactions tx on t.tx_id = tx.tx_id
+	WHERE reserved_for IS NULL 
+	  AND spent_at IS NULL 
+	  AND spending_txid IS NULL
+	  AND tx.state = 'broadcast'
 	LIMIT 0,1
 	`
 
