@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sync"
 
 	"github.com/libsv/go-bk/base58"
 	"github.com/libsv/go-bk/bec"
@@ -113,6 +114,7 @@ type ExtendedKey struct {
 	childNum  uint32
 	depth     uint8
 	isPrivate bool
+	o         sync.Once
 }
 
 // NewExtendedKey returns a new instance of an extended key with the given
@@ -151,12 +153,14 @@ func (k *ExtendedKey) pubKeyBytes() []byte {
 	}
 
 	// This is a private extended key, so calculate and memoize the public
-	// key if needed.
-	if len(k.pubKey) == 0 {
-		pkx, pky := bec.S256().ScalarBaseMult(k.key)
-		pubKey := bec.PublicKey{Curve: bec.S256(), X: pkx, Y: pky}
-		k.pubKey = pubKey.SerialiseCompressed()
-	}
+	// key if needed once and only once.
+	k.o.Do(func() {
+		if len(k.pubKey) == 0 {
+			pkx, pky := bec.S256().ScalarBaseMult(k.key)
+			pubKey := bec.PublicKey{Curve: bec.S256(), X: pkx, Y: pky}
+			k.pubKey = pubKey.SerialiseCompressed()
+		}
+	})
 
 	return k.pubKey
 }
