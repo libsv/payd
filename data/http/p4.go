@@ -103,5 +103,5 @@ func (p *p4) handleErr(resp *http.Response) error {
 		return errs.NewErrUnprocessable(errResp.Code, errResp.Message)
 	}
 
-	return errs.NewErrInternal(errors.New(errResp.Message), nil)
+	return errs.NewErrInternal(errors.New(errResp.Message), resp.Status)
 }
