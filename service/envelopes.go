@@ -112,7 +112,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req pa
 		return nil, errors.Wrap(err, "failed to set change")
 	}
 
-	if err = tx.SignAll(ctx, signer); err != nil {
+	if err = tx.UnlockAll(ctx, signer); err != nil {
 		return nil, errors.Wrapf(err, "failed to sign tx %s", tx.String())
 	}
 

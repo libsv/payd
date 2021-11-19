@@ -2,20 +2,14 @@ package bscript
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"strings"
 
 	"github.com/libsv/go-bk/bec"
+	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bk/crypto"
-)
-
-// Sentinel errors raised by the package.
-var (
-	ErrInvalidPKLen  = errors.New("invalid public key length")
-	ErrInvalidOpCode = errors.New("invalid opcode data")
-	ErrEmptyScript   = errors.New("script is empty")
-	ErrNotP2PKH      = errors.New("not a P2PKH")
 )
 
 // ScriptKey types.
@@ -23,6 +17,8 @@ const (
 	ScriptTypePubKey      = "pubkey"
 	ScriptTypePubKeyHash  = "pubkeyhash"
 	ScriptTypeNonStandard = "nonstandard"
+	ScriptTypeEmpty       = "empty"
+	ScriptTypeSecureHash  = "securehash"
 	ScriptTypeMultiSig    = "multisig"
 	ScriptTypeNullData    = "nulldata"
 )
@@ -137,6 +133,28 @@ func NewP2PKHFromAddress(addr string) (*Script, error) {
 		AppendOpCode(OpCHECKSIG)
 
 	return s, nil
+}
+
+// NewP2PKHFromBip32ExtKey takes a *bip32.ExtendedKey and creates a P2PKH script from it,
+// using an internally random generated seed, returning the script and derivation path used.
+func NewP2PKHFromBip32ExtKey(privKey *bip32.ExtendedKey) (*Script, string, error) {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return nil, "", err
+	}
+
+	derivationPath := bip32.DerivePath(binary.LittleEndian.Uint64(b[:]))
+	pubKey, err := privKey.DerivePublicKeyFromPath(derivationPath)
+	if err != nil {
+		return nil, "", err
+	}
+
+	lockingScript, err := NewP2PKHFromPubKeyBytes(pubKey)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return lockingScript, derivationPath, nil
 }
 
 // AppendPushData takes data bytes and appends them to the script
@@ -324,7 +342,7 @@ func (s *Script) PublicKeyHash() ([]byte, error) {
 // ScriptType returns the type of script this is as a string.
 func (s *Script) ScriptType() string {
 	if len(*s) == 0 {
-		return ScriptTypeNonStandard
+		return ScriptTypeEmpty
 	}
 	if s.IsP2PKH() {
 		return ScriptTypePubKeyHash
