@@ -12,6 +12,7 @@ type paymentRequest struct {
 	svc payd.PaymentRequestService
 }
 
+// NewPaymentRequests returns a new handler for payment request endpoint.
 func NewPaymentRequests(svc payd.PaymentRequestService) *paymentRequest {
 	return &paymentRequest{svc: svc}
 }

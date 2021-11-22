@@ -126,10 +126,7 @@ func wsHandler(svr *server.SocketServer) echo.HandlerFunc {
 		defer func() {
 			_ = ws.Close()
 		}()
-		if err := svr.Listen(ws, c.Param("channelID")); err != nil {
-			return err
-		}
-		return nil
+		return svr.Listen(ws, c.Param("channelID"))
 	}
 }
 
