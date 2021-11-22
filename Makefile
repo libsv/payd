@@ -37,7 +37,7 @@ install-swagger-gen:
 	@go get -d github.com/swaggo/swag/cmd/swag
 
 generate-swagger:
-	@swag init --parseVendor --parseDependency --parseInternal -g ./cmd/rest-server/main.go
+	@swag init --parseVendor --parseDependency --parseInternal -g ./cmd/server/main.go
 
 go-doc-mac:
 	@open http://localhost:6060 && \
@@ -58,6 +58,9 @@ run-compose-dev:
 
 run-compose-local:
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up
+
+run-compose-local-d:
+	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up -d
 
 run-compose-testnet:
 	@docker-compose -f docker-compose.yml  -f docker-compose.testnet.yml up

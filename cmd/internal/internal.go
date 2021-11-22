@@ -54,6 +54,7 @@ func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, e *echo.Echo)
 	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
 	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
 	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
+	thttp.NewPaymentRequests(services.PaymentRequestService).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
 	if cfg.Environment == "local" {
