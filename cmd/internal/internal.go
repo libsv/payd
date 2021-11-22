@@ -54,6 +54,7 @@ func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, e *echo.Echo)
 	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
 	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
 	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
+	thttp.NewPaymentRequests(services.PaymentRequestService).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
 	if cfg.Environment == "local" {
@@ -125,10 +126,7 @@ func wsHandler(svr *server.SocketServer) echo.HandlerFunc {
 		defer func() {
 			_ = ws.Close()
 		}()
-		if err := svr.Listen(ws, c.Param("channelID")); err != nil {
-			return err
-		}
-		return nil
+		return svr.Listen(ws, c.Param("channelID"))
 	}
 }
 

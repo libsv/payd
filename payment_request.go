@@ -10,7 +10,7 @@ import (
 
 // PaymentRequestArgs are used to create a new paymentRequest.
 type PaymentRequestArgs struct {
-	InvoiceID string
+	InvoiceID string `param:"invoiceID"`
 }
 
 // Validate will check that invoice arguments match expectations.

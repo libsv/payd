@@ -23,15 +23,16 @@ import (
 
 // RestDeps contains all dependencies used for the rest client.
 type RestDeps struct {
-	DestinationService payd.DestinationsService
-	PaymentService     payd.PaymentsService
-	PayService         payd.PayService
-	EnvelopeService    payd.EnvelopeService
-	InvoiceService     payd.InvoiceService
-	BalanceService     payd.BalanceService
-	ProofService       payd.ProofsService
-	OwnerService       payd.OwnerService
-	TransactionService payd.TransactionService
+	DestinationService    payd.DestinationsService
+	PaymentService        payd.PaymentsService
+	PaymentRequestService payd.PaymentRequestService
+	PayService            payd.PayService
+	EnvelopeService       payd.EnvelopeService
+	InvoiceService        payd.InvoiceService
+	BalanceService        payd.BalanceService
+	ProofService          payd.ProofsService
+	OwnerService          payd.OwnerService
+	TransactionService    payd.TransactionService
 }
 
 // SetupRestDeps will setup dependencies used in the rest server.
@@ -64,6 +65,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server)
+	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	proofSvc := service.NewProofsService(sqlLiteStore)
@@ -77,15 +79,16 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
 	}
 
 	return &RestDeps{
-		DestinationService: destSvc,
-		PaymentService:     paymentSvc,
-		PayService:         paySvc,
-		EnvelopeService:    envSvc,
-		InvoiceService:     invoiceSvc,
-		BalanceService:     balanceSvc,
-		ProofService:       proofSvc,
-		OwnerService:       ownerSvc,
-		TransactionService: transactionService,
+		DestinationService:    destSvc,
+		PaymentService:        paymentSvc,
+		PaymentRequestService: paymentReqSvc,
+		PayService:            paySvc,
+		EnvelopeService:       envSvc,
+		InvoiceService:        invoiceSvc,
+		BalanceService:        balanceSvc,
+		ProofService:          proofSvc,
+		OwnerService:          ownerSvc,
+		TransactionService:    transactionService,
 	}
 }
 

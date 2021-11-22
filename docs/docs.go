@@ -28,6 +28,56 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/payment/{paymentID}": {
+            "get": {
+                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "paymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
+                        "schema": {
+                            "$ref": "#/definitions/payd.PaymentRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "500": {
+                        "description": "returned if there is an unexpected internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/balance": {
             "get": {
                 "description": "Returns current balance, which is a sum of unspent txos",
@@ -58,7 +108,8 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Destinations"
+                    "Destinations",
+                    "Receive"
                 ],
                 "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
                 "parameters": [
@@ -328,6 +379,9 @@ var doc = `{
         }
     },
     "definitions": {
+        "bt.FeeQuote": {
+            "type": "object"
+        },
         "envelope.JSONEnvelope": {
             "type": "object",
             "properties": {
@@ -390,11 +444,69 @@ var doc = `{
                 }
             }
         },
+        "payd.P4Destination": {
+            "type": "object",
+            "properties": {
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/payd.P4Output"
+                    }
+                }
+            }
+        },
+        "payd.P4Output": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "script": {
+                    "type": "string"
+                }
+            }
+        },
         "payd.PayRequest": {
             "type": "object",
             "properties": {
                 "payToURL": {
                     "type": "string"
+                }
+            }
+        },
+        "payd.PaymentRequestResponse": {
+            "type": "object",
+            "properties": {
+                "creationTimestamp": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "$ref": "#/definitions/payd.P4Destination"
+                },
+                "expirationTimestamp": {
+                    "type": "string"
+                },
+                "fees": {
+                    "$ref": "#/definitions/bt.FeeQuote"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "merchantData": {
+                    "$ref": "#/definitions/payd.User"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "paymentURL": {
+                    "type": "string"
+                },
+                "spvRequired": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -412,9 +524,7 @@ var doc = `{
                 },
                 "extendedData": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": true
                 },
                 "id": {
                     "type": "integer"
