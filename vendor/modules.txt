@@ -246,7 +246,7 @@ github.com/theflyingcodr/sockets/client
 github.com/theflyingcodr/sockets/internal
 github.com/theflyingcodr/sockets/middleware
 github.com/theflyingcodr/sockets/server
-# github.com/tonicpow/go-minercraft v0.3.4
+# github.com/tonicpow/go-minercraft v0.3.5
 ## explicit; go 1.15
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0
@@ -258,12 +258,12 @@ github.com/valyala/fasttemplate
 # go.uber.org/atomic v1.9.0
 ## explicit; go 1.13
 go.uber.org/atomic
-# golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
+# golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ripemd160
-# golang.org/x/net v0.0.0-20210913180222-943fd674d43e
+# golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 ## explicit; go 1.17
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2

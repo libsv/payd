@@ -5,7 +5,7 @@ import "time"
 const (
 
 	// version is the current package version
-	version = "v0.3.4"
+	version = "v0.3.5"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-minercraft: " + version
@@ -23,6 +23,9 @@ const (
 
 	// routeSubmitTx is the route for submit a transaction
 	routeSubmitTx = "/mapi/tx"
+
+	// routeSubmitTxs is the route for submit batched transactions
+	routeSubmitTxs = "/mapi/txs"
 )
 
 const (

@@ -48,7 +48,7 @@ View documentation on hosting your own [mAPI server](https://github.com/bitcoin-
   - [x] [Fee Quote](https://github.com/bitcoin-sv-specs/brfc-merchantapi#get-fee-quote)
   - [x] [Query Transaction Status](https://github.com/bitcoin-sv-specs/brfc-merchantapi#Query-transaction-status)
   - [x] [Submit Transaction](https://github.com/bitcoin-sv-specs/brfc-merchantapi#Submit-transaction)
-  - [ ] [Submit Multiple Transactions](https://github.com/bitcoin-sv-specs/brfc-merchantapi#Submit-multiple-transactions) `(Miners have not implemented as of 10/15/20)`
+  - [x] [Submit Batched Transactions](https://github.com/bitcoin-sv-specs/brfc-merchantapi#Submit-multiple-transactions)
 - Custom Features:
   - [Client](client.go) is completely configurable
   - Using default [heimdall http client](https://github.com/gojektech/heimdall) with exponential backoff & more
