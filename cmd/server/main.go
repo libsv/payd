@@ -78,22 +78,20 @@ func main() {
 	if cfg.Server.SwaggerEnabled {
 		internal.SetupSwagger(*cfg.Server, e)
 	}
+	// socket client server
+	c := client.New(client.WithMaxMessageSize(10000), client.WithPongTimeout(360*time.Second))
+	defer c.Close()
+
+	g := e.Group("/")
 
 	// setup transports
-	if cfg.Transports.HTTPEnabled {
-		internal.SetupHTTPEndpoints(*cfg.Deployment, internal.SetupRestDeps(cfg, log, db), e)
-	}
+	internal.SetupHTTPEndpoints(*cfg.Deployment, internal.SetupRestDeps(cfg, log, db, c), g)
 
-	if cfg.Transports.SocketsEnabled {
-		// socket client server
-		c := client.New(client.WithMaxMessageSize(10000), client.WithPongTimeout(360*time.Second))
-		defer c.Close()
-		deps := internal.SetupSocketDeps(cfg, log, db, c)
-		internal.SetupSocketClient(*cfg.Socket, deps, c)
-
-		// overwrite the http endpoints
-		internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, e)
-	}
+	// setup sockets
+	deps := internal.SetupSocketDeps(cfg, log, db, c)
+	internal.SetupSocketClient(*cfg.Socket, deps, c)
+	// setup socket endpoints
+	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)
