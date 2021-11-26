@@ -54,6 +54,12 @@ type PaymentACK struct {
 	Error int `json:"error,omitempty"`
 }
 
+// PayStrategy for registering different payment strategies.
+type PayStrategy interface {
+	PayService
+	Register(svc PayService, names ...string) PayStrategy
+}
+
 // PayService for sending payments to another wallet.
 type PayService interface {
 	Pay(ctx context.Context, req PayRequest) (*PaymentACK, error)

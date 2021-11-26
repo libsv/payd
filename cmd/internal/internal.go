@@ -45,8 +45,7 @@ func SetupSwagger(cfg config.Server, e *echo.Echo) {
 }
 
 // SetupHTTPEndpoints will register the http endpoints.
-func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, e *echo.Echo) {
-	g := e.Group("/")
+func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, g *echo.Group) {
 	// handlers
 	thttp.NewInvoice(services.InvoiceService).
 		RegisterRoutes(g)
@@ -85,22 +84,8 @@ func SetupSocketClient(cfg config.Socket, deps *SocketDeps, c *client.Client) {
 
 // SetupSocketHTTPEndpoints will register the http endpoints used for sockets, there are some differences
 // between this and the standard http endpoints in terms of data repos used.
-func SetupSocketHTTPEndpoints(cfg config.Deployment, services *SocketDeps, e *echo.Echo) {
-	g := e.Group("/")
-	// handlers
-	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
+func SetupSocketHTTPEndpoints(cfg config.Deployment, services *SocketDeps, g *echo.Group) {
 	thttp.NewConnect(services.ConnectService).RegisterRoutes(g)
-	thttp.NewInvoice(services.InvoiceService).RegisterRoutes(g)
-	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
-	thttp.NewBalance(services.BalanceService).RegisterRoutes(g)
-	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
-	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
-	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
-
-	if cfg.Environment == "local" {
-		// ugly endpoint for regtest topup - local only!
-		thttp.NewTransactions(services.TransactionService).RegisterRoutes(g)
-	}
 }
 
 // SetupSocketServer will setup and return a socket server.

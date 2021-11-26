@@ -36,7 +36,7 @@ type RestDeps struct {
 }
 
 // SetupRestDeps will setup dependencies used in the rest server.
-func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
+func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Client) *RestDeps {
 	mapiCli, err := minercraft.NewClient(nil, nil, []*minercraft.Miner{
 		{
 			Name:  cfg.Mapi.MinerName,
@@ -64,7 +64,12 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB) *RestDeps {
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
-	paySvc := service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server)
+	paySvc := service.NewPayStrategy().Register(
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
+		"http", "https",
+	).Register(
+		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
+	)
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
@@ -136,7 +141,10 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
-	paySvc := service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c))
+	paySvc := service.NewPayStrategy().Register(
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
+		"http", "https",
+	).Register(service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss")
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	proofSvc := service.NewProofsService(sqlLiteStore)
