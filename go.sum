@@ -660,8 +660,8 @@ github.com/theflyingcodr/lathos v0.0.6 h1:xIHMZTinurvodmFOgvSGD+OrDhSj42+Xz+FOXY
 github.com/theflyingcodr/lathos v0.0.6/go.mod h1:68tGFEbAqAzydWDb1KEJZPQY57l3hH32GXO11Hf1zGQ=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e h1:gfOQ8DVRKwc97bXeR6I6ogosWhFi4mredpUtZcx/gvg=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod h1:g9qbiDvB47WyrRnNu2t2gMZFNHKnatsYRxsGZbCi4EM=
-github.com/theflyingcodr/sockets v0.0.10-beta h1:mvY6RMBX3QXM8ZeMj3EYscD1o1OrlESWG6KlCLxILPA=
-github.com/theflyingcodr/sockets v0.0.10-beta/go.mod h1:9WuWIyja/Q8PF3WmblAjFmfzkKabEBLto2Gx1XYnerc=
+github.com/theflyingcodr/sockets v0.0.11-beta h1:73rvasQ8aQkuzX1usPjAu9YyE73Kn6ffMfCucRGu1Pw=
+github.com/theflyingcodr/sockets v0.0.11-beta/go.mod h1:9WuWIyja/Q8PF3WmblAjFmfzkKabEBLto2Gx1XYnerc=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tonicpow/go-minercraft v0.3.6 h1:cJJ8+95/fiTfdZzqN0oXvyAAXO/BYfreR7L52d8mYA0=
 github.com/tonicpow/go-minercraft v0.3.6/go.mod h1:c6iEo7eKCu9CPXwP5MNwV+PE1NkwnqmwHhMzealQ7Tk=

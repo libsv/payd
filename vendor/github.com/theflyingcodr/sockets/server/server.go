@@ -102,22 +102,24 @@ type SocketServer struct {
 	// maps clientID to roomID for direct client messaging
 	clientConnections  map[string]*connection
 	channels           map[string]*channel
+	waitingMsgs        *waitMessages
 	broadcastListeners map[string]sockets.HandlerFunc
 	directListeners    map[string]sockets.HandlerFunc
-	middleware         []sockets.MiddlewareFunc
-	errHandler         sockets.ServerErrorHandlerFunc
-	unregister         chan unregister
-	register           chan register
-	channelSender      chan sender
-	directSender       chan sender
-	close              chan struct{}
-	done               chan struct{}
-	channelCloser      chan string
-	opts               *opts
-	onRegister         func(clientID, channelID string)
-	onDeRegister       func(clientID, channelID string)
-	onChannelClose     func(channelID string)
-	onChannelCreate    func(channelID string)
+
+	middleware      []sockets.MiddlewareFunc
+	errHandler      sockets.ServerErrorHandlerFunc
+	unregister      chan unregister
+	register        chan register
+	channelSender   chan sender
+	directSender    chan sender
+	close           chan struct{}
+	done            chan struct{}
+	channelCloser   chan string
+	opts            *opts
+	onRegister      func(clientID, channelID string)
+	onDeRegister    func(clientID, channelID string)
+	onChannelClose  func(channelID string)
+	onChannelCreate func(channelID string)
 }
 
 // New will setup and return a new instance of a SocketServer.
@@ -131,6 +133,7 @@ func New(opts ...OptFunc) *SocketServer {
 	s := &SocketServer{
 		clientConnections:  make(map[string]*connection),
 		channels:           make(map[string]*channel),
+		waitingMsgs:        newWaitMessgaes(),
 		broadcastListeners: make(map[string]sockets.HandlerFunc),
 		directListeners:    make(map[string]sockets.HandlerFunc),
 		middleware:         make([]sockets.MiddlewareFunc, 0),
@@ -380,6 +383,13 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 		m.ClientID = clientID
 		ctx := context.Background()
 		log.Debug().Msg("message received")
+		// if this is a wait message deliver it and move on
+		if wm := s.waitingMsgs.message(m.CorrelationID); wm != nil {
+			log.Debug().Msgf("wait message for correlationID %s executing", m.CorrelationID)
+			wm.deliver(m)
+			continue
+		}
+
 		hndlr, isDirect := s.handler(m.Key())
 		if hndlr == nil {
 			log.Debug().Msgf("no handler found for message %s", m.Key())
@@ -468,6 +478,19 @@ func (s *SocketServer) BroadcastDirect(clientID string, msg *sockets.Message) {
 		ID:  clientID,
 		msg: msg,
 	}
+}
+
+// BroadcastAwait will send a broadcast to a channel and wait for a response,
+// this will simply act on the first response to hit the server, if multiple peers respond, only the
+// first will be returned.
+//
+// The function will return if a msg is returned OR an error is returned OR the ctx times out.
+func (s *SocketServer) BroadcastAwait(ctx context.Context, channelID string, msg *sockets.Message) (*sockets.Message, error) {
+	defer s.waitingMsgs.delete(msg.CorrelationID)
+	wm := newWaitMessage()
+	s.waitingMsgs.add(msg.CorrelationID, wm)
+	s.Broadcast(channelID, msg)
+	return wm.wait(ctx)
 }
 
 // WithMiddleware will append the middleware funcs to any already registered middleware functions.
