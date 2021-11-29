@@ -19,7 +19,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/KyleBanks/depth"
 	"github.com/go-openapi/spec"
@@ -35,9 +34,10 @@ const (
 	// SnakeCase indicates using SnakeCase strategy for struct field.
 	SnakeCase = "snakecase"
 
-	acceptAttr      = "@accept"
-	produceAttr     = "@produce"
-	scopeAttrPrefix = "@scope."
+	acceptAttr       = "@accept"
+	produceAttr      = "@produce"
+	xCodeSamplesAttr = "@x-codesamples"
+	scopeAttrPrefix  = "@scope."
 )
 
 var (
@@ -50,6 +50,16 @@ var (
 	// ErrFailedConvertPrimitiveType Failed to convert for swag to interpretable type.
 	ErrFailedConvertPrimitiveType = errors.New("swag property: failed convert primitive type")
 )
+
+var allMethod = map[string]struct{}{
+	http.MethodGet:     {},
+	http.MethodPut:     {},
+	http.MethodPost:    {},
+	http.MethodDelete:  {},
+	http.MethodOptions: {},
+	http.MethodHead:    {},
+	http.MethodPatch:   {},
+}
 
 // Parser implements a parser for Go source files.
 type Parser struct {
@@ -106,6 +116,21 @@ type Parser struct {
 
 	// debugging output goes here
 	debug Debugger
+
+	// fieldParserFactory create FieldParser
+	fieldParserFactory FieldParserFactory
+}
+
+// FieldParserFactory create FieldParser
+type FieldParserFactory func(ps *Parser, field *ast.Field) FieldParser
+
+// FieldParser parse struct field
+type FieldParser interface {
+	ShouldSkip() (bool, error)
+	FieldName() (string, error)
+	CustomSchema() (*spec.Schema, error)
+	ComplementSchema(schema *spec.Schema) error
+	IsRequired() (bool, error)
 }
 
 // Debugger is the interface that wraps the basic Printf method.
@@ -143,6 +168,7 @@ func New(options ...func(*Parser)) *Parser {
 		existSchemaNames:   make(map[string]*Schema),
 		toBeRenamedSchemas: make(map[string]string),
 		excludes:           make(map[string]bool),
+		fieldParserFactory: newTagBaseFieldParser,
 	}
 
 	for _, option := range options {
@@ -190,6 +216,13 @@ func SetStrict(strict bool) func(*Parser) {
 func SetDebugger(logger Debugger) func(parser *Parser) {
 	return func(p *Parser) {
 		p.debug = logger
+	}
+}
+
+// SetFieldParserFactory allows the use of user-defined implementations.
+func SetFieldParserFactory(factory FieldParserFactory) func(parser *Parser) {
+	return func(p *Parser) {
+		p.fieldParserFactory = factory
 	}
 }
 
@@ -499,7 +532,7 @@ func isGeneralAPIComment(comments []string) bool {
 	for _, commentLine := range comments {
 		attribute := strings.ToLower(strings.Split(commentLine, " ")[0])
 		switch attribute {
-		// The @summary, @router, @success,@failure  annotation belongs to Operation
+		// The @summary, @router, @success, @failure annotation belongs to Operation
 		case "@summary", "@router", "@success", "@failure", "@response":
 			return false
 		}
@@ -674,8 +707,10 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 					pathItem = spec.PathItem{}
 				}
 
+				op := refRouteMethodOp(&pathItem, routeProperties.HTTPMethod)
+
 				// check if we already have a operation for this path and method
-				if hasRouteMethodOp(pathItem, routeProperties.HTTPMethod) {
+				if *op != nil {
 					err := fmt.Errorf("route %s %s is declared multiple times", routeProperties.HTTPMethod, routeProperties.Path)
 					if parser.Strict {
 						return err
@@ -683,7 +718,7 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 					parser.debug.Printf("warning: %s\n", err)
 				}
 
-				setRouteMethodOp(&pathItem, routeProperties.HTTPMethod, &operation.Operation)
+				*op = &operation.Operation
 
 				parser.swagger.Paths.Paths[routeProperties.Path] = pathItem
 			}
@@ -693,44 +728,24 @@ func (parser *Parser) ParseRouterAPIInfo(fileName string, astFile *ast.File) err
 	return nil
 }
 
-func setRouteMethodOp(pathItem *spec.PathItem, method string, op *spec.Operation) {
-	switch strings.ToUpper(method) {
+func refRouteMethodOp(item *spec.PathItem, method string) (op **spec.Operation) {
+	switch method {
 	case http.MethodGet:
-		pathItem.Get = op
+		op = &item.Get
 	case http.MethodPost:
-		pathItem.Post = op
+		op = &item.Post
 	case http.MethodDelete:
-		pathItem.Delete = op
+		op = &item.Delete
 	case http.MethodPut:
-		pathItem.Put = op
+		op = &item.Put
 	case http.MethodPatch:
-		pathItem.Patch = op
+		op = &item.Patch
 	case http.MethodHead:
-		pathItem.Head = op
+		op = &item.Head
 	case http.MethodOptions:
-		pathItem.Options = op
+		op = &item.Options
 	}
-}
-
-func hasRouteMethodOp(pathItem spec.PathItem, method string) bool {
-	switch strings.ToUpper(method) {
-	case http.MethodGet:
-		return pathItem.Get != nil
-	case http.MethodPost:
-		return pathItem.Post != nil
-	case http.MethodDelete:
-		return pathItem.Delete != nil
-	case http.MethodPut:
-		return pathItem.Put != nil
-	case http.MethodPatch:
-		return pathItem.Patch != nil
-	case http.MethodHead:
-		return pathItem.Head != nil
-	case http.MethodOptions:
-		return pathItem.Options != nil
-	}
-
-	return false
+	return
 }
 
 func convertFromSpecificToPrimitive(typeName string) (string, error) {
@@ -842,7 +857,7 @@ func (parser *Parser) getRefTypeSchema(typeSpecDef *TypeSpecDef, schema *Schema)
 
 	refSchema := RefSchema(schema.Name)
 	// store every URL
-	parser.toBeRenamedRefURLs = append(parser.toBeRenamedRefURLs, refSchema.Ref.Ref.GetURL())
+	parser.toBeRenamedRefURLs = append(parser.toBeRenamedRefURLs, refSchema.Ref.GetURL())
 
 	return refSchema
 }
@@ -1001,24 +1016,6 @@ func (parser *Parser) parseStruct(file *ast.File, fields *ast.FieldList) (*spec.
 	}, nil
 }
 
-type structField struct {
-	desc         string
-	schemaType   string
-	arrayType    string
-	formatType   string
-	isRequired   bool
-	readOnly     bool
-	exampleValue interface{}
-	maximum      *float64
-	minimum      *float64
-	multipleOf   *float64
-	maxLength    *int64
-	minLength    *int64
-	enums        []interface{}
-	defaultValue interface{}
-	extensions   map[string]interface{}
-}
-
 func (parser *Parser) parseStructField(file *ast.File, field *ast.Field) (map[string]spec.Schema, []string, error) {
 	if field.Names == nil {
 		if field.Tag != nil {
@@ -1053,12 +1050,24 @@ func (parser *Parser) parseStructField(file *ast.File, field *ast.Field) (map[st
 		return map[string]spec.Schema{typeName: *schema}, nil, nil
 	}
 
-	fieldName, schema, err := parser.getFieldName(field)
+	ps := parser.fieldParserFactory(parser, field)
+
+	ok, err := ps.ShouldSkip()
 	if err != nil {
 		return nil, nil, err
 	}
-	if fieldName == "" {
+	if ok {
 		return nil, nil, nil
+	}
+
+	fieldName, err := ps.FieldName()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	schema, err := ps.CustomSchema()
+	if err != nil {
+		return nil, nil, err
 	}
 	if schema == nil {
 		typeName, err := getFieldType(field.Type)
@@ -1074,42 +1083,17 @@ func (parser *Parser) parseStructField(file *ast.File, field *ast.Field) (map[st
 		}
 	}
 
-	types := parser.GetSchemaTypePath(schema, 2)
-	if len(types) == 0 {
-		return nil, nil, fmt.Errorf("invalid type for field: %s", field.Names[0])
-	}
-
-	structField, err := parser.parseFieldTag(field, types)
+	err = ps.ComplementSchema(schema)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if structField.schemaType == STRING && types[0] != structField.schemaType {
-		schema = PrimitiveSchema(structField.schemaType)
-	}
-
-	schema.Description = structField.desc
-	schema.ReadOnly = structField.readOnly
-	schema.Default = structField.defaultValue
-	schema.Example = structField.exampleValue
-	if structField.schemaType != ARRAY {
-		schema.Format = structField.formatType
-	}
-	schema.Extensions = structField.extensions
-	eleSchema := schema
-	if structField.schemaType == ARRAY {
-		eleSchema = schema.Items.Schema
-		eleSchema.Format = structField.formatType
-	}
-	eleSchema.Maximum = structField.maximum
-	eleSchema.Minimum = structField.minimum
-	eleSchema.MultipleOf = structField.multipleOf
-	eleSchema.MaxLength = structField.maxLength
-	eleSchema.MinLength = structField.minLength
-	eleSchema.Enum = structField.enums
-
 	var tagRequired []string
-	if structField.isRequired {
+	required, err := ps.IsRequired()
+	if err != nil {
+		return nil, nil, err
+	}
+	if required {
 		tagRequired = append(tagRequired, fieldName)
 	}
 
@@ -1138,213 +1122,6 @@ func getFieldType(field ast.Expr) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown field type %#v", field)
 	}
-}
-
-func (parser *Parser) getFieldName(field *ast.Field) (name string, schema *spec.Schema, err error) {
-	// Skip non-exported fields.
-	if !ast.IsExported(field.Names[0].Name) {
-		return "", nil, nil
-	}
-
-	if field.Tag != nil {
-		// `json:"tag"` -> json:"tag"
-		structTag := reflect.StructTag(strings.Replace(field.Tag.Value, "`", "", -1))
-		ignoreTag := structTag.Get("swaggerignore")
-		if strings.EqualFold(ignoreTag, "true") {
-			return "", nil, nil
-		}
-
-		name = structTag.Get("json")
-		// json:"tag,hoge"
-		if name = strings.TrimSpace(strings.Split(name, ",")[0]); name == "-" {
-			return "", nil, nil
-		}
-
-		typeTag := structTag.Get("swaggertype")
-		if typeTag != "" {
-			parts := strings.Split(typeTag, ",")
-			schema, err = BuildCustomSchema(parts)
-			if err != nil {
-				return "", nil, err
-			}
-		}
-	}
-
-	if name == "" {
-		switch parser.PropNamingStrategy {
-		case SnakeCase:
-			name = toSnakeCase(field.Names[0].Name)
-		case PascalCase:
-			name = field.Names[0].Name
-		default:
-			name = toLowerCamelCase(field.Names[0].Name)
-		}
-	}
-
-	return name, schema, err
-}
-
-func (parser *Parser) parseFieldTag(field *ast.Field, types []string) (*structField, error) {
-	structField := &structField{
-		//    name:       field.Names[0].Name,
-		schemaType: types[0],
-	}
-	if len(types) > 1 && (types[0] == ARRAY || types[0] == OBJECT) {
-		structField.arrayType = types[1]
-	}
-
-	if field.Doc != nil {
-		structField.desc = strings.TrimSpace(field.Doc.Text())
-	}
-	if structField.desc == "" && field.Comment != nil {
-		structField.desc = strings.TrimSpace(field.Comment.Text())
-	}
-
-	if field.Tag == nil {
-		return structField, nil
-	}
-	// `json:"tag"` -> json:"tag"
-	structTag := reflect.StructTag(strings.Replace(field.Tag.Value, "`", "", -1))
-
-	jsonTag := structTag.Get("json")
-	// json:"name,string" or json:",string"
-
-	exampleTag := structTag.Get("example")
-	if exampleTag != "" {
-		structField.exampleValue = exampleTag
-		if !strings.Contains(jsonTag, ",string") {
-			example, err := defineTypeOfExample(structField.schemaType, structField.arrayType, exampleTag)
-			if err != nil {
-				return nil, err
-			}
-			structField.exampleValue = example
-		}
-	}
-	formatTag := structTag.Get("format")
-	if formatTag != "" {
-		structField.formatType = formatTag
-	}
-	bindingTag := structTag.Get("binding")
-	if bindingTag != "" {
-		for _, val := range strings.Split(bindingTag, ",") {
-			if val == "required" {
-				structField.isRequired = true
-
-				break
-			}
-		}
-	}
-	validateTag := structTag.Get("validate")
-	if validateTag != "" {
-		for _, val := range strings.Split(validateTag, ",") {
-			if val == "required" {
-				structField.isRequired = true
-
-				break
-			}
-		}
-	}
-	extensionsTag := structTag.Get("extensions")
-	if extensionsTag != "" {
-		structField.extensions = map[string]interface{}{}
-		for _, val := range strings.Split(extensionsTag, ",") {
-			parts := strings.SplitN(val, "=", 2)
-			if len(parts) == 2 {
-				structField.extensions[parts[0]] = parts[1]
-			} else {
-				if len(parts[0]) > 0 && string(parts[0][0]) == "!" {
-					structField.extensions[string(parts[0][1:])] = false
-				} else {
-					structField.extensions[parts[0]] = true
-				}
-			}
-		}
-	}
-	enumsTag := structTag.Get("enums")
-	if enumsTag != "" {
-		enumType := structField.schemaType
-		if structField.schemaType == ARRAY {
-			enumType = structField.arrayType
-		}
-
-		for _, e := range strings.Split(enumsTag, ",") {
-			value, err := defineType(enumType, e)
-			if err != nil {
-				return nil, err
-			}
-			structField.enums = append(structField.enums, value)
-		}
-	}
-	defaultTag := structTag.Get("default")
-	if defaultTag != "" {
-		value, err := defineType(structField.schemaType, defaultTag)
-		if err != nil {
-			return nil, err
-		}
-		structField.defaultValue = value
-	}
-
-	if IsNumericType(structField.schemaType) || IsNumericType(structField.arrayType) {
-		maximum, err := getFloatTag(structTag, "maximum")
-		if err != nil {
-			return nil, err
-		}
-		structField.maximum = maximum
-
-		minimum, err := getFloatTag(structTag, "minimum")
-		if err != nil {
-			return nil, err
-		}
-		structField.minimum = minimum
-
-		multipleOf, err := getFloatTag(structTag, "multipleOf")
-		if err != nil {
-			return nil, err
-		}
-		structField.multipleOf = multipleOf
-	}
-	if structField.schemaType == STRING || structField.arrayType == STRING {
-		maxLength, err := getIntTag(structTag, "maxLength")
-		if err != nil {
-			return nil, err
-		}
-		structField.maxLength = maxLength
-
-		minLength, err := getIntTag(structTag, "minLength")
-		if err != nil {
-			return nil, err
-		}
-		structField.minLength = minLength
-	}
-	readOnly := structTag.Get("readonly")
-	if readOnly != "" {
-		structField.readOnly = readOnly == "true"
-	}
-
-	// perform this after setting everything else (min, max, etc...)
-	if strings.Contains(jsonTag, ",string") { // @encoding/json: "It applies only to fields of string, floating point, integer, or boolean types."
-		defaultValues := map[string]string{
-			// Zero Values as string
-			STRING:  "",
-			INTEGER: "0",
-			BOOLEAN: "false",
-			NUMBER:  "0",
-		}
-
-		defaultValue, ok := defaultValues[structField.schemaType]
-		if ok {
-			structField.schemaType = STRING
-
-			if structField.exampleValue == nil {
-				// if exampleValue is not defined by the user,
-				// we will force an example with a correct value
-				// (eg: int->"0", bool:"false")
-				structField.exampleValue = defaultValue
-			}
-		}
-	}
-
-	return structField, nil
 }
 
 // GetSchemaTypePath get path of schema type.
@@ -1387,70 +1164,7 @@ func (parser *Parser) GetSchemaTypePath(schema *spec.Schema, depth int) []string
 }
 
 func replaceLastTag(slice []spec.Tag, element spec.Tag) {
-	slice = slice[:len(slice)-1]
-	slice = append(slice, element)
-}
-
-func getFloatTag(structTag reflect.StructTag, tagName string) (*float64, error) {
-	strValue := structTag.Get(tagName)
-	if strValue == "" {
-		return nil, nil
-	}
-
-	value, err := strconv.ParseFloat(strValue, 64)
-	if err != nil {
-		return nil, fmt.Errorf("can't parse numeric value of %q tag: %v", tagName, err)
-	}
-
-	return &value, nil
-}
-
-func getIntTag(structTag reflect.StructTag, tagName string) (*int64, error) {
-	strValue := structTag.Get(tagName)
-	if strValue == "" {
-		return nil, nil
-	}
-
-	value, err := strconv.ParseInt(strValue, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("can't parse numeric value of %q tag: %v", tagName, err)
-	}
-
-	return &value, nil
-}
-
-func toSnakeCase(in string) string {
-	runes := []rune(in)
-	length := len(runes)
-
-	var out []rune
-	for i := 0; i < length; i++ {
-		if i > 0 && unicode.IsUpper(runes[i]) &&
-			((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {
-			out = append(out, '_')
-		}
-		out = append(out, unicode.ToLower(runes[i]))
-	}
-
-	return string(out)
-}
-
-func toLowerCamelCase(in string) string {
-	runes := []rune(in)
-
-	var out []rune
-	flag := false
-	for i, curr := range runes {
-		if (i == 0 && unicode.IsUpper(curr)) || (flag && unicode.IsUpper(curr)) {
-			out = append(out, unicode.ToLower(curr))
-			flag = true
-		} else {
-			out = append(out, curr)
-			flag = false
-		}
-	}
-
-	return string(out)
+	slice = append(slice[:len(slice)-1], element)
 }
 
 // defineTypeOfExample example value define the type (object and array unsupported)
@@ -1520,7 +1234,7 @@ func defineTypeOfExample(schemaType, arrayType, exampleValue string) (interface{
 
 // GetAllGoFileInfo gets all Go source files information for given searchDir.
 func (parser *Parser) getAllGoFileInfo(packageDir, searchDir string) error {
-	return filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
+	return filepath.Walk(searchDir, func(path string, f os.FileInfo, _ error) error {
 		if err := parser.Skip(path, f); err != nil {
 			return err
 		} else if f.IsDir() {
@@ -1547,7 +1261,7 @@ func (parser *Parser) getAllGoFileInfoFromDeps(pkg *depth.Pkg) error {
 		return nil
 	}
 	srcDir := pkg.Raw.Dir
-	files, err := ioutil.ReadDir(srcDir) // only parsing files in the dir(don't contains sub dir files)
+	files, err := ioutil.ReadDir(srcDir) // only parsing files in the dir(don't contain sub dir files)
 	if err != nil {
 		return err
 	}
@@ -1591,58 +1305,32 @@ func (parser *Parser) parseFile(packageDir, path string, src interface{}) error 
 	return nil
 }
 
-func getOperationID(itm spec.PathItem) (string, string) {
-	if itm.Get != nil {
-		return http.MethodGet, itm.Get.ID
-	}
-	if itm.Put != nil {
-		return http.MethodPut, itm.Put.ID
-	}
-	if itm.Post != nil {
-		return http.MethodPost, itm.Post.ID
-	}
-	if itm.Delete != nil {
-		return http.MethodDelete, itm.Delete.ID
-	}
-	if itm.Options != nil {
-		return http.MethodOptions, itm.Options.ID
-	}
-	if itm.Head != nil {
-		return http.MethodHead, itm.Head.ID
-	}
-	if itm.Patch != nil {
-		return http.MethodTrace, itm.Patch.ID
-	}
-
-	return "", ""
-}
-
 func (parser *Parser) checkOperationIDUniqueness() error {
 	// operationsIds contains all operationId annotations to check it's unique
 	operationsIds := make(map[string]string)
 
-	for path, itm := range parser.swagger.Paths.Paths {
-		method, id := getOperationID(itm)
-		err := saveOperationID(operationsIds, id, fmt.Sprintf("%s %s", method, path))
-		if err != nil {
-			return err
+	for path, item := range parser.swagger.Paths.Paths {
+		var method, id string
+		for method = range allMethod {
+			op := refRouteMethodOp(&item, method)
+			if *op != nil {
+				id = (**op).ID
+				break
+			}
 		}
-	}
+		if id == "" {
+			continue
+		}
 
-	return nil
-}
-
-func saveOperationID(operationsIds map[string]string, operationID, currentPath string) error {
-	if operationID == "" {
-		return nil
+		current := fmt.Sprintf("%s %s", method, path)
+		previous, ok := operationsIds[id]
+		if ok {
+			return fmt.Errorf(
+				"duplicated @id annotation '%s' found in '%s', previously declared in: '%s'",
+				id, current, previous)
+		}
+		operationsIds[id] = current
 	}
-	previousPath, ok := operationsIds[operationID]
-	if ok {
-		return fmt.Errorf(
-			"duplicated @id annotation '%s' found in '%s', previously declared in: '%s'",
-			operationID, currentPath, previousPath)
-	}
-	operationsIds[operationID] = currentPath
 
 	return nil
 }
@@ -1673,12 +1361,6 @@ func (parser *Parser) GetSwagger() *spec.Swagger {
 
 // addTestType just for tests.
 func (parser *Parser) addTestType(typename string) {
-	if parser.parsedSchemas == nil {
-		parser.parsedSchemas = make(map[*TypeSpecDef]*Schema)
-	}
-	if parser.packages.uniqueDefinitions == nil {
-		parser.packages.uniqueDefinitions = make(map[string]*TypeSpecDef)
-	}
 	typeDef := &TypeSpecDef{}
 	parser.packages.uniqueDefinitions[typename] = typeDef
 	parser.parsedSchemas[typeDef] = &Schema{
