@@ -246,7 +246,7 @@ github.com/theflyingcodr/sockets/client
 github.com/theflyingcodr/sockets/internal
 github.com/theflyingcodr/sockets/middleware
 github.com/theflyingcodr/sockets/server
-# github.com/tonicpow/go-minercraft v0.3.5
+# github.com/tonicpow/go-minercraft v0.3.6
 ## explicit; go 1.15
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0

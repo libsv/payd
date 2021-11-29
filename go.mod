@@ -24,7 +24,7 @@ require (
 	github.com/swaggo/swag v1.7.4
 	github.com/theflyingcodr/govalidator v0.1.3
 	github.com/theflyingcodr/lathos v0.0.6
-	github.com/tonicpow/go-minercraft v0.3.5
+	github.com/tonicpow/go-minercraft v0.3.6
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c

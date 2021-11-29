@@ -54,12 +54,12 @@ type (
 // SubmitTransactions is used for submitting batched transactions
 //
 // Reference: https://github.com/bitcoin-sv-specs/brfc-merchantapi#4-submit-multiple-transactions
-func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs *[]Transaction) (*SubmitTransactionsResponse, error) {
+func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs []Transaction) (*SubmitTransactionsResponse, error) {
 	if miner == nil {
 		return nil, errors.New("miner was nil")
 	}
 
-	if len(*txs) <= 0 {
+	if len(txs) <= 0 {
 		return nil, errors.New("no transactions")
 	}
 
@@ -79,7 +79,7 @@ func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs *[]Tr
 		return nil, err
 	}
 
-	var raw *RawSubmitTransactionsResponse
+	var raw RawSubmitTransactionsResponse
 	if err = json.Unmarshal(
 		response.BodyContents, &raw,
 	); err != nil {
