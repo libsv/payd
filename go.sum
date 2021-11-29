@@ -476,8 +476,6 @@ github.com/libsv/go-bk v0.1.5/go.mod h1:xbDkeFFpP0uyFaPLnP6TwaLpAsHaslZ0LftTdWlB
 github.com/libsv/go-bt v1.0.4 h1:2Css5lfomk/J97tM5Gk56Lp+tTK6xWYnmHNc/fGO6lE=
 github.com/libsv/go-bt v1.0.4/go.mod h1:AfXoLFYEbY/TvCq/84xTce2xGjPUuC5imokHmcykF2k=
 github.com/libsv/go-bt/v2 v2.0.0-beta.7/go.mod h1:6Vk1qMlMoFJFNm7rR7NmFx4VwHNMCi4+V9WBqTd37rQ=
-github.com/libsv/go-bt/v2 v2.0.0-beta.12 h1:xjCt06cUW5a8o1Qyk7pGSkvThMLTy2HzPrJFmsQIPBc=
-github.com/libsv/go-bt/v2 v2.0.0-beta.12/go.mod h1:Ict9mJuFxjzNszELtCTtAHH5tQtQd2fnXUKG1n1ldP0=
 github.com/libsv/go-bt/v2 v2.0.0-beta.13 h1:kedGtn9OX6k+OpZF21Wh7EKnce782nYn2NuYVloWr4U=
 github.com/libsv/go-bt/v2 v2.0.0-beta.13/go.mod h1:u5g3GmVLffBV8sWvMqHR3JekC51OR9XYvmQp1h/XoiQ=
 github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaWak/Gls=
@@ -662,8 +660,8 @@ github.com/theflyingcodr/lathos v0.0.6 h1:xIHMZTinurvodmFOgvSGD+OrDhSj42+Xz+FOXY
 github.com/theflyingcodr/lathos v0.0.6/go.mod h1:68tGFEbAqAzydWDb1KEJZPQY57l3hH32GXO11Hf1zGQ=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e h1:gfOQ8DVRKwc97bXeR6I6ogosWhFi4mredpUtZcx/gvg=
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod h1:g9qbiDvB47WyrRnNu2t2gMZFNHKnatsYRxsGZbCi4EM=
-github.com/theflyingcodr/sockets v0.0.10-beta h1:mvY6RMBX3QXM8ZeMj3EYscD1o1OrlESWG6KlCLxILPA=
-github.com/theflyingcodr/sockets v0.0.10-beta/go.mod h1:9WuWIyja/Q8PF3WmblAjFmfzkKabEBLto2Gx1XYnerc=
+github.com/theflyingcodr/sockets v0.0.11-beta h1:73rvasQ8aQkuzX1usPjAu9YyE73Kn6ffMfCucRGu1Pw=
+github.com/theflyingcodr/sockets v0.0.11-beta/go.mod h1:9WuWIyja/Q8PF3WmblAjFmfzkKabEBLto2Gx1XYnerc=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tonicpow/go-minercraft v0.3.5 h1:r4Yr8gQzbc4J2XtzSt9BT/EaUOy6diqaPmtA8fbJw5g=
 github.com/tonicpow/go-minercraft v0.3.5/go.mod h1:c6iEo7eKCu9CPXwP5MNwV+PE1NkwnqmwHhMzealQ7Tk=

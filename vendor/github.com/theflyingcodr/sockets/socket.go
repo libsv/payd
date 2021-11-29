@@ -1,6 +1,7 @@
 package sockets
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
@@ -35,7 +36,12 @@ type ServerDirectBroadcaster interface {
 
 // ServerChannelBroadcaster is used to send a message from a server to all clients connected to a channel.
 type ServerChannelBroadcaster interface {
+	// Broadcast will send a message to all connected peers on a channel.
+	// To handle these messages you should register a handler using server.RegisterChannelHandler.
 	Broadcast(channelID string, msg *Message)
+	// BroadcastAwait will broadcast a message to all peers but handle only the first one and return
+	// it to the caller. This is a blocking call.
+	BroadcastAwait(ctx context.Context, channelID string, msg *Message) (*Message, error)
 }
 
 // Request is used to send a message to a channel with a specific key.
