@@ -4,10 +4,9 @@
 package mocks
 
 import (
+	"github.com/libsv/payd"
 	"sync"
 	"time"
-
-	"github.com/libsv/payd"
 )
 
 // Ensure, that TimestampServiceMock does implement payd.TimestampService.

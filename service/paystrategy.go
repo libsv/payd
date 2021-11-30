@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
@@ -29,7 +30,7 @@ func (p *payStrat) Register(svc payd.PayService, names ...string) payd.PayStrate
 }
 
 // Pay to a url.
-func (p *payStrat) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, error) {
+func (p *payStrat) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}

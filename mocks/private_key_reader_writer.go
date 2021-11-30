@@ -5,9 +5,8 @@ package mocks
 
 import (
 	"context"
-	"sync"
-
 	"github.com/libsv/payd"
+	"sync"
 )
 
 // Ensure, that PrivateKeyReaderWriterMock does implement payd.PrivateKeyReaderWriter.

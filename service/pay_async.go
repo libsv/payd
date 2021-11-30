@@ -5,6 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 )
 
@@ -20,17 +21,17 @@ func NewPayChannel(wtr payd.PayWriter) *payChannel {
 }
 
 // Pay will initiate an async payment flow.
-func (p *payChannel) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, error) {
+func (p *payChannel) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, error) {
 	err := p.wtr.Pay(ctx, req)
 	if err != nil {
 		log.Err(err).Msg("failed to setup async channel")
-		return &payd.PaymentACK{
+		return &p4.PaymentACK{
 			Memo:  "failed to setup channel " + err.Error(),
 			Error: 1,
 		}, nil
 	}
 	// once pending in received, the receiver should listen on a channel for the async ack.
-	return &payd.PaymentACK{
+	return &p4.PaymentACK{
 		Memo:  "pending",
 		Error: 0,
 	}, nil

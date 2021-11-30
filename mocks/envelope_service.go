@@ -5,10 +5,10 @@ package mocks
 
 import (
 	"context"
-	"sync"
-
 	"github.com/libsv/go-bc/spv"
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
+	"sync"
 )
 
 // Ensure, that EnvelopeServiceMock does implement payd.EnvelopeService.
@@ -21,7 +21,7 @@ var _ payd.EnvelopeService = &EnvelopeServiceMock{}
 //
 // 		// make and configure a mocked payd.EnvelopeService
 // 		mockedEnvelopeService := &EnvelopeServiceMock{
-// 			EnvelopeFunc: func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
+// 			EnvelopeFunc: func(ctx context.Context, args payd.EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error) {
 // 				panic("mock out the Envelope method")
 // 			},
 // 		}
@@ -32,7 +32,7 @@ var _ payd.EnvelopeService = &EnvelopeServiceMock{}
 // 	}
 type EnvelopeServiceMock struct {
 	// EnvelopeFunc mocks the Envelope method.
-	EnvelopeFunc func(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error)
+	EnvelopeFunc func(ctx context.Context, args payd.EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -43,21 +43,21 @@ type EnvelopeServiceMock struct {
 			// Args is the args argument value.
 			Args payd.EnvelopeArgs
 			// Req is the req argument value.
-			Req payd.PaymentRequestResponse
+			Req p4.PaymentRequest
 		}
 	}
 	lockEnvelope sync.RWMutex
 }
 
 // Envelope calls EnvelopeFunc.
-func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
+func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error) {
 	if mock.EnvelopeFunc == nil {
 		panic("EnvelopeServiceMock.EnvelopeFunc: method is nil but EnvelopeService.Envelope was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
 		Args payd.EnvelopeArgs
-		Req  payd.PaymentRequestResponse
+		Req  p4.PaymentRequest
 	}{
 		Ctx:  ctx,
 		Args: args,
@@ -75,12 +75,12 @@ func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.Envelop
 func (mock *EnvelopeServiceMock) EnvelopeCalls() []struct {
 	Ctx  context.Context
 	Args payd.EnvelopeArgs
-	Req  payd.PaymentRequestResponse
+	Req  p4.PaymentRequest
 } {
 	var calls []struct {
 		Ctx  context.Context
 		Args payd.EnvelopeArgs
-		Req  payd.PaymentRequestResponse
+		Req  p4.PaymentRequest
 	}
 	mock.lockEnvelope.RLock()
 	calls = mock.calls.Envelope

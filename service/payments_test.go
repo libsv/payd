@@ -7,6 +7,7 @@ import (
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/log"
 	"github.com/libsv/payd/mocks"
@@ -23,12 +24,12 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		verifyPaymentFunc       func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error)
 		destinationsFunc        func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
 		txCreateFunc            func(context.Context, payd.TransactionCreate) error
-		proofCallbackCreateFunc func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error
+		proofCallbackCreateFunc func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error
 		broadcastFunc           func(context.Context, payd.BroadcastArgs, *bt.Tx) error
 		txUpdateStateFunc       func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error
 		commitFunc              func(context.Context) error
 		args                    payd.PaymentCreateArgs
-		req                     payd.PaymentCreate
+		req                     p4.Payment
 		expVerifyOpts           []spv.VerifyOpt
 		expRawTx                string
 		expTxState              payd.TxState
@@ -58,7 +59,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
 				return nil
 			},
-			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
 				return nil
 			},
 			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
@@ -71,7 +72,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -102,7 +103,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
 				return nil
 			},
-			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
 				return nil
 			},
 			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
@@ -115,7 +116,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{
 					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 				},
@@ -125,7 +126,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			expTxState:    payd.StateTxBroadcast,
 		},
 		"invalid request is rejected": {
-			req:    payd.PaymentCreate{},
+			req:    p4.Payment{},
 			expErr: errors.New("[invoiceID: value must be between 1 and 30 characters]"),
 		},
 		"invoice error is handled": {
@@ -133,7 +134,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, errors.New("no invoice 4 u")
 			},
 			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:    payd.PaymentCreate{},
+			req:    p4.Payment{},
 			expErr: errors.New("failed to get invoice with ID 'abc123': no invoice 4 u"),
 		},
 		"invoice cannot be paid twice": {
@@ -141,7 +142,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePaid}, nil
 			},
 			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:    payd.PaymentCreate{},
+			req:    p4.Payment{},
 			expErr: errors.New("Item already exists: payment already received for invoice ID 'abc123'"),
 		},
 		"error reading fees is reported": {
@@ -152,7 +153,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, errors.New("fee error")
 			},
 			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:    payd.PaymentCreate{},
+			req:    p4.Payment{},
 			expErr: errors.New("failed to read fees for payment with id abc123: fee error"),
 		},
 		"tx with insufficient fees is rejected": {
@@ -166,7 +167,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, spv.ErrFeePaidNotEnough
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[fees: not enough fees paid]"),
 		},
@@ -181,7 +182,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, spv.ErrInvalidProof
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[spvEnvelope: invalid merkle proof, payment invalid]"),
 		},
@@ -199,7 +200,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, errors.New("destinations unknown")
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("failed to get destinations with ID 'abc123': destinations unknown"),
 		},
@@ -225,7 +226,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				}}, nil
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: output satoshis do not match requested amount]"),
 		},
@@ -248,7 +249,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		//			State:          "pending",
 		//		}}, nil
 		//	},
-		//	req:    payd.PaymentCreate{InvoiceID: "abc123"},
+		//	req:    p4.Payment{InvoiceID: "abc123"},
 		//	expErr: errors.New("[tx.outputs: ]"),
 		//},
 		"tx with insufficient outputs is rejected": {
@@ -273,7 +274,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				}}, nil
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[transaction: tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again]"),
 		},
@@ -307,7 +308,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				}}, nil
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           payd.PaymentCreate{},
+			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: expected '2' outputs, received '1', ensure all destinations are supplied]"),
 		},
@@ -336,7 +337,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return errors.New("tx not create")
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -370,13 +371,13 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
 				return nil
 			},
-			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
 				return errors.New("oh no")
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
-				ProofCallbacks: map[string]payd.ProofCallback{
+				ProofCallbacks: map[string]p4.ProofCallback{
 					"wow": {},
 				},
 			},
@@ -408,7 +409,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
 				return nil
 			},
-			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
 				return nil
 			},
 			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
@@ -418,7 +419,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -450,7 +451,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
 				return nil
 			},
-			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]payd.ProofCallback) error {
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
 				return nil
 			},
 			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
@@ -463,7 +464,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return errors.New("oh no")
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req: payd.PaymentCreate{
+			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",

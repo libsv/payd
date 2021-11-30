@@ -7,6 +7,7 @@ import (
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
@@ -45,7 +46,7 @@ func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.Tra
 }
 
 // PaymentCreate will validate and store the payment.
-func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArgs, req payd.PaymentCreate) error {
+func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArgs, req p4.Payment) error {
 	if err := validator.New().
 		Validate("invoiceID", validator.StrLength(args.InvoiceID, 1, 30)).Err(); err != nil {
 		return err
@@ -138,7 +139,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
-		RefundTo:  req.RefundTo,
+		RefundTo:  null.StringFromPtr(req.RefundTo),
 		TxHex:     req.SPVEnvelope.RawTx,
 		Outputs:   txos,
 	}); err != nil {
@@ -167,7 +168,12 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	// set invoice as paid
 	if _, err := p.invRdr.InvoiceUpdate(ctx, payd.InvoiceUpdateArgs{InvoiceID: args.InvoiceID}, payd.InvoiceUpdatePaid{
 		PaymentReceivedAt: time.Now().UTC(),
-		RefundTo:          req.RefundTo.ValueOrZero(),
+		RefundTo: func() string {
+			if req.RefundTo == nil {
+				return ""
+			}
+			return *req.RefundTo
+		}(),
 	}); err != nil {
 		p.l.Error(err, "failed to update invoice to paid")
 	}

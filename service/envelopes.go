@@ -9,6 +9,7 @@ import (
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 	"github.com/theflyingcodr/lathos/errs"
 
@@ -37,7 +38,7 @@ func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter,
 }
 
 // Envelope will create and return a new Envelope.
-func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req payd.PaymentRequestResponse) (*spv.Envelope, error) {
+func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error) {
 	// Retrieve private key and build change utxo in advance of making any calls, so that
 	// if something internal goes wrong we don't make a premature request to the receiver's
 	// p4 server, creating unneeded traffic.
@@ -63,7 +64,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req pa
 		pathMap:       make(map[*bscript.Script]string),
 		masterPrivKey: privKey,
 	}
-	if err = tx.Fund(ctx, req.Fee, func(ctx context.Context, deficit uint64) ([]*bt.UTXO, error) {
+	if err = tx.Fund(ctx, req.FeeRate, func(ctx context.Context, deficit uint64) ([]*bt.UTXO, error) {
 		utxos, err := e.txoWtr.UTXOReserve(ctx, payd.UTXOReserve{
 			ReservedFor: args.PayToURL,
 			Satoshis:    deficit,
@@ -108,7 +109,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req pa
 		return nil, err
 	}
 	// Finalise the tx.
-	if err = tx.Change(changeOutput.LockingScript, req.Fee); err != nil {
+	if err = tx.Change(changeOutput.LockingScript, req.FeeRate); err != nil {
 		return nil, errors.Wrap(err, "failed to set change")
 	}
 

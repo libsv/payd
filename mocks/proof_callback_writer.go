@@ -5,9 +5,9 @@ package mocks
 
 import (
 	"context"
-	"sync"
-
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
+	"sync"
 )
 
 // Ensure, that ProofCallbackWriterMock does implement payd.ProofCallbackWriter.
@@ -20,7 +20,7 @@ var _ payd.ProofCallbackWriter = &ProofCallbackWriterMock{}
 //
 // 		// make and configure a mocked payd.ProofCallbackWriter
 // 		mockedProofCallbackWriter := &ProofCallbackWriterMock{
-// 			ProofCallBacksCreateFunc: func(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]payd.ProofCallback) error {
+// 			ProofCallBacksCreateFunc: func(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]p4.ProofCallback) error {
 // 				panic("mock out the ProofCallBacksCreate method")
 // 			},
 // 		}
@@ -31,7 +31,7 @@ var _ payd.ProofCallbackWriter = &ProofCallbackWriterMock{}
 // 	}
 type ProofCallbackWriterMock struct {
 	// ProofCallBacksCreateFunc mocks the ProofCallBacksCreate method.
-	ProofCallBacksCreateFunc func(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]payd.ProofCallback) error
+	ProofCallBacksCreateFunc func(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]p4.ProofCallback) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -42,21 +42,21 @@ type ProofCallbackWriterMock struct {
 			// Args is the args argument value.
 			Args payd.ProofCallbackArgs
 			// Callbacks is the callbacks argument value.
-			Callbacks map[string]payd.ProofCallback
+			Callbacks map[string]p4.ProofCallback
 		}
 	}
 	lockProofCallBacksCreate sync.RWMutex
 }
 
 // ProofCallBacksCreate calls ProofCallBacksCreateFunc.
-func (mock *ProofCallbackWriterMock) ProofCallBacksCreate(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]payd.ProofCallback) error {
+func (mock *ProofCallbackWriterMock) ProofCallBacksCreate(ctx context.Context, args payd.ProofCallbackArgs, callbacks map[string]p4.ProofCallback) error {
 	if mock.ProofCallBacksCreateFunc == nil {
 		panic("ProofCallbackWriterMock.ProofCallBacksCreateFunc: method is nil but ProofCallbackWriter.ProofCallBacksCreate was just called")
 	}
 	callInfo := struct {
 		Ctx       context.Context
 		Args      payd.ProofCallbackArgs
-		Callbacks map[string]payd.ProofCallback
+		Callbacks map[string]p4.ProofCallback
 	}{
 		Ctx:       ctx,
 		Args:      args,
@@ -74,12 +74,12 @@ func (mock *ProofCallbackWriterMock) ProofCallBacksCreate(ctx context.Context, a
 func (mock *ProofCallbackWriterMock) ProofCallBacksCreateCalls() []struct {
 	Ctx       context.Context
 	Args      payd.ProofCallbackArgs
-	Callbacks map[string]payd.ProofCallback
+	Callbacks map[string]p4.ProofCallback
 } {
 	var calls []struct {
 		Ctx       context.Context
 		Args      payd.ProofCallbackArgs
-		Callbacks map[string]payd.ProofCallback
+		Callbacks map[string]p4.ProofCallback
 	}
 	mock.lockProofCallBacksCreate.RLock()
 	calls = mock.calls.ProofCallBacksCreate
