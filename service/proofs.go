@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/libsv/go-bk/envelope"
+	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 
@@ -24,8 +25,8 @@ func NewProofsService(wtr payd.ProofsWriter) *proofs {
 
 // Create will add a merkle proof to a data store for persistent storage once it has
 // been validated.
-func (p *proofs) Create(ctx context.Context, args payd.ProofCreateArgs, req envelope.JSONEnvelope) error {
-	var proof *payd.ProofWrapper
+func (p *proofs) Create(ctx context.Context, args p4.ProofCreateArgs, req envelope.JSONEnvelope) error {
+	var proof p4.ProofWrapper
 	if err := json.Unmarshal([]byte(req.Payload), &proof); err != nil {
 		return errors.Wrap(err, "failed to unmarshall JSONEnvelope")
 	}
@@ -40,7 +41,7 @@ func (p *proofs) Create(ctx context.Context, args payd.ProofCreateArgs, req enve
 	if err := proof.Validate(args); err != nil {
 		return err
 	}
-	if err := p.wtr.ProofCreate(ctx, *proof); err != nil {
+	if err := p.wtr.ProofCreate(ctx, proof); err != nil {
 		return errors.Wrap(err, "failed to save proof")
 	}
 	return nil

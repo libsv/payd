@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/libsv/go-p4"
 	validator "github.com/theflyingcodr/govalidator"
 )
 
@@ -62,7 +63,7 @@ type PayStrategy interface {
 
 // PayService for sending payments to another wallet.
 type PayService interface {
-	Pay(ctx context.Context, req PayRequest) (*PaymentACK, error)
+	Pay(ctx context.Context, req PayRequest) (*p4.PaymentACK, error)
 }
 
 // PayWriter will send a payment to another wallet or p4 server.

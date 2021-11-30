@@ -7,21 +7,22 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 	"github.com/theflyingcodr/lathos/errs"
 )
 
-type p4 struct {
+type p4Client struct {
 	c Client
 }
 
 // NewP4 returns a new p4 interface.
 func NewP4(c Client) P4 {
-	return &p4{c: c}
+	return &p4Client{c: c}
 }
 
 // PaymentRequest performs a payment request http request to the specified url.
-func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.PaymentRequestResponse, error) {
+func (p *p4Client) PaymentRequest(ctx context.Context, args payd.PayRequest) (*p4.PaymentRequest, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, args.PayToURL, nil)
 	if err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 		return nil, p.handleErr(resp)
 	}
 
-	var payRec payd.PaymentRequestResponse
+	var payRec p4.PaymentRequest
 	if err = json.NewDecoder(resp.Body).Decode(&payRec); err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func (p *p4) PaymentRequest(ctx context.Context, args payd.PayRequest) (*payd.Pa
 }
 
 // PaymentSend sends a payment http request to the specified url, with the provided payment packet.
-func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.PaymentSend) (*payd.PaymentACK, error) {
+func (p *p4Client) PaymentSend(ctx context.Context, args payd.PayRequest, req p4.Payment) (*p4.PaymentACK, error) {
 	bb, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -70,7 +71,7 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 		return nil, p.handleErr(resp)
 	}
 
-	var ack payd.PaymentACK
+	var ack p4.PaymentACK
 	if err := json.NewDecoder(resp.Body).Decode(&ack); err != nil {
 		return nil, err
 	}
@@ -78,7 +79,7 @@ func (p *p4) PaymentSend(ctx context.Context, args payd.PayRequest, req payd.Pay
 	return &ack, nil
 }
 
-func (p *p4) handleErr(resp *http.Response) error {
+func (p *p4Client) handleErr(resp *http.Response) error {
 	errResp := &struct {
 		ID      string `json:"id"`
 		Code    string `json:"code"`

@@ -7,6 +7,7 @@ import (
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 
 	"github.com/libsv/payd"
@@ -59,7 +60,7 @@ func (l derivationSigner) Unlocker(ctx context.Context, script *bscript.Script) 
 
 // Pay takes a pay-to url and performs a payment procedure, ultimately sending money to the
 // url.
-func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, error) {
+func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -79,15 +80,15 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*payd.PaymentACK, e
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}
 	// Send the payment to the p4 server.
-	ack, err := p.p4.PaymentSend(ctx, req, payd.PaymentSend{
+	ack, err := p.p4.PaymentSend(ctx, req, p4.Payment{
 		SPVEnvelope: env,
-		ProofCallbacks: map[string]payd.ProofCallback{
+		ProofCallbacks: map[string]p4.ProofCallback{
 			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
 		},
-		MerchantData: payd.User{
+		MerchantData: p4.Merchant{
 			Name:         payReq.MerchantData.Name,
 			Email:        payReq.MerchantData.Email,
-			Avatar:       payReq.MerchantData.Avatar,
+			AvatarURL:    payReq.MerchantData.AvatarURL,
 			Address:      payReq.MerchantData.Address,
 			ExtendedData: payReq.MerchantData.ExtendedData,
 		},

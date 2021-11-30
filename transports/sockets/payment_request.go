@@ -8,8 +8,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/theflyingcodr/sockets"
 	"github.com/theflyingcodr/sockets/client"
-	"gopkg.in/guregu/null.v3"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 )
 
@@ -50,13 +50,13 @@ func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*soc
 }
 
 func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
-	var req payd.PaymentRequestResponse
+	var req p4.PaymentRequest
 	if err := msg.Bind(&req); err != nil {
 		return nil, err
 	}
-	payment := payd.PaymentCreate{
-		MerchantData: req.MerchantData,
-		RefundTo:     null.String{}, // TODO - read users paymail
+	payment := p4.Payment{
+		MerchantData: *req.MerchantData,
+		RefundTo:     nil, // TODO - read users paymail
 		Memo:         req.Memo,
 	}
 	// TODO : fix this, shouldn't be in this layer

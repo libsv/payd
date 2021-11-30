@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 )
 
@@ -35,7 +36,7 @@ func (p *payments) RegisterRoutes(g *echo.Group) {
 // @Success 200
 // @Router /v1/payments/{invoiceID} [POST].
 func (p *payments) create(e echo.Context) error {
-	var req payd.PaymentCreate
+	var req p4.Payment
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to bind request")
 	}

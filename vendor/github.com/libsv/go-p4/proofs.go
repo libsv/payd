@@ -1,25 +1,22 @@
-package payd
+package p4
 
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/libsv/go-bc"
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-bt/v2"
-	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 )
 
-var reTargetType = regexp.MustCompile(`^(header|hash|merkleRoot)$`)
-
 // ProofCreateArgs are used to create a proof.
 type ProofCreateArgs struct {
 	// TxID will be used to validate the proof envelope.
-	TxID string `json:"txId" param:"txid"`
+	TxID             string `json:"txId" param:"txid"`
+	PaymentReference string `query:"i"`
 }
 
 // ProofWrapper represents a mapi callback payload for a merkleproof.
@@ -52,7 +49,7 @@ func (p ProofWrapper) Validate(args ProofCreateArgs) error {
 	if p.CallbackPayload == nil {
 		return vl.Err()
 	}
-	vl = vl.Validate("callbackPayload.targetType", validator.MatchString(p.CallbackPayload.TargetType, reTargetType)).
+	vl = vl.Validate("callbackPayload.targetType", validator.AnyString(p.CallbackPayload.TargetType, "header", "hash", "merkleRoot")).
 		Validate("callbackPayload.target", validator.NotEmpty(p.CallbackPayload.Target)).
 		Validate("callbackPayload.proofType", func() error {
 			if p.CallbackPayload.ProofType == "" {
@@ -81,27 +78,16 @@ func (p ProofWrapper) Validate(args ProofCreateArgs) error {
 	return vl.Err()
 }
 
-// ProofCallbackArgs are used to identify proofs for an invoice.
-type ProofCallbackArgs struct {
-	InvoiceID string `db:"invoice_id"`
-}
-
 // ProofsService enforces business rules and validation when handling merkle proofs.
 type ProofsService interface {
 	// Create will store a JSONEnvelope that contains a merkleproof. The envelope should
 	// be validated to not be tampered with and the Envelope should be opened to check the payload
 	// is indeed a MerkleProof.
-	Create(ctx context.Context, args p4.ProofCreateArgs, req envelope.JSONEnvelope) error
+	Create(ctx context.Context, args ProofCreateArgs, req envelope.JSONEnvelope) error
 }
 
 // ProofsWriter is used to persist a proof to a data store.
 type ProofsWriter interface {
 	// ProofCreate can be used to persist a merkle proof in TSC format.
-	ProofCreate(ctx context.Context, req p4.ProofWrapper) error
-}
-
-// ProofCallbackWriter can be implemented to support writing proof callbacks.
-type ProofCallbackWriter interface {
-	// ProofCallBacksCreate can be implemented to store merkle proof callback urls for an invoice.
-	ProofCallBacksCreate(ctx context.Context, args ProofCallbackArgs, callbacks map[string]p4.ProofCallback) error
+	ProofCreate(ctx context.Context, args ProofCreateArgs, req envelope.JSONEnvelope) error
 }
