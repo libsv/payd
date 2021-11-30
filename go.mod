@@ -76,7 +76,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-require github.com/libsv/go-p4 v0.0.7-0.20211130125912-1e71594b4a02
+require github.com/libsv/go-p4 v0.0.7
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
