@@ -73,6 +73,8 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
+	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
+	invoiceSvc.SetConnectionService(connectService)
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 
@@ -150,7 +152,8 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
-	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc)
+	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
+	invoiceSvc.SetConnectionService(connectService)
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 
 	// create master private key if it doesn't exist

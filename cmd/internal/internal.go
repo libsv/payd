@@ -45,7 +45,7 @@ func SetupSwagger(cfg config.Server, e *echo.Echo) {
 }
 
 // SetupHTTPEndpoints will register the http endpoints.
-func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, g *echo.Group) {
+func SetupHTTPEndpoints(cfg config.Config, services *RestDeps, g *echo.Group) {
 	// handlers
 	thttp.NewInvoice(services.InvoiceService).
 		RegisterRoutes(g)
@@ -53,28 +53,28 @@ func SetupHTTPEndpoints(cfg config.Deployment, services *RestDeps, g *echo.Group
 	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
 	thttp.NewDestinations(services.DestinationService).RegisterRoutes(g)
 	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
-	thttp.NewPaymentRequests(services.PaymentRequestService).RegisterRoutes(g)
+	thttp.NewPaymentRequests(services.PaymentRequestService, cfg.P4).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
-	if cfg.Environment == "local" {
+	if cfg.Deployment.Environment == "local" {
 		// ugly endpoint for regtest topup - local only!
 		thttp.NewTransactions(services.TransactionService).RegisterRoutes(g)
 	}
 }
 
 // SetupSocketClient will setup handlers and socket server.
-func SetupSocketClient(cfg config.Socket, deps *SocketDeps, c *client.Client) {
+func SetupSocketClient(cfg config.Config, deps *SocketDeps, c *client.Client) {
 	c.WithMiddleware(smw.PanicHandler,
 		smw.Timeout(smw.NewTimeoutConfig()),
 		smw.Metrics(),
 		smw.Logger(smw.NewLoggerConfig()),
-		socMiddleware.IgnoreMyMessages(&cfg),
+		socMiddleware.IgnoreMyMessages(cfg.Socket),
 		socMiddleware.WithAppIDPayD()).
 		WithErrorHandler(socMiddleware.ErrorHandler).
 		WithServerErrorHandler(socMiddleware.ErrorMsgHandler)
 
 	// client handlers
-	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, deps.PaymentRequestService, deps.EnvelopeService).
+	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, deps.PaymentRequestService, deps.EnvelopeService, cfg.P4).
 		RegisterListeners(c)
 	tsoc.NewPayments(deps.PaymentService).
 		RegisterListeners(c)

@@ -11,20 +11,23 @@ import (
 
 	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 )
 
 type paymentRequest struct {
 	transacter payd.Transacter
 	prSvc      payd.PaymentRequestService
 	envSvc     payd.EnvelopeService
+	p4Cfg      *config.P4
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest socket listener.
-func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService) *paymentRequest {
+func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService, p4Cfg *config.P4) *paymentRequest {
 	return &paymentRequest{
 		transacter: transacter,
 		prSvc:      svc,
 		envSvc:     envSvc,
+		p4Cfg:      p4Cfg,
 	}
 }
 
@@ -36,10 +39,12 @@ func (p *paymentRequest) RegisterListeners(c *client.Client) {
 
 func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
 	log.Debug().Msg("socket: payment request create hit")
-	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{InvoiceID: msg.ChannelID()})
+	invoiceID := msg.ChannelID()
+	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{InvoiceID: invoiceID})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	pr.PaymentURL = fmt.Sprintf("%s/%s", p.p4Cfg.ServerHost, invoiceID)
 	resp := msg.NewFrom(RoutePaymentRequestResponse)
 	if err := resp.WithBody(pr); err != nil {
 		fmt.Printf("body %+v\n", pr)
