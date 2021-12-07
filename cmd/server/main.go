@@ -85,11 +85,11 @@ func main() {
 	g := e.Group("/")
 
 	// setup transports
-	internal.SetupHTTPEndpoints(*cfg.Deployment, internal.SetupRestDeps(cfg, log, db, c), g)
+	internal.SetupHTTPEndpoints(*cfg, internal.SetupRestDeps(cfg, log, db, c), g)
 
 	// setup sockets
 	deps := internal.SetupSocketDeps(cfg, log, db, c)
-	internal.SetupSocketClient(*cfg.Socket, deps, c)
+	internal.SetupSocketClient(*cfg, deps, c)
 	// setup socket endpoints
 	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
 

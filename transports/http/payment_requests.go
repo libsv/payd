@@ -1,20 +1,23 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
 )
 
 type paymentRequest struct {
-	svc payd.PaymentRequestService
+	svc   payd.PaymentRequestService
+	p4Cfg *config.P4
 }
 
 // NewPaymentRequests returns a new handler for payment request endpoint.
-func NewPaymentRequests(svc payd.PaymentRequestService) *paymentRequest {
-	return &paymentRequest{svc: svc}
+func NewPaymentRequests(svc payd.PaymentRequestService, p4Cfg *config.P4) *paymentRequest {
+	return &paymentRequest{svc: svc, p4Cfg: p4Cfg}
 }
 
 func (p *paymentRequest) RegisterRoutes(g *echo.Group) {
@@ -42,6 +45,7 @@ func (p *paymentRequest) get(c echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	req.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", p.p4Cfg.ServerHost, args.InvoiceID)
 
 	return c.JSON(http.StatusOK, req)
 }
