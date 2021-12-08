@@ -17,7 +17,7 @@ COPY . .
 
 RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/server
 
-FROM bitnami/minideb:buster
+FROM libsv/payd-base:latest
 
 COPY --from=builder /app/server /bin/
 COPY --from=builder /etc/passwd /etc/passwd

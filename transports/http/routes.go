@@ -20,4 +20,6 @@ const (
 	RouteV1UnsignedOffTx = "api/v1/txs/unsignedoff"
 	// TODO - fix this endpoint def.
 	RouteV1Submit = "api/v1/submit"
+
+	RouteV1Health = "api/v1/health"
 )

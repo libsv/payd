@@ -92,6 +92,7 @@ func main() {
 	internal.SetupSocketClient(*cfg.Socket, deps, c)
 	// setup socket endpoints
 	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
+	internal.SetupHealthEndpoint(*cfg, g, c)
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)
