@@ -10,6 +10,7 @@ import (
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/docs"
 	"github.com/libsv/payd/log"
+	"github.com/libsv/payd/service"
 	thttp "github.com/libsv/payd/transports/http"
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 	tsoc "github.com/libsv/payd/transports/sockets"
@@ -98,6 +99,11 @@ func SetupSocketServer(cfg config.Socket, e *echo.Echo) *server.SocketServer {
 	// this is our websocket endpoint, clients will hit this with the channelID they wish to connect to
 	e.GET("/ws/:channelID", wsHandler(s))
 	return s
+}
+
+// SetupHealthEndpoint setup the health check.
+func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client) {
+	thttp.NewHealthHandler(service.NewHealthService(c, cfg.P4)).RegisterRoutes(g)
 }
 
 func wsHandler(svr *server.SocketServer) echo.HandlerFunc {
