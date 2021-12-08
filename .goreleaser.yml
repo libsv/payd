@@ -38,20 +38,6 @@ changelog:
 dockers:
   -
     ids:
-      - base
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--platform=linux/amd64"
-    dockerfile: docker/Dockerfile.base
-    image_templates:
-      - "libsv/payd-base:latest"
-      - "libsv/payd-base:{{.Version}}"
-  -
-    ids:
       - server
     build_flag_templates:
       - "--pull"

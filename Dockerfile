@@ -17,7 +17,7 @@ COPY . .
 
 RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/server
 
-FROM libsv/payd-base:latest
+FROM bitnami/minideb:buster
 
 COPY --from=builder /app/server /bin/
 COPY --from=builder /etc/passwd /etc/passwd
@@ -25,7 +25,8 @@ COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /app/data/sqlite/migrations/ /migrations
 
-RUN mkdir /paydb && chown -R appuser:appuser /paydb
+RUN apt update && apt install -y curl && \
+	mkdir /paydb && chown -R appuser:appuser /paydb
 VOLUME /paydb
 
 USER appuser:appuser
