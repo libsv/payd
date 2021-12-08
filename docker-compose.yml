@@ -32,6 +32,10 @@ services:
       LOG_LEVEL: "info"
       P4_HOST: "ws://p4-merchant:28445/ws"
       MAPI_CALLBACK_HOST: "http://p4-merchant:28445"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "localhost:28443/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
     volumes:
       - merchant-data:/paydb
     ports:
