@@ -15,6 +15,7 @@ type healthSvc struct {
 	cfg *config.P4
 }
 
+// NewHealthService (NHS) will setup and return a new health service.
 func NewHealthService(c *client.Client, cfg *config.P4) payd.HealthService {
 	return &healthSvc{
 		c:   c,
@@ -22,6 +23,7 @@ func NewHealthService(c *client.Client, cfg *config.P4) payd.HealthService {
 	}
 }
 
+// Health will return an error if the application is in an unhealthy state.
 func (h *healthSvc) Health(ctx context.Context) error {
 	u, err := url.Parse(h.cfg.ServerHost)
 	if err != nil {

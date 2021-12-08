@@ -101,6 +101,7 @@ func SetupSocketServer(cfg config.Socket, e *echo.Echo) *server.SocketServer {
 	return s
 }
 
+// SetupHealthEndpoint setup the health check.
 func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client) {
 	thttp.NewHealthHandler(service.NewHealthService(c, cfg.P4)).RegisterRoutes(g)
 }

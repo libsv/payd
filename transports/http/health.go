@@ -12,12 +12,14 @@ type health struct {
 	svc payd.HealthService
 }
 
+// NewHealthHandler sets up and returns a new health handler.
 func NewHealthHandler(svc payd.HealthService) *health {
 	return &health{
 		svc: svc,
 	}
 }
 
+// RegisterRoutes will hook up the routes to the echo group.
 func (h *health) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteV1Health, h.health)
 }
