@@ -126,44 +126,7 @@ info:
   title: Payd
   version: 0.0.1
 paths:
-  /api/v1/payment/{paymentID}:
-    get:
-      consumes:
-      - application/json
-      description: Creates a payment request based on a payment id (the identifier
-        for an invoice).
-      parameters:
-      - description: Payment ID
-        in: path
-        name: paymentID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: contains outputs, merchant data and expiry information, used
-            by the payee to construct a transaction
-          schema:
-            $ref: '#/definitions/payd.PaymentRequestResponse'
-        "400":
-          description: returned if the user input is invalid, usually an issue with
-            the paymentID
-          schema:
-            $ref: '#/definitions/payd.ClientError'
-        "404":
-          description: returned if the paymentID has not been found
-          schema:
-            $ref: '#/definitions/payd.ClientError'
-        "500":
-          description: returned if there is an unexpected internal error
-          schema:
-            type: string
-      summary: Request to pay an invoice and receive back outputs to use when constructing
-        the payment transaction
-      tags:
-      - Payment
-  /v1/balance:
+  /api/v1/balance:
     get:
       consumes:
       - application/json
@@ -176,7 +139,7 @@ paths:
       summary: Balance
       tags:
       - Balance
-  /v1/destinations/{invoiceID}:
+  /api/v1/destinations/{invoiceID}:
     get:
       consumes:
       - application/json
@@ -202,7 +165,7 @@ paths:
       tags:
       - Destinations
       - Receive
-  /v1/invoices:
+  /api/v1/invoices:
     get:
       consumes:
       - application/json
@@ -234,7 +197,7 @@ paths:
       summary: InvoiceCreate invoices
       tags:
       - Invoices
-  /v1/invoices/{invoiceID}:
+  /api/v1/invoices/{invoiceID}:
     delete:
       consumes:
       - application/json
@@ -275,7 +238,7 @@ paths:
       summary: Invoices
       tags:
       - Invoices
-  /v1/owner:
+  /api/v1/owner:
     get:
       consumes:
       - application/json
@@ -290,7 +253,7 @@ paths:
       summary: Wallet owner information.
       tags:
       - Users
-  /v1/pay:
+  /api/v1/pay:
     post:
       consumes:
       - application/json
@@ -309,7 +272,44 @@ paths:
       summary: Make a payment
       tags:
       - Pay
-  /v1/payments/{invoiceID}:
+  /api/v1/payment/{paymentID}:
+    get:
+      consumes:
+      - application/json
+      description: Creates a payment request based on a payment id (the identifier
+        for an invoice).
+      parameters:
+      - description: Payment ID
+        in: path
+        name: paymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: contains outputs, merchant data and expiry information, used
+            by the payee to construct a transaction
+          schema:
+            $ref: '#/definitions/payd.PaymentRequestResponse'
+        "400":
+          description: returned if the user input is invalid, usually an issue with
+            the paymentID
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+        "404":
+          description: returned if the paymentID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+        "500":
+          description: returned if there is an unexpected internal error
+          schema:
+            type: string
+      summary: Request to pay an invoice and receive back outputs to use when constructing
+        the payment transaction
+      tags:
+      - Payment
+  /api/v1/payments/{invoiceID}:
     post:
       consumes:
       - application/json
@@ -337,7 +337,7 @@ paths:
       summary: Validate and store a payment.
       tags:
       - Payments
-  /v1/proofs/{txid}:
+  /api/v1/proofs/{txid}:
     post:
       consumes:
       - application/json

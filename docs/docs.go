@@ -28,57 +28,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/payment/{paymentID}": {
-            "get": {
-                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Payment ID",
-                        "name": "paymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
-                        "schema": {
-                            "$ref": "#/definitions/payd.PaymentRequestResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    },
-                    "404": {
-                        "description": "returned if the paymentID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    },
-                    "500": {
-                        "description": "returned if there is an unexpected internal error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/balance": {
+        "/api/v1/balance": {
             "get": {
                 "description": "Returns current balance, which is a sum of unspent txos",
                 "consumes": [
@@ -98,7 +48,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/destinations/{invoiceID}": {
+        "/api/v1/destinations/{invoiceID}": {
             "get": {
                 "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
                 "consumes": [
@@ -134,7 +84,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/invoices": {
+        "/api/v1/invoices": {
             "get": {
                 "description": "Returns all invoices currently stored",
                 "consumes": [
@@ -183,7 +133,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/invoices/{invoiceID}": {
+        "/api/v1/invoices/{invoiceID}": {
             "get": {
                 "description": "Returns invoices by invoices id if exists",
                 "consumes": [
@@ -245,7 +195,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/owner": {
+        "/api/v1/owner": {
             "get": {
                 "description": "Returns information about the wallet owner",
                 "consumes": [
@@ -268,7 +218,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/pay": {
+        "/api/v1/pay": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -298,7 +248,57 @@ var doc = `{
                 }
             }
         },
-        "/v1/payments/{invoiceID}": {
+        "/api/v1/payment/{paymentID}": {
+            "get": {
+                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "paymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
+                        "schema": {
+                            "$ref": "#/definitions/payd.PaymentRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "500": {
+                        "description": "returned if there is an unexpected internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/payments/{invoiceID}": {
             "post": {
                 "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
                 "consumes": [
@@ -339,7 +339,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/proofs/{txid}": {
+        "/api/v1/proofs/{txid}": {
             "post": {
                 "description": "Creates a json envelope proof",
                 "consumes": [

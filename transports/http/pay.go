@@ -31,7 +31,7 @@ func (p *pay) RegisterRoutes(g *echo.Group) {
 // @Produce json
 // @Param body body payd.PayRequest true "Pay to url"
 // @Success 201
-// @Router /v1/pay [POST].
+// @Router /api/v1/pay [POST].
 func (p *pay) pay(c echo.Context) error {
 	var req payd.PayRequest
 	if err := c.Bind(&req); err != nil {
