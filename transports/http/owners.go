@@ -27,7 +27,7 @@ func (o *owners) RegisterRoutes(g *echo.Group) {
 // owner will return information on the current wallet owner.
 // @Summary Wallet owner information.
 // @Description Returns information about the wallet owner
-// @Tags Users
+// @Tags User
 // @Accept json
 // @Produce json
 // @Success 200 {object} payd.User "Current wallet owner"

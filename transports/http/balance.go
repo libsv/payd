@@ -26,7 +26,7 @@ func (b *balance) RegisterRoutes(g *echo.Group) {
 // balance godoc
 // @Summary Balance
 // @Description Returns current balance, which is a sum of unspent txos
-// @Tags Balance
+// @Tags User
 // @Accept json
 // @Produce json
 // @Success 200

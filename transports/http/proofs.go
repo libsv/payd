@@ -30,7 +30,7 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 // create godoc
 // @Summary InvoiceCreate proof
 // @Description Creates a json envelope proof
-// @Tags Proofs
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param txid path string true "Transaction ID"

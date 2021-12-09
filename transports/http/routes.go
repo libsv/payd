@@ -6,7 +6,7 @@ const (
 	RouteV1Invoice     = "api/v1/invoices/:invoiceID"
 	RouteV1Invoices    = "api/v1/invoices"
 	RouteV1Destination = "api/v1/destinations/:invoiceID"
-	RouteV1Payment     = "api/v1/payments/:invoiceID"
+	RouteV1Payment     = "api/v1/payments/:paymentID"
 	RouteV1Proofs      = "api/v1/proofs/:txid"
 	RouteV1Connect     = "api/v1/socket/connect/:invoiceID"
 	RouteV1Transaction = "api/v1/transactions/:invoiceID"

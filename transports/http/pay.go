@@ -26,7 +26,7 @@ func (p *pay) RegisterRoutes(g *echo.Group) {
 
 // pay will send a payment to a provided url
 // @Summary Make a payment
-// @Tags Pay
+// @Tags Send
 // @Accept json
 // @Produce json
 // @Param body body payd.PayRequest true "Pay to url"

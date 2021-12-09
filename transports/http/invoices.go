@@ -29,7 +29,7 @@ func (i *invoices) RegisterRoutes(g *echo.Group) {
 // invoices godoc
 // @Summary Invoices
 // @Description Returns all invoices currently stored
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Success 200
@@ -45,7 +45,7 @@ func (i *invoices) invoices(e echo.Context) error {
 // invoices godoc
 // @Summary Invoices
 // @Description Returns invoices by invoices id if exists
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
@@ -66,7 +66,7 @@ func (i *invoices) invoice(e echo.Context) error {
 // create will validate and persist a new invoices.
 // @Summary InvoiceCreate invoices
 // @Description Creates an invoices with invoiceID and satoshis
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param body body payd.InvoiceCreate true "Reference and Satoshis"
@@ -87,7 +87,7 @@ func (i *invoices) create(e echo.Context) error {
 // delete godoc
 // @Summary InvoiceDelete invoices
 // @Description InvoiceDelete
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "invoiceID we want to remove"

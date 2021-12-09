@@ -79,7 +79,7 @@ func (p PaymentCreate) Validate(spvRequired bool) error {
 
 // PaymentCreateArgs are used to identify a payment.
 type PaymentCreateArgs struct {
-	InvoiceID string
+	PaymentID string
 }
 
 // ProofCallback contains information relating to a merkleproof callback.

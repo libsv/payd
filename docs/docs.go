@@ -38,7 +38,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Balance"
+                    "User"
                 ],
                 "summary": "Balance",
                 "responses": {
@@ -58,7 +58,6 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Destinations",
                     "Receive"
                 ],
                 "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
@@ -94,7 +93,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "Invoices",
                 "responses": {
@@ -112,7 +111,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "InvoiceCreate invoices",
                 "parameters": [
@@ -143,7 +142,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "Invoices",
                 "parameters": [
@@ -170,7 +169,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "InvoiceDelete invoices",
                 "parameters": [
@@ -205,7 +204,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "User"
                 ],
                 "summary": "Wallet owner information.",
                 "responses": {
@@ -227,7 +226,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Pay"
+                    "Send"
                 ],
                 "summary": "Make a payment",
                 "parameters": [
@@ -258,7 +257,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Payment"
+                    "Receive"
                 ],
                 "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
                 "parameters": [
@@ -298,9 +297,9 @@ var doc = `{
                 }
             }
         },
-        "/api/v1/payments/{invoiceID}": {
+        "/api/v1/payments/{paymentID}": {
             "post": {
-                "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
+                "description": "Given an paymentID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the payment.",
                 "consumes": [
                     "application/json"
                 ],
@@ -308,14 +307,14 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Payments"
+                    "Receive"
                 ],
                 "summary": "Validate and store a payment.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
+                        "description": "Payment ID",
+                        "name": "paymentID",
                         "in": "path",
                         "required": true
                     }
@@ -325,13 +324,13 @@ var doc = `{
                         "description": ""
                     },
                     "400": {
-                        "description": "returned if the invoiceID is empty or payment isn't valid",
+                        "description": "returned if the paymentID is empty or payment isn't valid",
                         "schema": {
                             "$ref": "#/definitions/payd.ClientError"
                         }
                     },
                     "404": {
-                        "description": "returned if the invoiceID has not been found",
+                        "description": "returned if the paymentID has not been found",
                         "schema": {
                             "$ref": "#/definitions/payd.ClientError"
                         }
@@ -349,7 +348,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Proofs"
+                    "Receive"
                 ],
                 "summary": "InvoiceCreate proof",
                 "parameters": [

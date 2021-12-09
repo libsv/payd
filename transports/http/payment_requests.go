@@ -27,7 +27,7 @@ func (p *paymentRequest) RegisterRoutes(g *echo.Group) {
 // buildPaymentRequest will setup and return a new payment request.
 // @Summary Request to pay an invoice and receive back outputs to use when constructing the payment transaction
 // @Description Creates a payment request based on a payment id (the identifier for an invoice).
-// @Tags Payment
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param paymentID path string true "Payment ID"
