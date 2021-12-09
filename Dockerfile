@@ -19,10 +19,12 @@ RUN CGO_ENABLED=1 GOOS=linux go build -o server -ldflags="-s -w" ./cmd/server
 
 FROM bitnami/minideb:buster
 
+# Configuration
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app/data/sqlite/migrations/ /migrations
+
+# Curl
 COPY --from=builder /lib/x86_64-linux-gnu/libcom_err.so.2.1 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libcom_err.so.2 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libkeyutils.so.1.8 /lib/x86_64-linux-gnu/
@@ -53,6 +55,9 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libkrb5support.so.0.1 /usr/lib/x86
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so.2 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so.2.0.25 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/bin/curl /usr/bin/
+
+# Code
+COPY --from=builder /app/data/sqlite/migrations/ /migrations
 COPY --from=builder /app/server /bin/
 
 RUN mkdir /paydb && chown -R appuser:appuser /paydb
