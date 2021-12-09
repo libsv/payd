@@ -19,7 +19,7 @@ const (
 )
 
 type destinations struct {
-	deployCfg  *config.Deployment
+	deployCfg  *config.Wallet
 	privKeySvc payd.PrivateKeyService
 	destRdrWtr payd.DestinationsReaderWriter
 	derivRdr   payd.DerivationReader
@@ -29,7 +29,7 @@ type destinations struct {
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(deployCfg *config.Deployment, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader, seed payd.SeedService) *destinations {
+func NewDestinationsService(deployCfg *config.Wallet, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader, seed payd.SeedService) *destinations {
 	return &destinations{
 		deployCfg:  deployCfg,
 		privKeySvc: privKeySvc,

@@ -32,8 +32,8 @@ const (
 	// TODO - sort updates when working on rest of Invoice API.
 	sqlInvoiceUpdate = `
 		UPDATE invoices 
-		SET paymentReceivedAt = :paymentReceivedAt, refundTo = :refundTo
-		WHERE invoice_id = :invoice_id AND state = :state
+		SET payment_received_at = :paymentReceivedAt, refund_to = :refundTo, state = 'paid'
+		WHERE invoice_id = :invoice_id AND state = 'pending'
 	`
 
 	sqlInvoiceDelete = `
@@ -148,8 +148,8 @@ func (s *sqliteStore) txUpdateInvoicePaid(tx db, args payd.InvoiceUpdateArgs, re
 	req.PaymentReceivedAt = time.Now().UTC()
 	if err := handleNamedExec(tx, sqlInvoiceUpdate, map[string]interface{}{
 		"paymentReceivedAt": req.PaymentReceivedAt,
-		//	"refundTo":          req.RefundTo,
-		"paymentID": args.InvoiceID,
+		"refundTo":          req.RefundTo,
+		"invoice_id":        args.InvoiceID,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to update invoice for invoiceID %s", args.InvoiceID)
 	}

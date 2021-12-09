@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  payd:
+    container_name: payd
+    image: local.payd
+    volumes:
+      - ./run/regtest/payd:/paydb
+
+  payd-merchant:
+    container_name: payd-merchant
+    image: local.payd
+    volumes:
+      - ./run/regtest/payd-merchant:/paydb
+

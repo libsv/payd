@@ -26,13 +26,13 @@ func (d *destinations) RegisterRoutes(g *echo.Group) {
 // destination will return destinations by invoiceID, or a 404 if none found.
 // @Summary Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
 // @Description Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.
-// @Tags Destinations
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
 // @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
 // @Success 200
-// @Router /v1/destinations/{invoiceID} [GET].
+// @Router /api/v1/destinations/{invoiceID} [GET].
 func (d *destinations) destination(e echo.Context) error {
 	var args payd.DestinationsArgs
 	if err := e.Bind(&args); err != nil {

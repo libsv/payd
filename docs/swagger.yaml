@@ -1,5 +1,7 @@
 basePath: /api
 definitions:
+  bt.FeeQuote:
+    type: object
   envelope.JSONEnvelope:
     properties:
       encoding:
@@ -51,10 +53,48 @@ definitions:
         description: Satoshis is the total amount this invoice is to pay.
         type: integer
     type: object
+  payd.P4Destination:
+    properties:
+      outputs:
+        items:
+          $ref: '#/definitions/payd.P4Output'
+        type: array
+    type: object
+  payd.P4Output:
+    properties:
+      amount:
+        type: integer
+      description:
+        type: string
+      script:
+        type: string
+    type: object
   payd.PayRequest:
     properties:
       payToURL:
         type: string
+    type: object
+  payd.PaymentRequestResponse:
+    properties:
+      creationTimestamp:
+        type: string
+      destinations:
+        $ref: '#/definitions/payd.P4Destination'
+      expirationTimestamp:
+        type: string
+      fees:
+        $ref: '#/definitions/bt.FeeQuote'
+      memo:
+        type: string
+      merchantData:
+        $ref: '#/definitions/payd.User'
+      network:
+        type: string
+      paymentURL:
+        type: string
+      spvRequired:
+        example: true
+        type: boolean
     type: object
   payd.User:
     properties:
@@ -65,8 +105,7 @@ definitions:
       email:
         type: string
       extendedData:
-        additionalProperties:
-          type: string
+        additionalProperties: true
         type: object
       id:
         type: integer
@@ -87,7 +126,7 @@ info:
   title: Payd
   version: 0.0.1
 paths:
-  /v1/balance:
+  /api/v1/balance:
     get:
       consumes:
       - application/json
@@ -99,8 +138,8 @@ paths:
           description: ""
       summary: Balance
       tags:
-      - Balance
-  /v1/destinations/{invoiceID}:
+      - User
+  /api/v1/destinations/{invoiceID}:
     get:
       consumes:
       - application/json
@@ -124,8 +163,8 @@ paths:
       summary: Given an invoiceID, a set of outputs and fees will be returned, if
         not found a 404 is returned.
       tags:
-      - Destinations
-  /v1/invoices:
+      - Receive
+  /api/v1/invoices:
     get:
       consumes:
       - application/json
@@ -137,7 +176,7 @@ paths:
           description: ""
       summary: Invoices
       tags:
-      - Invoices
+      - Receive
     post:
       consumes:
       - application/json
@@ -156,8 +195,8 @@ paths:
           description: ""
       summary: InvoiceCreate invoices
       tags:
-      - Invoices
-  /v1/invoices/{invoiceID}:
+      - Receive
+  /api/v1/invoices/{invoiceID}:
     delete:
       consumes:
       - application/json
@@ -179,7 +218,7 @@ paths:
             $ref: '#/definitions/payd.ClientError'
       summary: InvoiceDelete invoices
       tags:
-      - Invoices
+      - Receive
     get:
       consumes:
       - application/json
@@ -197,8 +236,8 @@ paths:
           description: ""
       summary: Invoices
       tags:
-      - Invoices
-  /v1/owner:
+      - Receive
+  /api/v1/owner:
     get:
       consumes:
       - application/json
@@ -212,8 +251,8 @@ paths:
             $ref: '#/definitions/payd.User'
       summary: Wallet owner information.
       tags:
-      - Users
-  /v1/pay:
+      - User
+  /api/v1/pay:
     post:
       consumes:
       - application/json
@@ -231,17 +270,54 @@ paths:
           description: ""
       summary: Make a payment
       tags:
-      - Pay
-  /v1/payments/{invoiceID}:
+      - Send
+  /api/v1/payment/{paymentID}:
+    get:
+      consumes:
+      - application/json
+      description: Creates a payment request based on a payment id (the identifier
+        for an invoice).
+      parameters:
+      - description: Payment ID
+        in: path
+        name: paymentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: contains outputs, merchant data and expiry information, used
+            by the payee to construct a transaction
+          schema:
+            $ref: '#/definitions/payd.PaymentRequestResponse'
+        "400":
+          description: returned if the user input is invalid, usually an issue with
+            the paymentID
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+        "404":
+          description: returned if the paymentID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+        "500":
+          description: returned if there is an unexpected internal error
+          schema:
+            type: string
+      summary: Request to pay an invoice and receive back outputs to use when constructing
+        the payment transaction
+      tags:
+      - Receive
+  /api/v1/payments/{paymentID}:
     post:
       consumes:
       - application/json
-      description: Given an invoiceID, and an spvEnvelope, we will validate the payment
-        and inputs used are valid and that it covers the invoice.
+      description: Given an paymentID, and an spvEnvelope, we will validate the payment
+        and inputs used are valid and that it covers the payment.
       parameters:
-      - description: Invoice ID
+      - description: Payment ID
         in: path
-        name: invoiceID
+        name: paymentID
         required: true
         type: string
       produces:
@@ -250,17 +326,17 @@ paths:
         "200":
           description: ""
         "400":
-          description: returned if the invoiceID is empty or payment isn't valid
+          description: returned if the paymentID is empty or payment isn't valid
           schema:
             $ref: '#/definitions/payd.ClientError'
         "404":
-          description: returned if the invoiceID has not been found
+          description: returned if the paymentID has not been found
           schema:
             $ref: '#/definitions/payd.ClientError'
       summary: Validate and store a payment.
       tags:
-      - Payments
-  /v1/proofs/{txid}:
+      - Receive
+  /api/v1/proofs/{txid}:
     post:
       consumes:
       - application/json
@@ -284,5 +360,5 @@ paths:
           description: ""
       summary: InvoiceCreate proof
       tags:
-      - Proofs
+      - Receive
 swagger: "2.0"

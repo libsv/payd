@@ -6,10 +6,12 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
 
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/internal"
 )
 
 const (
@@ -82,7 +84,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 		}
 		dd = append(dd, payd.Output{
 			ID:             id,
-			LockingScript:  lockingScript,
+			LockingScript:  internal.StringToScript(lockingScript),
 			Satoshis:       satoshis,
 			DerivationPath: derivationPath,
 			State:          state,
@@ -114,9 +116,21 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 	return dd, errors.Wrapf(commit(ctx, tx), "failed to commit transaction when creating payment destinations")
 }
 
+type dbOutput struct {
+	ID uint64 `db:"destination_id"`
+	// LockingScript is the P2PKH locking script used.
+	LockingScript string `db:"locking_script"`
+	Satoshis      uint64 `json:"satoshis" db:"satoshis"`
+	// DerivationPath is the deterministic path for this destination.
+	DerivationPath string `db:"derivation_path"`
+	// State will indicate if this destination is still waiting on a tx to fulfil it (pending)
+	// has been paid to in a tx (received) or has been deleted.
+	State string `db:"state"  enums:"pending,received,deleted"`
+}
+
 // Destinations will return a set of destination outputs for a specific invoiceID.
 func (s *sqliteStore) Destinations(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
-	var oo []payd.Output
+	var oo []dbOutput
 	if err := s.db.SelectContext(ctx, &oo, sqlDestinationsByInvoiceID, args.InvoiceID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
@@ -126,5 +140,16 @@ func (s *sqliteStore) Destinations(ctx context.Context, args payd.DestinationsAr
 	if len(oo) == 0 {
 		return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
 	}
-	return oo, nil
+	outs := make([]payd.Output, len(oo))
+	for i := 0; i < len(oo); i++ {
+		s, _ := bscript.NewFromHexString(oo[i].LockingScript)
+		outs[i] = payd.Output{
+			ID:             oo[i].ID,
+			LockingScript:  s,
+			Satoshis:       oo[i].Satoshis,
+			DerivationPath: oo[i].DerivationPath,
+			State:          oo[i].State,
+		}
+	}
+	return outs, nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/libsv/go-bk/envelope"
+	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 
 	"github.com/libsv/payd"
@@ -29,19 +30,19 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 // create godoc
 // @Summary InvoiceCreate proof
 // @Description Creates a json envelope proof
-// @Tags Proofs
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param txid path string true "Transaction ID"
 // @Param body body envelope.JSONEnvelope true "JSON Envelope"
 // @Success 201
-// @Router /v1/proofs/{txid} [POST].
+// @Router /api/v1/proofs/{txid} [POST].
 func (p *proofs) create(c echo.Context) error {
 	var req envelope.JSONEnvelope
 	if err := c.Bind(&req); err != nil {
 		return errors.WithStack(err)
 	}
-	args := payd.ProofCreateArgs{TxID: c.Param("txid")}
+	args := p4.ProofCreateArgs{TxID: c.Param("txid")}
 	if err := p.svc.Create(c.Request().Context(), args, req); err != nil {
 		return errors.WithStack(err)
 	}

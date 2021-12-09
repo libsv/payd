@@ -31,6 +31,7 @@ type invoice struct {
 	timeSvc    payd.TimestampService
 	store      payd.InvoiceReaderWriter
 	destSvc    destinationCreator
+	connSvc    payd.ConnectService
 	cfg        *config.Server
 	wallCfg    *config.Wallet
 	transacter payd.Transacter
@@ -112,7 +113,10 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to create payment destinations for invoice")
 	}
-	return inv, errors.WithStack(i.transacter.Commit(ctx))
+	if err := i.transacter.Commit(ctx); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return inv, i.connectPaymentChannel(ctx, req.InvoiceID)
 }
 
 // Delete will permanently remove an invoice from the system.
@@ -122,4 +126,17 @@ func (i *invoice) Delete(ctx context.Context, args payd.InvoiceArgs) error {
 	}
 	return errors.WithMessagef(i.store.InvoiceDelete(ctx, args),
 		"failed to delete invoice with ID %s", args.InvoiceID)
+}
+
+// SetConnectionService set the connection service.
+func (i *invoice) SetConnectionService(connSvc payd.ConnectService) {
+	i.connSvc = connSvc
+}
+
+func (i *invoice) connectPaymentChannel(ctx context.Context, invoiceID string) error {
+	if i.connSvc == nil {
+		return nil
+	}
+
+	return i.connSvc.Connect(ctx, payd.ConnectArgs{InvoiceID: invoiceID})
 }

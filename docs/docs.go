@@ -28,7 +28,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/balance": {
+        "/api/v1/balance": {
             "get": {
                 "description": "Returns current balance, which is a sum of unspent txos",
                 "consumes": [
@@ -38,7 +38,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Balance"
+                    "User"
                 ],
                 "summary": "Balance",
                 "responses": {
@@ -48,7 +48,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/destinations/{invoiceID}": {
+        "/api/v1/destinations/{invoiceID}": {
             "get": {
                 "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
                 "consumes": [
@@ -58,7 +58,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Destinations"
+                    "Receive"
                 ],
                 "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
                 "parameters": [
@@ -83,7 +83,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/invoices": {
+        "/api/v1/invoices": {
             "get": {
                 "description": "Returns all invoices currently stored",
                 "consumes": [
@@ -93,7 +93,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "Invoices",
                 "responses": {
@@ -111,7 +111,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "InvoiceCreate invoices",
                 "parameters": [
@@ -132,7 +132,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/invoices/{invoiceID}": {
+        "/api/v1/invoices/{invoiceID}": {
             "get": {
                 "description": "Returns invoices by invoices id if exists",
                 "consumes": [
@@ -142,7 +142,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "Invoices",
                 "parameters": [
@@ -169,7 +169,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "Receive"
                 ],
                 "summary": "InvoiceDelete invoices",
                 "parameters": [
@@ -194,7 +194,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/owner": {
+        "/api/v1/owner": {
             "get": {
                 "description": "Returns information about the wallet owner",
                 "consumes": [
@@ -204,7 +204,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "User"
                 ],
                 "summary": "Wallet owner information.",
                 "responses": {
@@ -217,7 +217,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/pay": {
+        "/api/v1/pay": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -226,7 +226,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Pay"
+                    "Send"
                 ],
                 "summary": "Make a payment",
                 "parameters": [
@@ -247,9 +247,9 @@ var doc = `{
                 }
             }
         },
-        "/v1/payments/{invoiceID}": {
-            "post": {
-                "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
+        "/api/v1/payment/{paymentID}": {
+            "get": {
+                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
                 "consumes": [
                     "application/json"
                 ],
@@ -257,14 +257,64 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Payments"
+                    "Receive"
+                ],
+                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "paymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
+                        "schema": {
+                            "$ref": "#/definitions/payd.PaymentRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "500": {
+                        "description": "returned if there is an unexpected internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/payments/{paymentID}": {
+            "post": {
+                "description": "Given an paymentID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the payment.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receive"
                 ],
                 "summary": "Validate and store a payment.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
+                        "description": "Payment ID",
+                        "name": "paymentID",
                         "in": "path",
                         "required": true
                     }
@@ -274,13 +324,13 @@ var doc = `{
                         "description": ""
                     },
                     "400": {
-                        "description": "returned if the invoiceID is empty or payment isn't valid",
+                        "description": "returned if the paymentID is empty or payment isn't valid",
                         "schema": {
                             "$ref": "#/definitions/payd.ClientError"
                         }
                     },
                     "404": {
-                        "description": "returned if the invoiceID has not been found",
+                        "description": "returned if the paymentID has not been found",
                         "schema": {
                             "$ref": "#/definitions/payd.ClientError"
                         }
@@ -288,7 +338,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/proofs/{txid}": {
+        "/api/v1/proofs/{txid}": {
             "post": {
                 "description": "Creates a json envelope proof",
                 "consumes": [
@@ -298,7 +348,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Proofs"
+                    "Receive"
                 ],
                 "summary": "InvoiceCreate proof",
                 "parameters": [
@@ -328,6 +378,9 @@ var doc = `{
         }
     },
     "definitions": {
+        "bt.FeeQuote": {
+            "type": "object"
+        },
         "envelope.JSONEnvelope": {
             "type": "object",
             "properties": {
@@ -390,11 +443,69 @@ var doc = `{
                 }
             }
         },
+        "payd.P4Destination": {
+            "type": "object",
+            "properties": {
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/payd.P4Output"
+                    }
+                }
+            }
+        },
+        "payd.P4Output": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "script": {
+                    "type": "string"
+                }
+            }
+        },
         "payd.PayRequest": {
             "type": "object",
             "properties": {
                 "payToURL": {
                     "type": "string"
+                }
+            }
+        },
+        "payd.PaymentRequestResponse": {
+            "type": "object",
+            "properties": {
+                "creationTimestamp": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "$ref": "#/definitions/payd.P4Destination"
+                },
+                "expirationTimestamp": {
+                    "type": "string"
+                },
+                "fees": {
+                    "$ref": "#/definitions/bt.FeeQuote"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "merchantData": {
+                    "$ref": "#/definitions/payd.User"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "paymentURL": {
+                    "type": "string"
+                },
+                "spvRequired": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -412,9 +523,7 @@ var doc = `{
                 },
                 "extendedData": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": true
                 },
                 "id": {
                     "type": "integer"
@@ -481,5 +590,5 @@ func (s *s) ReadDoc() string {
 }
 
 func init() {
-	swag.Register(swag.Name, &s{})
+	swag.Register("swagger", &s{})
 }

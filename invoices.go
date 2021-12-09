@@ -92,6 +92,7 @@ func (i InvoiceCreate) Validate() error {
 // InvoiceUpdatePaid can be used to update an invoice after it has been created.
 type InvoiceUpdatePaid struct {
 	PaymentReceivedAt time.Time `db:"payment_received_at"`
+	RefundTo          string    `db:"refund_to"`
 }
 
 // InvoiceUpdateRefunded can be used to update an invoice state to refunded.

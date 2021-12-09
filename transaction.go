@@ -46,6 +46,7 @@ type Txo struct {
 // To save calls, Txos can be included to also add in the same transaction.
 type TransactionCreate struct {
 	InvoiceID string       `db:"invoice_id"`
+	RefundTo  null.String  `db:"refund_to"`
 	TxID      string       `db:"tx_id"`
 	TxHex     string       `db:"tx_hex"`
 	Outputs   []*TxoCreate `db:"-"`
@@ -75,7 +76,8 @@ type TransactionArgs struct {
 
 // TransactionStateUpdate contains information to update a tx.
 type TransactionStateUpdate struct {
-	State TxState `db:"state"`
+	State      TxState     `db:"state"`
+	FailReason null.String `db:"fail_reason"`
 }
 
 // TransactionWriter will add and update transaction data.
@@ -83,4 +85,20 @@ type TransactionWriter interface {
 	TransactionCreate(ctx context.Context, req TransactionCreate) error
 	// TransactionUpdateState can be used to change a tx state (failed, broadcast).
 	TransactionUpdateState(ctx context.Context, args TransactionArgs, req TransactionStateUpdate) error
+}
+
+// TransactionSubmitArgs are used to identify a tx.
+type TransactionSubmitArgs struct {
+	InvoiceID string `param:"invoiceid"`
+}
+
+// TransactionSubmit contains the request to store the tx.
+type TransactionSubmit struct {
+	TxHex string `param:"txHex"`
+}
+
+// TransactionService is used to handle transactions.
+type TransactionService interface {
+	// Submit is for testing only and allows a finalised tx to be stored.
+	Submit(ctx context.Context, args TransactionSubmitArgs, req TransactionSubmit) error
 }

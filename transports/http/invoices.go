@@ -29,11 +29,11 @@ func (i *invoices) RegisterRoutes(g *echo.Group) {
 // invoices godoc
 // @Summary Invoices
 // @Description Returns all invoices currently stored
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /v1/invoices [GET].
+// @Router /api/v1/invoices [GET].
 func (i *invoices) invoices(e echo.Context) error {
 	ii, err := i.svc.Invoices(e.Request().Context())
 	if err != nil {
@@ -45,12 +45,12 @@ func (i *invoices) invoices(e echo.Context) error {
 // invoices godoc
 // @Summary Invoices
 // @Description Returns invoices by invoices id if exists
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
 // @Success 200
-// @Router /v1/invoices/{invoiceID} [GET].
+// @Router /api/v1/invoices/{invoiceID} [GET].
 func (i *invoices) invoice(e echo.Context) error {
 	var args payd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
@@ -66,12 +66,12 @@ func (i *invoices) invoice(e echo.Context) error {
 // create will validate and persist a new invoices.
 // @Summary InvoiceCreate invoices
 // @Description Creates an invoices with invoiceID and satoshis
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param body body payd.InvoiceCreate true "Reference and Satoshis"
 // @Success 201
-// @Router /v1/invoices [POST].
+// @Router /api/v1/invoices [POST].
 func (i *invoices) create(e echo.Context) error {
 	var req payd.InvoiceCreate
 	if err := e.Bind(&req); err != nil {
@@ -87,13 +87,13 @@ func (i *invoices) create(e echo.Context) error {
 // delete godoc
 // @Summary InvoiceDelete invoices
 // @Description InvoiceDelete
-// @Tags Invoices
+// @Tags Receive
 // @Accept json
 // @Produce json
 // @Param invoiceID path string true "invoiceID we want to remove"
 // @Success 204
 // @Failure 404 {object} payd.ClientError "returned if the paymentID has not been found"
-// @Router /v1/invoices/{invoiceID} [DELETE].
+// @Router /api/v1/invoices/{invoiceID} [DELETE].
 func (i *invoices) delete(e echo.Context) error {
 	var args payd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {

@@ -3,6 +3,7 @@ package mocks
 //go:generate moq -pkg mocks -out destination_service.go ../ DestinationsService
 //go:generate moq -pkg mocks -out timestamp_service.go ../ TimestampService
 //go:generate moq -pkg mocks -out private_key_service.go ../ PrivateKeyService
+//go:generate moq -pkg mocks -out envelope_service.go ../ EnvelopeService
 //go:generate moq -pkg mocks -out seed_service.go ../ SeedService
 
 //go:generate moq -pkg mocks -out transacter.go ../ Transacter

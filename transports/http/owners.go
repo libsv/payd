@@ -27,11 +27,11 @@ func (o *owners) RegisterRoutes(g *echo.Group) {
 // owner will return information on the current wallet owner.
 // @Summary Wallet owner information.
 // @Description Returns information about the wallet owner
-// @Tags Users
+// @Tags User
 // @Accept json
 // @Produce json
 // @Success 200 {object} payd.User "Current wallet owner"
-// @Router /v1/owner [GET].
+// @Router /api/v1/owner [GET].
 func (o *owners) owner(c echo.Context) error {
 	owner, err := o.svc.Owner(c.Request().Context())
 	if err != nil {

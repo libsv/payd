@@ -5,9 +5,8 @@ package mocks
 
 import (
 	"context"
-	"sync"
-
 	"github.com/libsv/payd"
+	"sync"
 )
 
 // Ensure, that TransactionWriterMock does implement payd.TransactionWriter.

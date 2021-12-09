@@ -2,7 +2,8 @@ package databases
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/libsv/payd/log"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -18,33 +19,33 @@ import (
 	"github.com/libsv/payd/config"
 )
 
-func setupSqliteDB(c *config.Db) (*sqlx.DB, error) {
+func setupSqliteDB(l log.Logger, c *config.Db) (*sqlx.DB, error) {
 	db, err := sqlx.Open("sqlite3", c.Dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup database")
 	}
 	if !c.MigrateDb {
-		log.Println("migrate database set to false, skipping migration")
+		l.Info("migrate database set to false, skipping migration")
 		return db, nil
 	}
-	log.Println("migrating database")
+	l.Info("migrating database")
 	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{})
 	if err != nil {
-		log.Fatalf("creating sqlite3 db driver failed %s", err)
+		l.Fatalf(err, "creating sqlite3 db driver failed")
 	}
 	m, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file://%s", c.SchemaPath), "sqlite3",
 		driver)
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(err, "failed to migrate file instance")
 	}
 
 	if err := m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
-			log.Fatal(err)
+			l.Fatal(err, "failed to exec migrations")
 		}
 
 	}
-	log.Println("migrating database completed")
+	l.Info("migrating database completed")
 	return db, nil
 }

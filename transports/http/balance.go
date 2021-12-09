@@ -26,11 +26,11 @@ func (b *balance) RegisterRoutes(g *echo.Group) {
 // balance godoc
 // @Summary Balance
 // @Description Returns current balance, which is a sum of unspent txos
-// @Tags Balance
+// @Tags User
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /v1/balance [GET].
+// @Router /api/v1/balance [GET].
 func (b *balance) balance(e echo.Context) error {
 	resp, err := b.svc.Balance(e.Request().Context())
 	if err != nil {

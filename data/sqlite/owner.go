@@ -21,7 +21,7 @@ const (
 // Owner will return the owner of the wallet.
 func (s *sqliteStore) Owner(ctx context.Context) (*payd.User, error) {
 	owner := payd.User{
-		ExtendedData: make(map[string]string),
+		ExtendedData: make(map[string]interface{}),
 	}
 
 	if err := s.db.GetContext(ctx, &owner, sqlOwnerGet); err != nil {

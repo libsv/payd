@@ -10,30 +10,35 @@ import (
 
 // Environment variable constants.
 const (
-	EnvServerPort           = "server.port"
-	EnvServerHost           = "server.host"
-	EnvServerSwaggerEnabled = "server.swagger.enabled"
-	EnvServerSwaggerHost    = "server.swagger.host"
-	EnvEnvironment          = "env.environment"
-	EnvRegion               = "env.region"
-	EnvVersion              = "env.version"
-	EnvCommit               = "env.commit"
-	EnvBuildDate            = "env.builddate"
-	EnvBicoinNetwork        = "env.bitcoin.network"
-	EnvLogLevel             = "log.level"
-	EnvDb                   = "db.type"
-	EnvDbSchema             = "db.schema.path"
-	EnvDbDsn                = "db.dsn"
-	EnvDbMigrate            = "db.migrate"
-	EnvHeadersClientAddress = "headersclient.address"
-	EnvHeadersClientTimeout = "headersclient.timeout"
-	EnvNetwork              = "wallet.network"
-	EnvWalletSpvRequired    = "wallet.spvrequired"
-	EnvPaymentExpiry        = "wallet.paymentexpiry"
-	EnvP4Timeout            = "p4.timeout"
-	EnvMAPIMinerName        = "mapi.minername"
-	EnvMAPIURL              = "mapi.minerurl"
-	EnvMAPIToken            = "mapi.token"
+	EnvServerPort              = "server.port"
+	EnvServerHost              = "server.host"
+	EnvServerSwaggerEnabled    = "server.swagger.enabled"
+	EnvServerSwaggerHost       = "server.swagger.host"
+	EnvEnvironment             = "env.environment"
+	EnvRegion                  = "env.region"
+	EnvVersion                 = "env.version"
+	EnvCommit                  = "env.commit"
+	EnvBuildDate               = "env.builddate"
+	EnvBitcoinNetwork          = "env.bitcoin.network"
+	EnvLogLevel                = "log.level"
+	EnvDb                      = "db.type"
+	EnvDbSchema                = "db.schema.path"
+	EnvDbDsn                   = "db.dsn"
+	EnvDbMigrate               = "db.migrate"
+	EnvHeadersClientAddress    = "headersclient.address"
+	EnvHeadersClientTimeout    = "headersclient.timeout"
+	EnvNetwork                 = "wallet.network"
+	EnvWalletSpvRequired       = "wallet.spvrequired"
+	EnvPaymentExpiry           = "wallet.paymentexpiry"
+	EnvP4Timeout               = "p4.timeout"
+	EnvP4Host                  = "p4.host"
+	EnvMAPIMinerName           = "mapi.minername"
+	EnvMAPIURL                 = "mapi.minerurl"
+	EnvMAPIToken               = "mapi.token"
+	EnvMAPICallbackHost        = "mapi.callback.host"
+	EnvSocketMaxMessageBytes   = "socket.maxmessage.bytes"
+	EnvTransportHTTPEnabled    = "transport.http.enabled"
+	EnvTransportSocketsEnabled = "transport.sockets.enabled"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -51,6 +56,10 @@ const (
 	NetworkTestnet NetworkType = "testnet"
 	NetworkMainet  NetworkType = "mainnet"
 )
+
+func (n NetworkType) String() string {
+	return string(n)
+}
 
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
 
@@ -76,6 +85,8 @@ type Config struct {
 	Wallet        *Wallet
 	P4            *P4
 	Mapi          *MApi
+	Socket        *Socket
+	Transports    *Transports
 }
 
 // Validate will ensure the config matches certain parameters.
@@ -84,8 +95,8 @@ func (c *Config) Validate() error {
 	if c.Db != nil {
 		vl = vl.Validate("db.type", validator.MatchString(string(c.Db.Type), reDbType))
 	}
-	if c.Deployment != nil {
-		vl = vl.Validate("deployment.network", validator.MatchString(string(c.Deployment.Network), reNetworks))
+	if c.Wallet != nil {
+		vl = vl.Validate("wallet.network", validator.MatchString(string(c.Wallet.Network), reNetworks))
 	}
 	return vl.Err()
 }
@@ -98,7 +109,6 @@ type Deployment struct {
 	Region      string
 	Version     string
 	Commit      string
-	Network     NetworkType
 	BuildDate   time.Time
 }
 
@@ -142,32 +152,49 @@ type HeadersClient struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network            string
+	Network            NetworkType
 	SPVRequired        bool
 	PaymentExpiryHours int64
 }
 
 // P4 contains information relating to a p4 interactions.
 type P4 struct {
-	Timeout int
+	Timeout    int
+	ServerHost string
 }
 
 // MApi contains MAPI connection settings.
 type MApi struct {
-	MinerName string
-	URL       string
-	Token     string
+	MinerName    string
+	URL          string
+	Token        string
+	CallbackHost string
+}
+
+// Socket contains the socket config for this server if running sockets.
+type Socket struct {
+	MaxMessageBytes  int
+	ClientIdentifier string
+}
+
+// Transports enables or disables p4 transports.
+type Transports struct {
+	HTTPEnabled    bool
+	SocketsEnabled bool
 }
 
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
-	WithServer() *Config
-	WithDb() *Config
-	WithDeployment(app string) *Config
-	WithLog() *Config
-	WithPaymail() *Config
-	WithWallet() *Config
-	WithP4() *Config
-	WithHeadersClient() *Config
+	WithServer() ConfigurationLoader
+	WithDb() ConfigurationLoader
+	WithDeployment(app string) ConfigurationLoader
+	WithLog() ConfigurationLoader
+	WithWallet() ConfigurationLoader
+	WithP4() ConfigurationLoader
+	WithHeadersClient() ConfigurationLoader
+	WithSocket() ConfigurationLoader
+	WithTransports() ConfigurationLoader
+	WithMapi() ConfigurationLoader
+	Load() *Config
 }

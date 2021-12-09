@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
+	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
 )
 
@@ -25,21 +26,21 @@ func (p *payments) RegisterRoutes(g *echo.Group) {
 
 // create will validate and store a payment if valid.
 // @Summary Validate and store a payment.
-// @Description Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.
-// @Tags Payments
+// @Description Given an paymentID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the payment.
+// @Tags Receive
 // @Accept json
 // @Produce json
-// @Param invoiceID path string true "Invoice ID"
-// @Failure 400 {object} payd.ClientError "returned if the invoiceID is empty or payment isn't valid"
-// @Failure 404 {object} payd.ClientError "returned if the invoiceID has not been found"
+// @Param paymentID path string true "Payment ID"
+// @Failure 400 {object} payd.ClientError "returned if the paymentID is empty or payment isn't valid"
+// @Failure 404 {object} payd.ClientError "returned if the paymentID has not been found"
 // @Success 200
-// @Router /v1/payments/{invoiceID} [POST].
+// @Router /api/v1/payments/{paymentID} [POST].
 func (p *payments) create(e echo.Context) error {
-	var req payd.PaymentCreate
+	var req p4.Payment
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to bind request")
 	}
-	if err := p.svc.PaymentCreate(e.Request().Context(), req); err != nil {
+	if err := p.svc.PaymentCreate(e.Request().Context(), payd.PaymentCreateArgs{PaymentID: e.Param("paymentID")}, req); err != nil {
 		return errors.WithStack(err)
 	}
 	return e.NoContent(http.StatusNoContent)
