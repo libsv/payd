@@ -32,25 +32,25 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 		return nil, errors.WithStack(err)
 	}
 
-	dd, err := p.destSvc.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.InvoiceID})
+	dd, err := p.destSvc.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.PaymentID})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get destinations when building payment request '%s'", args.InvoiceID)
+		return nil, errors.Wrapf(err, "failed to get destinations when building payment request '%s'", args.PaymentID)
 	}
 	owner, err := p.ownSvc.Owner(ctx)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get owner when building payment request '%s'", args.InvoiceID)
+		return nil, errors.Wrapf(err, "failed to get owner when building payment request '%s'", args.PaymentID)
 	}
 	if owner.ExtendedData == nil {
 		owner.ExtendedData = map[string]interface{}{}
 	}
 	// here we store paymentRef in extended data to allow some validation in payment flow
-	owner.ExtendedData["paymentReference"] = args.InvoiceID
+	owner.ExtendedData["paymentReference"] = args.PaymentID
 	oo := make([]payd.P4Output, len(dd.Outputs))
 	for i, out := range dd.Outputs {
 		oo[i] = payd.P4Output{
 			Amount:      out.Satoshis,
 			Script:      out.LockingScript.String(),
-			Description: "payment reference " + args.InvoiceID,
+			Description: "payment reference " + args.PaymentID,
 		}
 	}
 	return &payd.PaymentRequestResponse{
@@ -60,7 +60,7 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 		Fee:                 dd.Fees,
 		CreationTimestamp:   dd.CreatedAt,
 		ExpirationTimestamp: dd.ExpiresAt,
-		Memo:                fmt.Sprintf("invoice %s", args.InvoiceID),
+		Memo:                fmt.Sprintf("invoice %s", args.PaymentID),
 		MerchantData: payd.User{
 			Avatar:       owner.Avatar,
 			Name:         owner.Name,

@@ -40,7 +40,7 @@ func (p *paymentRequest) RegisterListeners(c *client.Client) {
 func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
 	log.Debug().Msg("socket: payment request create hit")
 	invoiceID := msg.ChannelID()
-	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{InvoiceID: invoiceID})
+	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{PaymentID: invoiceID})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

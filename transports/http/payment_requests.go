@@ -45,7 +45,7 @@ func (p *paymentRequest) get(c echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	req.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", p.p4Cfg.ServerHost, args.InvoiceID)
+	req.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", p.p4Cfg.ServerHost, args.PaymentID)
 
 	return c.JSON(http.StatusOK, req)
 }

@@ -10,13 +10,13 @@ import (
 
 // PaymentRequestArgs are used to create a new paymentRequest.
 type PaymentRequestArgs struct {
-	InvoiceID string `param:"invoiceID"`
+	PaymentID string `param:"paymentID"`
 }
 
 // Validate will check that invoice arguments match expectations.
 func (p *PaymentRequestArgs) Validate() error {
 	return validator.New().
-		Validate("invoiceID", validator.StrLength(p.InvoiceID, 1, 30)).
+		Validate("paymentID", validator.StrLength(p.PaymentID, 1, 30)).
 		Err()
 }
 
