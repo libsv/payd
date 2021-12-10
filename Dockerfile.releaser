@@ -48,7 +48,6 @@ COPY --from=builder /usr/lib/x86_64-linux-gnu/libkrb5support.so.0.1 /usr/lib/x86
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so.2 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libsasl2.so.2.0.25 /usr/lib/x86_64-linux-gnu/
 COPY --from=builder /usr/bin/curl /usr/bin/
-COPY --from=builder /app/server /bin/
 
 RUN mkdir /paydb && chown -R appuser:appuser /paydb
 VOLUME /paydb
