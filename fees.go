@@ -20,5 +20,5 @@ type FeeQuoteCreateArgs struct {
 
 // FeeWriter writes fees to a store.
 type FeeWriter interface {
-	FeesQuoteCreate(ctx context.Context, args *FeeQuoteCreateArgs) error
+	FeeQuoteCreate(ctx context.Context, args *FeeQuoteCreateArgs) error
 }

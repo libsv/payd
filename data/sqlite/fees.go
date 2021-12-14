@@ -23,7 +23,7 @@ const sqlSelectFees = `
 	WHERE invoice_id = :invoice_id
 `
 
-func (s *sqliteStore) FeesQuoteCreate(ctx context.Context, args *payd.FeeQuoteCreateArgs) error {
+func (s *sqliteStore) FeeQuoteCreate(ctx context.Context, args *payd.FeeQuoteCreateArgs) error {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction when inserting fees to db")

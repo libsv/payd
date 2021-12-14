@@ -77,7 +77,7 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 		if err != nil {
 			return errors.Wrapf(err, "failed to get fees when getting payment request")
 		}
-		if err := p.feeWtr.FeesQuoteCreate(ctx, &payd.FeeQuoteCreateArgs{
+		if err := p.feeWtr.FeeQuoteCreate(ctx, &payd.FeeQuoteCreateArgs{
 			InvoiceID: args.InvoiceID,
 			FeeQuote:  fq,
 		}); err != nil {
