@@ -49,7 +49,7 @@ func (s *sqliteStore) FeeQuoteCreate(ctx context.Context, args *payd.FeeQuoteCre
 	return errors.Wrapf(commit(ctx, tx), "failed to commit transaction when inserting fee rate for invoice '%s'", args.InvoiceID)
 }
 
-func (s *sqliteStore) Fees(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+func (s *sqliteStore) FeeQuote(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 	var row struct {
 		FeeJSON   string `db:"fee_json"`
 		ExpiresAt string `db:"expires_at"`

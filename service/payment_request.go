@@ -16,17 +16,17 @@ import (
 type paymentRequest struct {
 	cfg     *config.Wallet
 	destSvc payd.DestinationsService
-	feeRdr  payd.FeeReader
-	feeWtr  payd.FeeWriter
+	feeFtr  payd.FeeQuoteFetcher
+	feeWtr  payd.FeeQuoteWriter
 	ownSvc  payd.OwnerStore
 }
 
 //  NewPaymentRequest will setup a new paymentRequest service.
-func NewPaymentRequest(cfg *config.Wallet, destSvc payd.DestinationsService, feeRdr payd.FeeReader, feeWtr payd.FeeWriter, ownSvc payd.OwnerStore) *paymentRequest {
+func NewPaymentRequest(cfg *config.Wallet, destSvc payd.DestinationsService, feeFtr payd.FeeQuoteFetcher, feeWtr payd.FeeQuoteWriter, ownSvc payd.OwnerStore) *paymentRequest {
 	return &paymentRequest{
 		cfg:     cfg,
 		destSvc: destSvc,
-		feeRdr:  feeRdr,
+		feeFtr:  feeFtr,
 		feeWtr:  feeWtr,
 		ownSvc:  ownSvc,
 	}
@@ -73,7 +73,7 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 	})
 	var fees *bt.FeeQuote
 	g.Go(func() error {
-		fq, err := p.feeRdr.Fees(ctx, args.InvoiceID)
+		fq, err := p.feeFtr.FeeQuote(ctx)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get fees when getting payment request")
 		}

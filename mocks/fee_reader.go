@@ -5,14 +5,15 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that FeeReaderMock does implement payd.FeeReader.
 // If this is not the case, regenerate this file with moq.
-var _ payd.FeeReader = &FeeReaderMock{}
+var _ payd.FeeQuoteReader = &FeeReaderMock{}
 
 // FeeReaderMock is a mock implementation of payd.FeeReader.
 //
