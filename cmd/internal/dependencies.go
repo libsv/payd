@@ -61,8 +61,8 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 
 	seedSvc := service.NewSeedService()
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
-	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
+	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc)
+	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
 		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
@@ -70,7 +70,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	).Register(
 		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
 	)
-	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
+	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
@@ -140,8 +140,8 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 
 	seedSvc := service.NewSeedService()
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
-	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, mapiStore, seedSvc)
-	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, mapiStore, sqlLiteStore)
+	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc)
+	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
 		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
@@ -151,7 +151,7 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
-	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, sqlLiteStore)
+	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
 	invoiceSvc.SetConnectionService(connectService)
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)

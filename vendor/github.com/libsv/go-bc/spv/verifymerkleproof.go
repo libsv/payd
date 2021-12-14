@@ -21,22 +21,32 @@ const (
 	targetTypeFlags = targetTypeFlag1 | targetTypeFlag2
 )
 
-// VerifyMerkleProof verifies a Merkle Proof in standard byte format.
-func (v *verifier) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, isLastInTree bool, err error) {
+// MerkleProofValidation is a wrapper for the response of a validation operation.
+type MerkleProofValidation struct {
+	TxID         string
+	Valid        bool
+	IsLastInTree bool
+}
 
+// VerifyMerkleProof verifies a Merkle Proof in standard byte format.
+func (v *verifier) VerifyMerkleProof(ctx context.Context, proof []byte) (*MerkleProofValidation, error) {
 	mpb, err := parseBinaryMerkleProof(proof)
 	if err != nil {
-		return false, false, err
+		return nil, err
 	}
 
 	err = validateTxOrID(mpb.flags, mpb.txOrID)
 	if err != nil {
-		return false, false, err
+		return nil, err
 	}
 
 	txid, err := txidFromTxOrID(mpb.txOrID)
 	if err != nil {
-		return false, false, err
+		return nil, err
+	}
+
+	response := &MerkleProofValidation{
+		TxID: txid,
 	}
 
 	var merkleRoot string
@@ -46,7 +56,7 @@ func (v *verifier) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, 
 		// The `target` field contains a block hash
 		blockHeader, err := v.bhc.BlockHeader(ctx, mpb.target)
 		if err != nil {
-			return false, false, err
+			return response, err
 		}
 
 		merkleRoot = blockHeader.HashMerkleRootStr()
@@ -62,30 +72,36 @@ func (v *verifier) VerifyMerkleProof(ctx context.Context, proof []byte) (valid, 
 		var err error
 		merkleRoot, err = bc.ExtractMerkleRootFromBlockHeader(mpb.target)
 		if err != nil {
-			return false, false, err
+			return response, err
 		}
 
 	default:
-		return false, false, errors.New("invalid flags")
+		return response, ErrInvalidMerkleFlags
 	}
 
 	if mpb.flags&proofTypeFlag == 1 {
-		return false, false, errors.New("only merkle branch supported in this version") // merkle tree proof type not supported
+		return response, ErrInvalidMerkleFlags
 	}
 
 	if mpb.flags&compositeFlag == 1 {
-		return false, false, errors.New("only single proof supported in this version") // composite proof type not supported
+		return response, ErrInvalidMerkleFlags // composite proof type not supported
 	}
 
 	if txid == "" {
-		return false, false, errors.New("txid missing")
+		return response, ErrMissingTxidInProof
 	}
 
 	if merkleRoot == "" {
-		return false, false, errors.New("merkleRoot missing")
+		return response, ErrMissingRootInProof
 	}
 
-	return verifyProof(txid, merkleRoot, mpb.index, mpb.nodes)
+	valid, isLastInTree, err := verifyProof(txid, merkleRoot, mpb.index, mpb.nodes)
+
+	return &MerkleProofValidation{
+		TxID:         txid,
+		Valid:        valid,
+		IsLastInTree: isLastInTree,
+	}, err
 }
 
 // VerifyMerkleProofJSON verifies a Merkle Proof in standard JSON format.
@@ -156,7 +172,7 @@ func verifyProof(c, merkleRoot string, index uint64, nodes []string) (bool, bool
 		// the last element of an uneven merkle tree layer
 		if p == "*" {
 			if !cIsLeft { // this shouldn't happen...
-				return false, false, errors.New("invalid nodes")
+				return false, false, ErrInvalidNodes
 			}
 			p = c
 		}
@@ -235,17 +251,18 @@ type merkleProofBinary struct {
 func parseBinaryMerkleProof(proof []byte) (*merkleProofBinary, error) {
 	mpb := &merkleProofBinary{}
 
-	var offset, size int
+	var offset int
 
 	// flags is first byte
 	mpb.flags = proof[offset]
 	offset++
 
 	// index is the next varint after the 1st byte
-	mpb.index, size = bt.DecodeVarInt(proof[offset:])
+	index, size := bt.NewVarIntFromBytes(proof[offset:])
+	mpb.index = uint64(index)
 	offset += size
 
-	var txLength uint64
+	var txLength bt.VarInt
 	// if bit 1 of flags is NOT set, txOrId should contain txid (= 32 bytes)
 	if mpb.flags&1 == 0 {
 		txLength = 32
@@ -253,13 +270,12 @@ func parseBinaryMerkleProof(proof []byte) (*merkleProofBinary, error) {
 
 	// if bit 1 of flags is set, txOrId should contain tx hex (> 32 bytes)
 	if mpb.flags&1 == 1 {
+		// txLength is the next varint after the 1st byte + index size
+		txLength, size = bt.NewVarIntFromBytes(proof[offset:])
+		offset += size
 		if txLength <= 32 {
 			return nil, errors.New("invalid tx length (should be greater than 32 bytes)")
 		}
-
-		// txLength is the next varint after the 1st byte + index size
-		txLength, size = bt.DecodeVarInt(proof[offset:])
-		offset += size
 	}
 
 	// txOrID is the next txLength bytes after 1st byte + index size (+ txLength size)
@@ -279,11 +295,15 @@ func parseBinaryMerkleProof(proof []byte) (*merkleProofBinary, error) {
 		offset += 80
 
 	default:
-		return nil, errors.New("invalid flags")
+		return nil, ErrInvalidMerkleFlags
 	}
 
-	nodeCount, size := bt.DecodeVarInt(proof[offset:])
+	nodeCount, size := bt.NewVarIntFromBytes(proof[offset:])
 	offset += size
+
+	if mpb.index >= 1<<nodeCount {
+		return nil, ErrInvalidProof
+	}
 
 	for i := 0; i < int(nodeCount); i++ {
 		t := proof[offset]

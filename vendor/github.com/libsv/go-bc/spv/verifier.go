@@ -121,7 +121,7 @@ type PaymentVerifier interface {
 
 // MerkleProofVerifier interfaces the verification of Merkle Proofs.
 type MerkleProofVerifier interface {
-	VerifyMerkleProof(context.Context, []byte) (bool, bool, error)
+	VerifyMerkleProof(context.Context, []byte) (*MerkleProofValidation, error)
 	VerifyMerkleProofJSON(context.Context, *bc.MerkleProof) (bool, bool, error)
 }
 

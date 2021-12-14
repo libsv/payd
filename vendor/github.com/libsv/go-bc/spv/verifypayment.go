@@ -68,7 +68,7 @@ func (v *verifier) verifyFees(initialPayment *Envelope, tx *bt.Tx, opts *verifyO
 		return ErrNoFeeQuoteSupplied
 	}
 	for _, input := range tx.Inputs {
-		parent, err := initialPayment.ParentTX(input.PreviousTxIDStr())
+		parent, err := initialPayment.ParentTx(input.PreviousTxIDStr())
 		if err != nil {
 			return errors.Wrapf(err, "tx %s failed to get parent tx", tx.TxID())
 		}
@@ -160,7 +160,7 @@ func (v *verifier) verifyUnconfirmedTx(tx *bt.Tx, payment *Envelope) error {
 	}
 
 	for _, input := range tx.Inputs {
-		parent, err := payment.ParentTX(input.PreviousTxIDStr())
+		parent, err := payment.ParentTx(input.PreviousTxIDStr())
 		if err != nil {
 			return errors.Wrapf(err, "tx %s missing parent", tx.TxID())
 		}
