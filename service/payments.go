@@ -26,11 +26,11 @@ type payments struct {
 	transacter    payd.Transacter
 	callbackWtr   payd.ProofCallbackWriter
 	broadcaster   payd.BroadcastWriter
-	feeRdr        payd.FeeReader
+	feeRdr        payd.FeeQuoteReader
 }
 
 // NewPayments will setup and return a payments service.
-func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeReader, callbackWtr payd.ProofCallbackWriter) *payments {
+func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.TransactionWriter, invRdr payd.InvoiceReaderWriter, destRdr payd.DestinationsReader, transacter payd.Transacter, broadcaster payd.BroadcastWriter, feeRdr payd.FeeQuoteReader, callbackWtr payd.ProofCallbackWriter) *payments {
 	svc := &payments{
 		l:             l,
 		paymentVerify: paymentVerify,
@@ -59,9 +59,12 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if inv.State != payd.StateInvoicePending {
 		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
-	fq, err := p.feeRdr.Fees(ctx)
+	fq, err := p.feeRdr.FeeQuote(ctx, args.InvoiceID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read fees for payment with id %s", args.InvoiceID)
+	}
+	if fq.Expired() {
+		return lathos.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
 	tx, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope, p.paymentVerifyOpts(inv.SPVRequired, fq)...)

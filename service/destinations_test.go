@@ -42,7 +42,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 		derivationPathExistsFunc func(context.Context, payd.DerivationExistsArgs) (bool, error)
 		destinationsCreateFunc   func(context.Context, payd.DestinationsCreateArgs, []payd.DestinationCreate) ([]payd.Output, error)
 		privateKeyFunc           func(context.Context, string) (*bip32.ExtendedKey, error)
-		feesFunc                 func(context.Context) (*bt.FeeQuote, error)
+		feesFunc                 func(context.Context, string) (*bt.FeeQuote, error)
 		uint64Func               func() (uint64, error)
 		expErr                   error
 		expDests                 []payd.DestinationCreate
@@ -61,7 +61,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				return false, nil
 			},
 			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDests: []payd.DestinationCreate{{
@@ -80,7 +80,6 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 					DerivationPath: "2147483648/2147483648/2147483648",
 					State:          "pending",
 				}},
-				Fees: fq,
 			},
 			expDerivationChecks: 1,
 		},
@@ -101,7 +100,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				return n < 2, err
 			},
 			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDests: []payd.DestinationCreate{{
@@ -117,7 +116,6 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 					DerivationPath: "2147483648/2147483648/2147483650",
 					State:          "pending",
 				}},
-				Fees: fq,
 			},
 			expDerivationChecks: 3,
 		},
@@ -136,7 +134,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				return false, nil
 			},
 			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expErr: errors.New("denied"),
@@ -153,7 +151,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				return false, nil
 			},
 			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expErr: errors.New("failed to create seed for derivation path: no seed 4 u"),
@@ -170,34 +168,10 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				return false, errors.New("flip a coin")
 			},
 			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expErr:              errors.New("failed to check derivation path exists when creating new destination: flip a coin"),
-			expDerivationChecks: 1,
-		},
-		"error reading fees is reported": {
-			req: payd.DestinationsCreate{
-				InvoiceID: null.StringFrom("abc123"),
-				Satoshis:  1000,
-			},
-			uint64Func: func() (uint64, error) {
-				return 0, nil
-			},
-			derivationPathExistsFunc: func(ctx context.Context, args payd.DerivationExistsArgs) (bool, error) {
-				return false, nil
-			},
-			destinationsCreateFunc: destinationsToOutputs,
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
-				return nil, errors.New("priceless m8")
-			},
-			expDests: []payd.DestinationCreate{{
-				Satoshis:       1000,
-				Script:         "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
-				DerivationPath: "2147483648/2147483648/2147483648",
-				Keyname:        "masterkey",
-			}},
-			expErr:              errors.New("failed to get fees when creating destinations: priceless m8"),
 			expDerivationChecks: 1,
 		},
 		"error created desintations is reported": {
@@ -214,7 +188,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			destinationsCreateFunc: func(ctx context.Context, args payd.DestinationsCreateArgs, dests []payd.DestinationCreate) ([]payd.Output, error) {
 				return nil, errors.New("finaldestination")
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDests: []payd.DestinationCreate{{
@@ -261,9 +235,6 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 					},
 				},
 				nil,
-				&mocks.FeeReaderMock{
-					FeesFunc: test.feesFunc,
-				},
 				&mocks.SeedServiceMock{
 					Uint64Func: test.uint64Func,
 				},
@@ -296,7 +267,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 		cfg              *config.Wallet
 		invoiceFunc      func(context.Context, payd.InvoiceArgs) (*payd.Invoice, error)
 		destinationsFunc func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
-		feesFunc         func(context.Context) (*bt.FeeQuote, error)
+		feesFunc         func(context.Context, string) (*bt.FeeQuote, error)
 		expErr           error
 		expDestination   *payd.Destination
 	}{
@@ -326,7 +297,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 					}(),
 				}}, nil
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDestination: &payd.Destination{
@@ -341,7 +312,6 @@ func TestDestinationService_Destinations(t *testing.T) {
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
-				Fees:      fq,
 			},
 		},
 		"successful destinations network get on testnet": {
@@ -370,7 +340,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 					}(),
 				}}, nil
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDestination: &payd.Destination{
@@ -385,7 +355,6 @@ func TestDestinationService_Destinations(t *testing.T) {
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
-				Fees:      fq,
 			},
 		},
 		"successful destinations network get spv not required": {
@@ -413,7 +382,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 					}(),
 				}}, nil
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDestination: &payd.Destination{
@@ -427,7 +396,6 @@ func TestDestinationService_Destinations(t *testing.T) {
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 24),
-				Fees:      fq,
 			},
 		},
 		"successful get with 2 hr expiry": {
@@ -455,7 +423,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 					}(),
 				}}, nil
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expDestination: &payd.Destination{
@@ -469,7 +437,6 @@ func TestDestinationService_Destinations(t *testing.T) {
 				}},
 				CreatedAt: ts,
 				ExpiresAt: ts.Add(time.Hour * 2),
-				Fees:      fq,
 			},
 		},
 		"error with invoice is reported": {
@@ -491,7 +458,7 @@ func TestDestinationService_Destinations(t *testing.T) {
 					}(),
 				}}, nil
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expErr: errors.New("failed to get invoice for invoiceID 'abc123' when getting destinations: outsilent"),
@@ -516,41 +483,10 @@ func TestDestinationService_Destinations(t *testing.T) {
 			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
 				return nil, errors.New("destination unknown")
 			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
+			feesFunc: func(context.Context, string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			expErr: errors.New("failed to read destinations for invoiceID 'abc123': destination unknown"),
-		},
-		"error on fees is reported": {
-			cfg: &config.Wallet{
-				Network: config.NetworkMainet,
-			},
-			args: payd.DestinationsArgs{
-				InvoiceID: "abc123",
-			},
-			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
-				return &payd.Invoice{
-					SPVRequired: true,
-					Satoshis:    1000,
-					ExpiresAt:   null.TimeFrom(ts.Add(time.Hour * 24)),
-					MetaData: payd.MetaData{
-						CreatedAt: ts,
-					},
-				}, nil
-			},
-			destinationsFunc: func(ctx context.Context, args payd.DestinationsArgs) ([]payd.Output, error) {
-				return []payd.Output{{
-					Satoshis: 1000,
-					LockingScript: func() *bscript.Script {
-						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
-						return s
-					}(),
-				}}, nil
-			},
-			feesFunc: func(context.Context) (*bt.FeeQuote, error) {
-				return nil, errors.New("leave fee be")
-			},
-			expErr: errors.New("failed to get fees when getting destinations: leave fee be"),
 		},
 		"invalid args are rejected": {
 			args:   payd.DestinationsArgs{},
@@ -569,9 +505,6 @@ func TestDestinationService_Destinations(t *testing.T) {
 				nil,
 				&mocks.InvoiceReaderWriterMock{
 					InvoiceFunc: test.invoiceFunc,
-				},
-				&mocks.FeeReaderMock{
-					FeesFunc: test.feesFunc,
 				},
 				nil,
 			)

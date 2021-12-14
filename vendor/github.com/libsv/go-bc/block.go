@@ -35,7 +35,7 @@ func (b *Block) Bytes() []byte {
 	bytes = append(bytes, b.BlockHeader.Bytes()...)
 
 	txCount := uint64(len(b.Txs))
-	bytes = append(bytes, bt.VarInt(txCount)...)
+	bytes = append(bytes, bt.VarInt(txCount).Bytes()...)
 
 	for _, tx := range b.Txs {
 		bytes = append(bytes, tx.Bytes()...)
@@ -73,7 +73,7 @@ func NewBlockFromBytes(b []byte) (*Block, error) {
 	}
 	offset += 80
 
-	txCount, size := bt.DecodeVarInt(b[offset:])
+	txCount, size := bt.NewVarIntFromBytes(b[offset:])
 	offset += size
 
 	var txs []*bt.Tx

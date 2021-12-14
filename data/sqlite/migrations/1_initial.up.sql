@@ -48,6 +48,15 @@ CREATE TABLE invoices (
 
 CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
+CREATE TABLE fee_rates (
+	fee_rate_id INTEGER PRIMARY KEY
+	,invoice_id VARCHAR
+	,fee_json TEXT
+	,expires_at TIMESTAMP
+	,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
+    ,CONSTRAINT fee_key UNIQUE(invoice_id)
+);
+
 CREATE TABLE transactions (
     tx_id               CHAR(64) NOT NULL PRIMARY KEY
     ,tx_hex             TEXT NOT NULL

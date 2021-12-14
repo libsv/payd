@@ -21,7 +21,7 @@ var _ spv.PaymentVerifier = &PaymentVerifierMock{}
 //
 // 		// make and configure a mocked spv.PaymentVerifier
 // 		mockedPaymentVerifier := &PaymentVerifierMock{
-// 			VerifyMerkleProofFunc: func(contextMoqParam context.Context, bytes []byte) (bool, bool, error) {
+// 			VerifyMerkleProofFunc: func(contextMoqParam context.Context, bytes []byte) (*spv.MerkleProofValidation, error) {
 // 				panic("mock out the VerifyMerkleProof method")
 // 			},
 // 			VerifyMerkleProofJSONFunc: func(contextMoqParam context.Context, merkleProof *bc.MerkleProof) (bool, bool, error) {
@@ -38,7 +38,7 @@ var _ spv.PaymentVerifier = &PaymentVerifierMock{}
 // 	}
 type PaymentVerifierMock struct {
 	// VerifyMerkleProofFunc mocks the VerifyMerkleProof method.
-	VerifyMerkleProofFunc func(contextMoqParam context.Context, bytes []byte) (bool, bool, error)
+	VerifyMerkleProofFunc func(contextMoqParam context.Context, bytes []byte) (*spv.MerkleProofValidation, error)
 
 	// VerifyMerkleProofJSONFunc mocks the VerifyMerkleProofJSON method.
 	VerifyMerkleProofJSONFunc func(contextMoqParam context.Context, merkleProof *bc.MerkleProof) (bool, bool, error)
@@ -78,7 +78,7 @@ type PaymentVerifierMock struct {
 }
 
 // VerifyMerkleProof calls VerifyMerkleProofFunc.
-func (mock *PaymentVerifierMock) VerifyMerkleProof(contextMoqParam context.Context, bytes []byte) (bool, bool, error) {
+func (mock *PaymentVerifierMock) VerifyMerkleProof(contextMoqParam context.Context, bytes []byte) (*spv.MerkleProofValidation, error) {
 	if mock.VerifyMerkleProofFunc == nil {
 		panic("PaymentVerifierMock.VerifyMerkleProofFunc: method is nil but PaymentVerifier.VerifyMerkleProof was just called")
 	}

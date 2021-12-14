@@ -7,7 +7,8 @@ package mocks
 //go:generate moq -pkg mocks -out seed_service.go ../ SeedService
 
 //go:generate moq -pkg mocks -out transacter.go ../ Transacter
-//go:generate moq -pkg mocks -out fee_reader.go ../ FeeReader
+//go:generate moq -pkg mocks -out fee_quote_reader.go ../ FeeQuoteReader
+//go:generate moq -pkg mocks -out fee_quote_fetcher.go ../ FeeQuoteFetcher
 //go:generate moq -pkg mocks -out txo_writer.go ../ TxoWriter
 //go:generate moq -pkg mocks -out owner_store.go ../ OwnerStore
 //go:generate moq -pkg mocks -out proofs_writer.go ../ ProofsWriter
