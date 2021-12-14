@@ -139,31 +139,6 @@ paths:
       summary: Balance
       tags:
       - User
-  /api/v1/destinations/{invoiceID}:
-    get:
-      consumes:
-      - application/json
-      description: Given an invoiceID, a set of outputs and fees will be returned,
-        if not found a 404 is returned.
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: invoiceID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-        "404":
-          description: returned if the invoiceID has not been found
-          schema:
-            $ref: '#/definitions/payd.ClientError'
-      summary: Given an invoiceID, a set of outputs and fees will be returned, if
-        not found a 404 is returned.
-      tags:
-      - Receive
   /api/v1/invoices:
     get:
       consumes:
