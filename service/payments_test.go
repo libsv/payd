@@ -22,7 +22,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 	fq.UpdateExpiry(time.Now().Add(time.Hour))
 	tests := map[string]struct {
 		invoiceFunc             func(context.Context, payd.InvoiceArgs) (*payd.Invoice, error)
-		feesFunc                func(context.Context, string) (*bt.FeeQuote, error)
+		feeQuoteFunc            func(context.Context, string) (*bt.FeeQuote, error)
 		verifyPaymentFunc       func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error)
 		destinationsFunc        func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
 		txCreateFunc            func(context.Context, payd.TransactionCreate) error
@@ -41,7 +41,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -85,7 +85,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending, SPVRequired: true}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -151,7 +151,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return nil, errors.New("fee error")
 			},
 			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
@@ -162,7 +162,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return bt.NewFeeQuote(), nil
 			},
 			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
@@ -173,7 +173,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -188,7 +188,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -203,7 +203,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -221,7 +221,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -269,7 +269,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, Satoshis: 1001, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -295,7 +295,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, Satoshis: 1000, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -329,7 +329,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -364,7 +364,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 					State: payd.StateInvoicePending,
 				}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -402,7 +402,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -444,7 +444,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
-			feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
 			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
@@ -528,8 +528,8 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				&mocks.BroadcastWriterMock{
 					BroadcastFunc: test.broadcastFunc,
 				},
-				&mocks.FeeReaderMock{
-					FeesFunc: test.feesFunc,
+				&mocks.FeeQuoteReaderMock{
+					FeeQuoteFunc: test.feeQuoteFunc,
 				},
 				&mocks.ProofCallbackWriterMock{
 					ProofCallBacksCreateFunc: test.proofCallbackCreateFunc,
