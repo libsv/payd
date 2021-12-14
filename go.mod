@@ -49,7 +49,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/libsv/go-bc v0.1.7
+	github.com/libsv/go-bc v0.1.8
 	github.com/libsv/go-bt v1.0.4 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
@@ -92,5 +92,3 @@ require (
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-
-replace github.com/libsv/go-bc => /Users/t.carroll/go/src/github.com/libsv/go-bc
