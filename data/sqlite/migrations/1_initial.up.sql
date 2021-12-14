@@ -51,16 +51,10 @@ CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 CREATE TABLE fee_rates (
 	fee_rate_id INTEGER PRIMARY KEY
 	,invoice_id VARCHAR
-	,fee_type VARCHAR
+	,fee_json TEXT
 	,expires_at TIMESTAMP
 	,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
-);
-
-CREATE TABLE fee_units (
-	fee_rate_id INTEGER NOT NULL
-	,satoshis INTEGER NOT NULL
-	,bytes INTEGER NOT NULL
-	,FOREIGN KEY (fee_rate_id) REFERENCES fee_rates(fee_rate_id)
+    ,CONSTRAINT fee_key UNIQUE(invoice_id)
 );
 
 CREATE TABLE transactions (

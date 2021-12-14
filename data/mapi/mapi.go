@@ -48,7 +48,7 @@ func (m *minercraftMapi) Broadcast(ctx context.Context, args payd.BroadcastArgs,
 
 // Fees will return the current fees for the configured miner. If the fee has not
 // expired we will return the current memoized fee quote.
-func (m *minercraftMapi) Fees(ctx context.Context) (*bt.FeeQuote, error) {
+func (m *minercraftMapi) Fees(ctx context.Context, _ string) (*bt.FeeQuote, error) {
 	if !m.fq.Expired() {
 		return m.fq, nil
 	}
