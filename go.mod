@@ -12,7 +12,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/libsv/go-bk v0.1.5
-	github.com/libsv/go-bt/v2 v2.1.0-beta.1
+	github.com/libsv/go-bt/v2 v2.1.0-beta.2
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.9
 	github.com/pkg/errors v0.9.1
@@ -92,7 +92,5 @@ require (
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-
-replace github.com/libsv/go-bt/v2 => /Users/t.carroll/go/src/github.com/libsv/go-bt
 
 replace github.com/libsv/go-bc => /Users/t.carroll/go/src/github.com/libsv/go-bc

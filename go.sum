@@ -483,6 +483,8 @@ github.com/libsv/go-bt/v2 v2.0.0-beta.7/go.mod h1:6Vk1qMlMoFJFNm7rR7NmFx4VwHNMCi
 github.com/libsv/go-bt/v2 v2.0.0-beta.13/go.mod h1:u5g3GmVLffBV8sWvMqHR3JekC51OR9XYvmQp1h/XoiQ=
 github.com/libsv/go-bt/v2 v2.1.0-beta.1 h1:3nSvhUnrCOM4Cel+zVlLjCoAITCJ7dbYJuPGj6x8958=
 github.com/libsv/go-bt/v2 v2.1.0-beta.1/go.mod h1:u5g3GmVLffBV8sWvMqHR3JekC51OR9XYvmQp1h/XoiQ=
+github.com/libsv/go-bt/v2 v2.1.0-beta.2 h1:oq6BQQtNeZiG/esfoY/7RyYF+dDj996xqNfvoQfH6n4=
+github.com/libsv/go-bt/v2 v2.1.0-beta.2/go.mod h1:u5g3GmVLffBV8sWvMqHR3JekC51OR9XYvmQp1h/XoiQ=
 github.com/libsv/go-p4 v0.0.7 h1:zKrNUNQ1zL6T5prxWu7LkxXQ5ysBHDL1RH8Ziu6f9kQ=
 github.com/libsv/go-p4 v0.0.7/go.mod h1:neXEtCQkbdYbB35sMZ8BBA1NK4/uENZ+MhfiM1qzeBM=
 github.com/magiconair/properties v1.8.5 h1:b6kJs+EmPFMYGkow9GiUyCyOvIwYetYJ3fSaWak/Gls=
