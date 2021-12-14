@@ -165,7 +165,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return bt.NewFeeQuote(), nil
 			},
-			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			args:   payd.PaymentCreateArgs{PaymentID: "abc123"},
 			req:    p4.Payment{},
 			expErr: errors.New("Unprocessable: fee quote has expired, please make a new payment request"),
 		},
