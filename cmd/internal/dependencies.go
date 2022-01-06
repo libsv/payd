@@ -32,6 +32,7 @@ type RestDeps struct {
 	BalanceService        payd.BalanceService
 	ProofService          payd.ProofsService
 	OwnerService          payd.OwnerService
+	UserService           payd.UserService
 	TransactionService    payd.TransactionService
 }
 
@@ -77,6 +78,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	invoiceSvc.SetConnectionService(connectService)
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
+	userSvc := service.NewUsersService(sqlLiteStore)
 
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 
@@ -95,6 +97,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 		BalanceService:        balanceSvc,
 		ProofService:          proofSvc,
 		OwnerService:          ownerSvc,
+		UserService:           userSvc,
 		TransactionService:    transactionService,
 	}
 }

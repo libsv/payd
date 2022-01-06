@@ -21,27 +21,27 @@ services:
     networks:
       - regtest-stack
 
-  payd-merchant:
-    container_name: payd-merchant
-    image: local.payd:latest
-    environment:
-      DB_DSN: "file:paydb/merchant-wallet.db?cache=shared&_foreign_keys=true"
-      DB_SCHEMA_PATH: "migrations"
-      SERVER_HOST: payd-merchant:28443
-      SERVER_PORT: :28443
-      LOG_LEVEL: "info"
-      P4_HOST: "ws://p4-merchant:28445/ws"
-      MAPI_CALLBACK_HOST: "http://p4-merchant:28445"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "localhost:28443/api/v1/health" ]
-      interval: 30s
-      timeout: 10s
-    volumes:
-      - merchant-data:/paydb
-    ports:
-      - "28443:28443"
-    networks:
-      - regtest-stack
+  # payd-merchant:
+  #   container_name: payd-merchant
+  #   image: local.payd:latest
+  #   environment:
+  #     DB_DSN: "file:paydb/merchant-wallet.db?cache=shared&_foreign_keys=true"
+  #     DB_SCHEMA_PATH: "migrations"
+  #     SERVER_HOST: payd-merchant:28443
+  #     SERVER_PORT: :28443
+  #     LOG_LEVEL: "info"
+  #     P4_HOST: "ws://p4-merchant:28445/ws"
+  #     MAPI_CALLBACK_HOST: "http://p4-merchant:28445"
+  #   healthcheck:
+  #     test: [ "CMD", "curl", "-f", "localhost:28443/api/v1/health" ]
+  #     interval: 30s
+  #     timeout: 10s
+  #   volumes:
+  #     - merchant-data:/paydb
+  #   ports:
+  #     - "28443:28443"
+  #   networks:
+  #     - regtest-stack
 
 networks:
   regtest-stack:
@@ -51,5 +51,5 @@ networks:
 volumes:
   payd-data:
     external: false
-  merchant-data:
-    external: false
+  # merchant-data:
+  #   external: false

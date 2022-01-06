@@ -12,8 +12,9 @@ const (
 	RouteV1Transaction = "api/v1/transactions/:invoiceID"
 
 	// User management.
-	RouteV1Balance = "api/v1/balance"
-	RouteV1Owner   = "api/v1/owner"
+	RouteV1Balance      = "api/v1/balance"
+	RouteV1Owner        = "api/v1/owner"
+	RouteV1UserByHandle = "api/v1/user/:handle"
 
 	// Sending payments.
 	RouteV1Pay           = "api/v1/pay"
