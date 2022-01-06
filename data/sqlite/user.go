@@ -53,15 +53,13 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 		WHERE (user_id = %d)
 	`, user.ID)
 
-	keys := struct {
-		Xpriv string `db:"xpriv"`
-	}{}
+	var keys payd.PrivateKey
 
 	if err := s.db.GetContext(ctx, &keys, sqlGetKeysByID); err != nil {
 		return nil, errors.Wrap(err, "failed to get wallet owner")
 	}
 
-	xPriv, err := bip32.NewKeyFromString(keys.Xpriv)
+	xPriv, err := bip32.NewKeyFromString(keys.Xprv)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
 	}

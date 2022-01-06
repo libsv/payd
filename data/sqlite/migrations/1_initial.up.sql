@@ -150,13 +150,19 @@ INSERT INTO
     users(
         name,
         is_owner,
-        email
+        email,
+        avatar_url,
+        address,
+        phone_number
     )
 VALUES
     (
         'Epictetus',
         1,
-        'epic@nchain.com'
+        'epic@nchain.com',
+        'https://thispersondoesnotexist.com/image',
+        '1 Athens Avenue',
+        '0800-call-me'
     );
 
 INSERT INTO

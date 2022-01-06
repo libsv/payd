@@ -9,6 +9,7 @@ import (
 
 // PrivateKey describes a named private key.
 type PrivateKey struct {
+	UserID uint64 `db:"user_id"`
 	// Name of the private key.
 	Name string `db:"name"`
 	// Xprv is the private key.
