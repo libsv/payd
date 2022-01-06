@@ -7,3 +7,4 @@ CREATE TABLE paymail_handles(
 
 INSERT INTO paymail_handles(user_id, handle)
 VALUES(1, 'epic');   
+    

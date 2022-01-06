@@ -1,3 +1,16 @@
+/*
+required tables:
+keys            - to store all our extended private keys created
+paymentOutputs  - to store the outputs generated in PaymentRequests
+txos            - to store our outputs and note when they have been spent
+
+ */
+CREATE TABLE keys (
+    name        VARCHAR NOT NULL PRIMARY KEY
+    ,xprv       VARCHAR NOT NULL
+    ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE users(
     user_id         INTEGER PRIMARY KEY AUTOINCREMENT
     ,is_owner       BOOLEAN NOT NULL DEFAULT 0
@@ -8,27 +21,12 @@ CREATE TABLE users(
     ,phone_number   VARCHAR
 );
 
-CREATE TABLE keys (
-    user_id     INTEGER NOT NULL
-    name        VARCHAR NOT NULL PRIMARY KEY
-    ,xprv       VARCHAR NOT NULL
-    ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
 CREATE TABLE users_meta(
     user_id      INTEGER NOT NULL
     ,key            VARCHAR NOT NULL
     ,value          VARCHAR NOT NULL
     ,FOREIGN KEY (user_id) REFERENCES users(user_id)
     ,CONSTRAINT users_key UNIQUE(user_id, key)
-);
-
-CREATE TABLE paymail_handles(
-    user_id      INTEGER NOT NULL
-    ,handle          VARCHAR NOT NULL PRIMARY KEY
-    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
-    ,UNIQUE(handle)
 );
 
 -- TODO - we will maybe need a payments table as an invoice can have many payments
@@ -139,11 +137,8 @@ CREATE TABLE proof_callbacks(
 );
 
 INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
-VALUES('Epictetus', 1, 'https://nchain.com', 'epic@nchain.com', '1 Athens Avenue', '0208001234');
+VALUES('Merchant Name',1, 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
 
 INSERT INTO users_meta(user_id, key, value)
-VALUES(1, 'likes', 'Stoicism & placeholder data'),
-      (1, 'dislikes', 'Malfeasance');   
-
-INSERT INTO paymail_handles(user_id, handle)
-VALUES(1, 'epic');   
+VALUES(1, 'likes', 'walks in the park at night'),
+      (1, 'dislikes', 'trying to think up placeholder data');
