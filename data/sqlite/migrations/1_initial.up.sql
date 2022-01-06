@@ -1,10 +1,7 @@
-/*
- required tables:
- keys            - to store all our extended private keys created
- paymentOutputs  - to store the outputs generated in PaymentRequests
- txos            - to store our outputs and note when they have been spent
- 
- */
+--  required tables:
+--  keys            - to store all our extended private keys created
+--  paymentOutputs  - to store the outputs generated in PaymentRequests
+--  txos            - to store our outputs and note when they have been spent 
 CREATE TABLE keys (
     name VARCHAR NOT NULL PRIMARY KEY,
     xprv VARCHAR NOT NULL,
@@ -153,18 +150,14 @@ VALUES
     (
         'Epictetus',
         1,
-        'http://url.com',
-        'merchant@demo.com',
-        '123 Street Fake',
-        '123456789'
+        'https://nchain.com',
+        'epic@nchain.com',
+        '1 Athens Avenue',
+        '0208001234'
     );
 
 INSERT INTO
     users_meta(user_id, key, value)
 VALUES
-    (1, 'likes', 'walks in the park at night'),
-    (
-        1,
-        'dislikes',
-        'trying to think up placeholder data'
-    );
+    (1, 'likes', 'Stoicism & placeholder data'),
+    (1, 'dislikes', 'Malfeasance');
