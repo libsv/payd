@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/libsv/go-bk/bip32"
@@ -80,7 +81,7 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 		user.ExtendedData[m.Key] = m.Value
 	}
 
-	user.ExtendedData["pki"] = string(pki)
+	user.ExtendedData["pki"] = hex.EncodeToString(pki)
 
 	return &user, nil
 }
