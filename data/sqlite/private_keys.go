@@ -19,8 +19,8 @@ const (
 	`
 
 	createKey = `
-	INSERT INTO keys(name, xprv)
-	VALUES(:name, :xprv)
+	INSERT INTO keys(user_id, name, xprv)
+	VALUES(1, :name, :xprv)
 	`
 )
 

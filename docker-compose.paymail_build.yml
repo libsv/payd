@@ -2,6 +2,8 @@ version: "3.7"
 
 services:
   payd:
+    container_name: payd
+    image: local.payd
     build:
       context: .
     environment:

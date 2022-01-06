@@ -2,13 +2,7 @@
 --  keys            - to store all our extended private keys created
 --  paymentOutputs  - to store the outputs generated in PaymentRequests
 --  txos            - to store our outputs and note when they have been spent 
-CREATE TABLE keys (
-    name VARCHAR NOT NULL PRIMARY KEY,
-    xprv VARCHAR NOT NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE users(
+CREATE TABLE users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     is_owner BOOLEAN NOT NULL DEFAULT 0,
     name VARCHAR NOT NULL,
@@ -18,7 +12,15 @@ CREATE TABLE users(
     phone_number VARCHAR
 );
 
-CREATE TABLE users_meta(
+CREATE TABLE keys (
+    user_id INTEGER NOT NULL,
+    name VARCHAR NOT NULL PRIMARY KEY,
+    xprv VARCHAR NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE users_meta (
     user_id INTEGER NOT NULL,
     key VARCHAR NOT NULL,
     value VARCHAR NOT NULL,
@@ -71,7 +73,7 @@ CREATE TABLE transaction_invoice (
     FOREIGN KEY (tx_id) REFERENCES transactions(tx_id)
 );
 
-CREATE TABLE destinations(
+CREATE TABLE destinations (
     destination_id INTEGER PRIMARY KEY AUTOINCREMENT,
     locking_script VARCHAR(50) NOT NULL,
     satoshis BIGINT NOT NULL,
@@ -89,7 +91,7 @@ CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
 
 CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
 
-CREATE TABLE destination_invoice(
+CREATE TABLE destination_invoice (
     destination_id INTEGER NOT NULL,
     invoice_id VARCHAR NOT NULL,
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
@@ -115,7 +117,7 @@ CREATE TABLE txos (
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id)
 );
 
-CREATE TABLE proofs(
+CREATE TABLE proofs (
     blockhash VARCHAR(255) NOT NULL,
     tx_id VARCHAR(64) NOT NULL,
     data TEXT NOT NULL,
@@ -125,7 +127,7 @@ CREATE TABLE proofs(
     FOREIGN KEY (tx_id) REFERENCES transactions(tx_id)
 );
 
-CREATE TABLE proof_callbacks(
+CREATE TABLE proof_callbacks (
     invoice_id VARCHAR NOT NULL,
     url VARCHAR NOT NULL,
     token VARCHAR,
@@ -137,23 +139,24 @@ CREATE TABLE proof_callbacks(
     PRIMARY KEY(invoice_id, url)
 );
 
+CREATE TABLE paymail_handles (
+    user_id INTEGER NOT NULL,
+    handle VARCHAR NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    UNIQUE(handle)
+);
+
 INSERT INTO
     users(
         name,
         is_owner,
-        avatar_url,
-        email,
-        address,
-        phone_number
+        email
     )
 VALUES
     (
         'Epictetus',
         1,
-        'https://nchain.com',
-        'epic@nchain.com',
-        '1 Athens Avenue',
-        '0208001234'
+        'epic@nchain.com'
     );
 
 INSERT INTO
@@ -161,3 +164,8 @@ INSERT INTO
 VALUES
     (1, 'likes', 'Stoicism & placeholder data'),
     (1, 'dislikes', 'Malfeasance');
+
+INSERT INTO
+    paymail_handles(user_id, handle)
+VALUES
+    (1, 'epic');

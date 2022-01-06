@@ -30,7 +30,7 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 	sqlGetUserIDFromHandle := fmt.Sprintf(`
 		SELECT user_id
 		FROM paymail_handles
-		WHERE handle = %s
+		WHERE (handle = "%s")
 	`, handle)
 
 	if err := s.db.GetContext(ctx, &user, sqlGetUserIDFromHandle); err != nil {
@@ -40,7 +40,7 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 	sqlGetUserByID := fmt.Sprintf(`
 		SELECT user_id, name, avatar_url, email, address, phone_number
 		FROM users
-		WHERE user_id = %d
+		WHERE (user_id = %d)
 	`, user.ID)
 
 	if err := s.db.GetContext(ctx, &user, sqlGetUserByID); err != nil {
@@ -49,8 +49,8 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 
 	sqlGetKeysByID := fmt.Sprintf(`
 		SELECT user_id, xprv
-		FROM users
-		WHERE user_id = %d
+		FROM keys
+		WHERE (user_id = %d)
 	`, user.ID)
 
 	keys := struct {

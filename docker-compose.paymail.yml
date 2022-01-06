@@ -1,0 +1,31 @@
+version: "3.7"
+
+services:
+  payd:
+    container_name: payd
+    image: local.payd
+    environment:
+      DB_DSN: "file:paydb/wallet.db?cache=shared&_foreign_keys=true"
+      DB_SCHEMA_PATH: "migrations"
+      LOG_LEVEL: "info"
+      P4_HOST: "ws://p4:8445/ws"
+      MAPI_CALLBACK_HOST: "http://p4:8445"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "localhost:8443/api/v1/health" ]
+      interval: 30s
+      timeout: 10s
+    volumes:
+      - payd-data:/paydb
+    ports:
+      - "8443:8443"
+    networks:
+      - regtest-stack
+
+networks:
+  regtest-stack:
+    name: regtest-stack
+    external: true
+
+volumes:
+  payd-data:
+    external: false
