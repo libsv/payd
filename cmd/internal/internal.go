@@ -55,6 +55,7 @@ func SetupHTTPEndpoints(cfg config.Config, services *RestDeps, g *echo.Group) {
 	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
 	thttp.NewPaymentRequests(services.PaymentRequestService, cfg.P4).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
+	thttp.NewUsersHandler(services.UserService).RegisterRoutes(g)
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
 	if cfg.Deployment.Environment == "local" {
 		// ugly endpoint for regtest topup - local only!

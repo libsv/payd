@@ -13,8 +13,8 @@ type users struct {
 }
 
 // NewUsersHandler returns a new handler for owner endpoints.
-func NewUsersHandler(svc payd.OwnerService) *owners {
-	return &owners{
+func NewUsersHandler(svc payd.UserService) *users {
+	return &users{
 		svc: svc,
 	}
 }

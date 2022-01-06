@@ -1,10 +1,3 @@
-/*
-required tables:
-keys            - to store all our extended private keys created
-paymentOutputs  - to store the outputs generated in PaymentRequests
-txos            - to store our outputs and note when they have been spent
-
- */
 CREATE TABLE users(
     user_id         INTEGER PRIMARY KEY AUTOINCREMENT
     ,is_owner       BOOLEAN NOT NULL DEFAULT 0
