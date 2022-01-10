@@ -44,8 +44,14 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	// get our master private key
-	priv, err := d.privKeySvc.PrivateKey(ctx, keyname)
+	// Get the master key associated with the beneficiary of the invoice.
+	var key string
+	if req.Handle.Valid {
+		key = req.Handle.ValueOrZero()
+	} else {
+		key = "masterkey"
+	}
+	priv, err := d.privKeySvc.PrivateKey(ctx, key)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -64,7 +70,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 			}
 			path = bip32.DerivePath(seed)
 			exists, err := d.derivRdr.DerivationPathExists(ctx, payd.DerivationExistsArgs{
-				KeyName: keyname,
+				KeyName: key,
 				Path:    path,
 			})
 			if err != nil {
@@ -90,7 +96,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 			sats = args.Denomination
 		}*/
 		destinations = append(destinations, payd.DestinationCreate{
-			Keyname:        keyname,
+			Keyname:        key,
 			DerivationPath: path,
 			Script:         s.String(),
 			Satoshis:       req.Satoshis,

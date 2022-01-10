@@ -37,6 +37,8 @@ func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter,
 	}
 }
 
+// TODO keyname in the below function will probably be wrong, as it should be associated with the invoice "key_name" rather than the default "masterkey".
+
 // Envelope will create and return a new Envelope.
 func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error) {
 	// Retrieve private key and build change utxo in advance of making any calls, so that

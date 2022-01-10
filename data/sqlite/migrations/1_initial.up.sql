@@ -175,3 +175,8 @@ INSERT INTO
     paymail_handles(user_id, handle)
 VALUES
     (1, 'epic');
+
+INSERT INTO
+    keys(user_id, name)
+VALUES
+    (1, 'epic');

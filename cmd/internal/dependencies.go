@@ -87,6 +87,12 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 		l.Fatal(err, "failed to create master key")
 	}
 
+	// TODO for each handle in the database, create an xpriv.
+	// For now let's just manually make one for the handle "epic".
+	if err = privKeySvc.Create(context.Background(), "epic"); err != nil {
+		l.Fatal(err, "failed to create master key")
+	}
+
 	return &RestDeps{
 		DestinationService:    destSvc,
 		PaymentService:        paymentSvc,

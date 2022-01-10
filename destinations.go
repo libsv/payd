@@ -14,6 +14,7 @@ type DestinationsCreate struct {
 	InvoiceID     null.String
 	Satoshis      uint64
 	Denominations uint64
+	Handle        null.String
 }
 
 // Validate will ensure arguments for destinationsCreate are valid, otherwise an error is returned.
