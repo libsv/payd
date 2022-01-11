@@ -30,7 +30,7 @@ Example query tx response from Merchant API:
 
 // QueryTransactionResponse is the raw response from the Merchant API request
 //
-// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#Query-transaction-status
+// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi#4-query-transaction-status
 type QueryTransactionResponse struct {
 	JSONEnvelope
 	Query *QueryPayload `json:"query"` // Custom field for unmarshalled payload data
@@ -89,7 +89,7 @@ type QueryPayload struct {
 // The purpose of the envelope is to ensure strict consistency in the message content for
 // the purpose of signing responses.
 //
-// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#Query-transaction-status
+// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi#4-query-transaction-status
 func (c *Client) QueryTransaction(ctx context.Context, miner *Miner, txID string) (*QueryTransactionResponse, error) {
 
 	// Make sure we have a valid miner

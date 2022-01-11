@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Reference: https://github.com/bitcoin-sv-specs/brfc-merchantapi#4-submit-multiple-transactions
+// Reference: https://github.com/bitcoin-sv-specs/brfc-merchantapi#5-submit-multiple-transactions
 
 type (
 
@@ -53,7 +53,7 @@ type (
 
 // SubmitTransactions is used for submitting batched transactions
 //
-// Reference: https://github.com/bitcoin-sv-specs/brfc-merchantapi#4-submit-multiple-transactions
+// Reference: https://github.com/bitcoin-sv-specs/brfc-merchantapi#5-submit-multiple-transactions
 func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs []Transaction) (*SubmitTransactionsResponse, error) {
 	if miner == nil {
 		return nil, errors.New("miner was nil")

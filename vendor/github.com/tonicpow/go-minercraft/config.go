@@ -5,7 +5,7 @@ import "time"
 const (
 
 	// version is the current package version
-	version = "v0.3.6"
+	version = "v0.4.0"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-minercraft: " + version
@@ -15,6 +15,9 @@ const (
 )
 
 const (
+	// routePolicyQuote is the route for getting a policy quote
+	routePolicyQuote = "/mapi/policyQuote"
+
 	// routeFeeQuote is the route for getting a fee quote
 	routeFeeQuote = "/mapi/feeQuote"
 

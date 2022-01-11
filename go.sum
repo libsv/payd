@@ -721,8 +721,8 @@ github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod
 github.com/theflyingcodr/sockets v0.0.11-beta h1:73rvasQ8aQkuzX1usPjAu9YyE73Kn6ffMfCucRGu1Pw=
 github.com/theflyingcodr/sockets v0.0.11-beta/go.mod h1:9WuWIyja/Q8PF3WmblAjFmfzkKabEBLto2Gx1XYnerc=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
-github.com/tonicpow/go-minercraft v0.3.6 h1:cJJ8+95/fiTfdZzqN0oXvyAAXO/BYfreR7L52d8mYA0=
-github.com/tonicpow/go-minercraft v0.3.6/go.mod h1:c6iEo7eKCu9CPXwP5MNwV+PE1NkwnqmwHhMzealQ7Tk=
+github.com/tonicpow/go-minercraft v0.4.0 h1:o7ndFm0NDIWZ6ml5qXGzGIh7xhGDWQhQixjPCJec2PY=
+github.com/tonicpow/go-minercraft v0.4.0/go.mod h1:+mJZAtlRy89vbL/gLAH4kft46lxueHUGMhsBJF2E9Fg=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/urfave/cli/v2 v2.3.0/go.mod h1:LJmUH05zAU44vOAcrfzZQKsZbVcdbOG8rtL3/XcUArI=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
@@ -794,7 +794,7 @@ golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a/go.mod h1:P+XmwS30IXTQdn5
 golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.0.0-20210817164053-32db794688a5/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
-golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
+golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e h1:1SzTfNOXwIS2oWiMF+6qu0OUDKb0dauo6MoDUQyu+yU=
 golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e/go.mod h1:P+XmwS30IXTQdn5tA2iutPOUgjI07+tq3H3K9MVA1s8=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=

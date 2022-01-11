@@ -332,7 +332,6 @@ linters:
     - bodyclose
     - revive
     - unconvert
-    - dupl
     - misspell
     - dogsled
     - prealloc
@@ -344,15 +343,16 @@ linters:
     - goconst
     #- lll
   disable:
-    - gocritic # use this for very opinionated linting
+    - dupl
     - gochecknoglobals
-    - whitespace
-    - wsl
-    - goerr113
+    - gocritic # use this for very opinionated linting
     - godot
-    - testpackage
+    - goerr113
     - nestif
     - nlreturn
+    - testpackage
+    - whitespace
+    - wsl
   disable-all: false
   presets:
     - bugs
