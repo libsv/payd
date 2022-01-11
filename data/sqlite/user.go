@@ -23,26 +23,16 @@ func (s *sqliteStore) Create(ctx context.Context, user payd.User) (sql.Result, e
 	return res, nil
 }
 
-func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, error) {
+func (s *sqliteStore) Read(ctx context.Context, userID uint64) (*payd.User, error) {
 	user := payd.User{
 		ExtendedData: make(map[string]interface{}),
-	}
-
-	sqlGetUserIDFromHandle := fmt.Sprintf(`
-		SELECT user_id
-		FROM paymail_handles
-		WHERE (handle = "%s")
-	`, handle)
-
-	if err := s.db.GetContext(ctx, &user, sqlGetUserIDFromHandle); err != nil {
-		return nil, errors.Wrap(err, "failed to get wallet owner")
 	}
 
 	sqlGetUserByID := fmt.Sprintf(`
 		SELECT user_id, name, avatar_url, email, address, phone_number
 		FROM users
 		WHERE (user_id = %d)
-	`, user.ID)
+	`, userID)
 
 	if err := s.db.GetContext(ctx, &user, sqlGetUserByID); err != nil {
 		return nil, errors.Wrap(err, "failed to get wallet owner")
@@ -52,7 +42,7 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 		SELECT user_id, xprv
 		FROM keys
 		WHERE (user_id = %d)
-	`, user.ID)
+	`, userID)
 
 	var keys payd.PrivateKey
 
@@ -73,7 +63,7 @@ func (s *sqliteStore) Read(ctx context.Context, handle string) (*payd.User, erro
 		Key   string `db:"key"`
 		Value string `db:"value"`
 	}, 0)
-	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, user.ID); err != nil {
+	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
 		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
 	}
 
