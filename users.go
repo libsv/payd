@@ -28,16 +28,27 @@ type OwnerStore interface {
 
 // UserService interfaces with users.
 type UserService interface {
-	Create(ctx context.Context, user User) (sql.Result, error)
-	Read(ctx context.Context, handle string) (*User, error)
-	Update(ctx context.Context, ID uint64, d User) (*User, error)
-	Delete(ctx context.Context, ID uint64) (*User, error)
+	CreateUser(context.Context, CreateUserArgs) (*User, error)
+	ReadUser(context.Context, uint64) (*User, error)
+	UpdateUser(context.Context, uint64, User) (*User, error)
+	DeleteUser(context.Context, uint64) (*User, error)
 }
 
 // UserStore interfaces with a user store.
 type UserStore interface {
-	Create(ctx context.Context, user User) (sql.Result, error)
-	Read(ctx context.Context, handle string) (*User, error)
-	Update(ctx context.Context, ID uint64, user User) (*User, error)
-	Delete(ctx context.Context, ID uint64) (*User, error)
+	CreateUser(context.Context, CreateUserArgs) (sql.Result, error)
+	ReadUser(context.Context, uint64) (*User, error)
+	UpdateUser(context.Context, uint64, User) (*User, error)
+	DeleteUser(context.Context, uint64) (*User, error)
+}
+
+// CreateUserArgs is what we expect to be sent to create a new user in the payd user store.
+type CreateUserArgs struct {
+	Handle       string                 `json:"handle"`
+	Name         string                 `json:"name"`
+	Email        string                 `json:"email"`
+	Avatar       string                 `json:"avatar"`
+	Address      string                 `json:"address"`
+	PhoneNumber  string                 `json:"phoneNumber"`
+	ExtendedData map[string]interface{} `json:"extendedData"`
 }

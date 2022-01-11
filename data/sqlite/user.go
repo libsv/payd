@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *sqliteStore) Create(ctx context.Context, user payd.User) (sql.Result, error) {
+func (s *sqliteStore) CreateUser(ctx context.Context, user payd.User) (sql.Result, error) {
 	sqlCreateUser := fmt.Sprintf(`
 		INSERT INTO users(name, is_owner, handle, avatar_url, email, address, phone_number) 
 		VALUES('%s', 0, '%s', '%s', '%s', '%s');
@@ -23,7 +23,7 @@ func (s *sqliteStore) Create(ctx context.Context, user payd.User) (sql.Result, e
 	return res, nil
 }
 
-func (s *sqliteStore) Read(ctx context.Context, userID uint64) (*payd.User, error) {
+func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, error) {
 	user := payd.User{
 		ExtendedData: make(map[string]interface{}),
 	}
@@ -76,10 +76,10 @@ func (s *sqliteStore) Read(ctx context.Context, userID uint64) (*payd.User, erro
 	return &user, nil
 }
 
-func (s *sqliteStore) Update(ctx context.Context, ID uint64, d payd.User) (*payd.User, error) {
+func (s *sqliteStore) UpdateUser(ctx context.Context, ID uint64, d payd.User) (*payd.User, error) {
 	return nil, nil
 }
 
-func (s *sqliteStore) Delete(ctx context.Context, ID uint64) (*payd.User, error) {
+func (s *sqliteStore) DeleteUser(ctx context.Context, ID uint64) (*payd.User, error) {
 	return nil, nil
 }
