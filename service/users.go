@@ -8,18 +8,20 @@ import (
 
 type users struct {
 	str payd.UserStore
+	pks payd.PrivateKeyService
 }
 
 // NewUsersService returns a new owner service.
-func NewUsersService(str payd.UserStore) payd.UserService {
+func NewUsersService(str payd.UserStore, pks payd.PrivateKeyService) payd.UserService {
 	return &users{
 		str: str,
+		pks: pks,
 	}
 }
 
 // Owner will return the current owner of the wallet.
 func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd.User, error) {
-	resp, err := u.str.CreateUser(ctx, user)
+	resp, err := u.str.CreateUser(ctx, user, u.pks)
 	if err != nil {
 		return nil, err
 	}

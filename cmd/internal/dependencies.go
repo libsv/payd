@@ -78,18 +78,12 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	invoiceSvc.SetConnectionService(connectService)
 	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
-	userSvc := service.NewUsersService(sqlLiteStore)
+	userSvc := service.NewUsersService(sqlLiteStore, privKeySvc)
 
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 
 	// create master private key if it doesn't exist
-	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
-		l.Fatal(err, "failed to create master key")
-	}
-
-	// TODO for each handle in the database, create an xpriv.
-	// For now let's just manually make one for the handle "epic".
-	if err = privKeySvc.Create(context.Background(), "epic"); err != nil {
+	if err = privKeySvc.Create(context.Background(), "masterkey", 1); err != nil {
 		l.Fatal(err, "failed to create master key")
 	}
 
@@ -166,7 +160,7 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 
 	// create master private key if it doesn't exist
-	if err = privKeySvc.Create(context.Background(), "masterkey"); err != nil {
+	if err = privKeySvc.Create(context.Background(), "masterkey", 1); err != nil {
 		l.Fatal(err, "failed to create master key")
 	}
 

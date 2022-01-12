@@ -44,7 +44,9 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4
 	// Retrieve private key and build change utxo in advance of making any calls, so that
 	// if something internal goes wrong we don't make a premature request to the receiver's
 	// p4 server, creating unneeded traffic.
-	privKey, err := e.pkSvc.PrivateKey(ctx, keyname)
+	keyname := "masterkey"
+	userID := uint64(1)
+	privKey, err := e.pkSvc.PrivateKey(ctx, keyname, userID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to retrieve private key")
 	}
@@ -143,7 +145,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4
 			[]payd.DestinationCreate{{
 				Script:         changeOutput.LockingScript.String(),
 				DerivationPath: changeOutput.DerivationPath,
-				Keyname:        keyname,
+				UserID:         userID,
 				Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
 			}})
 		if err != nil {

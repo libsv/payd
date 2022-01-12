@@ -110,7 +110,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
 		InvoiceID: null.StringFrom(req.InvoiceID),
 		Satoshis:  req.Satoshis,
-		Handle:    req.Handle,
+		UserID:    req.UserID,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to create payment destinations for invoice")
 	}

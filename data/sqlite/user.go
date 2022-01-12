@@ -13,7 +13,7 @@ const (
 	sqlCreateUser = `
 		INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
 		VALUES(:name, 0, :avatar_url, :email, :address, :phone_number)
-		RETURNING user_id, name, avatar_url, email, address, phone_number
+		RETURNING user_id
 	`
 
 	sqlGetUserByID = `
@@ -29,7 +29,7 @@ const (
 	`
 )
 
-func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs) (*payd.CreateUserResponse, error) {
+func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, pks payd.PrivateKeyService) (*payd.CreateUserResponse, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new user for: %s", req.Name)
@@ -38,12 +38,17 @@ func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs) (
 		_ = rollback(ctx, tx)
 	}()
 	var resp payd.CreateUserResponse
-	err = tx.GetContext(ctx, &resp, sqlCreateUser, req)
+	err = tx.GetContext(ctx, &resp, sqlCreateUser, req.Name, req.Avatar, req.Email, req.Address, req.PhoneNumber) //:name, :avatar_url, :email, :address, :phone_number
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create new user: %s", req.Name)
 	}
 	if err := commit(ctx, tx); err != nil {
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating new user: %s", req.Name)
+	}
+	// Create a new xpriv for this new user
+	err = pks.Create(ctx, "masterkey", resp.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create new xkey")
 	}
 	return &resp, nil
 }
@@ -72,13 +77,13 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
 	}
 
-	meta := make([]struct {
-		Key   string `db:"key"`
-		Value string `db:"value"`
-	}, 0)
-	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
-		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
-	}
+	// meta := make([]struct {
+	// 	Key   string `db:"key"`
+	// 	Value string `db:"value"`
+	// }, 0)
+	// if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
+	// 	return nil, errors.Wrap(err, "failed to get wallet owner extended info")
+	// }
 
 	user := payd.User{
 		ID:           data.ID,
@@ -90,9 +95,9 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		ExtendedData: make(map[string]interface{}, 3),
 	}
 
-	for _, m := range meta {
-		user.ExtendedData[m.Key] = m.Value
-	}
+	// for _, m := range meta {
+	// 	user.ExtendedData[m.Key] = m.Value
+	// }
 
 	user.ExtendedData["pki"] = hex.EncodeToString(pki)
 

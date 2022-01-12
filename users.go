@@ -35,7 +35,7 @@ type UserService interface {
 
 // UserStore interfaces with a user store.
 type UserStore interface {
-	CreateUser(context.Context, CreateUserArgs) (*CreateUserResponse, error)
+	CreateUser(context.Context, CreateUserArgs, PrivateKeyService) (*CreateUserResponse, error)
 	ReadUser(context.Context, uint64) (*User, error)
 	UpdateUser(context.Context, uint64, User) (*User, error)
 	DeleteUser(context.Context, uint64) error

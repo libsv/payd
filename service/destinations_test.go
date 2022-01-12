@@ -68,7 +68,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Satoshis:       1000,
 				Script:         "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
 				DerivationPath: "2147483648/2147483648/2147483648",
-				Keyname:        "masterkey",
+				UserID:         1,
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
@@ -107,7 +107,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Satoshis:       1000,
 				Script:         "76a9141a4cc80bc3ee6567cb37f9c5121841a5f8e0b87d88ac",
 				DerivationPath: "2147483648/2147483648/2147483650",
-				Keyname:        "masterkey",
+				UserID:         1,
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
@@ -195,7 +195,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Satoshis:       1000,
 				Script:         "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
 				DerivationPath: "2147483648/2147483648/2147483648",
-				Keyname:        "masterkey",
+				UserID:         1,
 			}},
 			expErr:              errors.New("failed to store destinations: finaldestination"),
 			expDerivationChecks: 1,
@@ -215,7 +215,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			svc := service.NewDestinationsService(
 				nil,
 				&mocks.PrivateKeyServiceMock{
-					PrivateKeyFunc: func(ctx context.Context, name string) (*bip32.ExtendedKey, error) {
+					PrivateKeyFunc: func(ctx context.Context, name string, userID uint64) (*bip32.ExtendedKey, error) {
 						if test.privateKeyFunc != nil {
 							return test.privateKeyFunc(ctx, name)
 						}
