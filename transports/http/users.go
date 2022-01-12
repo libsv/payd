@@ -23,7 +23,7 @@ func NewUsersHandler(svc payd.UserService) *users {
 // RegisterRoutes will setup the http handler with the echo group.
 func (u *users) RegisterRoutes(g *echo.Group) {
 	g.GET(RouteV1UserID, u.user)
-	g.POST(RouteV1User, u.user)
+	g.POST(RouteV1User, u.create)
 }
 
 // user will return information on the user associated with the id.

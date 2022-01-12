@@ -13,8 +13,8 @@ import (
 
 const (
 	sqlCreateInvoice = `
-	INSERT INTO invoices(invoice_id, satoshis, description, spv_required, payment_reference, created_at, expires_at, state, handle)
-	VALUES(:invoice_id, :satoshis, :description, :spv_required, :payment_reference, :created_at, :expires_at, 'pending', :handle)
+	INSERT INTO invoices(invoice_id, satoshis, description, spv_required, payment_reference, created_at, expires_at, state)
+	VALUES(:invoice_id, :satoshis, :description, :spv_required, :payment_reference, :created_at, :expires_at, 'pending')
 	`
 
 	sqlInvoiceByID = `

@@ -2,7 +2,6 @@ package payd
 
 import (
 	"context"
-	"database/sql"
 )
 
 // User information on wallet users.
@@ -31,24 +30,28 @@ type UserService interface {
 	CreateUser(context.Context, CreateUserArgs) (*User, error)
 	ReadUser(context.Context, uint64) (*User, error)
 	UpdateUser(context.Context, uint64, User) (*User, error)
-	DeleteUser(context.Context, uint64) (*User, error)
+	DeleteUser(context.Context, uint64) error
 }
 
 // UserStore interfaces with a user store.
 type UserStore interface {
-	CreateUser(context.Context, CreateUserArgs) (sql.Result, error)
+	CreateUser(context.Context, CreateUserArgs) (*CreateUserResponse, error)
 	ReadUser(context.Context, uint64) (*User, error)
 	UpdateUser(context.Context, uint64, User) (*User, error)
-	DeleteUser(context.Context, uint64) (*User, error)
+	DeleteUser(context.Context, uint64) error
 }
 
 // CreateUserArgs is what we expect to be sent to create a new user in the payd user store.
 type CreateUserArgs struct {
-	Handle       string                 `json:"handle"`
 	Name         string                 `json:"name"`
 	Email        string                 `json:"email"`
 	Avatar       string                 `json:"avatar"`
 	Address      string                 `json:"address"`
 	PhoneNumber  string                 `json:"phoneNumber"`
 	ExtendedData map[string]interface{} `json:"extendedData"`
+}
+
+// CreateUserResponse is what we expect to receive once a new user is created.
+type CreateUserResponse struct {
+	ID uint64 `json:"userId" db:"user_id"`
 }

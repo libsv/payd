@@ -19,16 +19,12 @@ func NewUsersService(str payd.UserStore) payd.UserService {
 
 // Owner will return the current owner of the wallet.
 func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd.User, error) {
-	sql, err := u.str.CreateUser(ctx, user)
-	if err != nil {
-		return nil, err
-	}
-	id, err := sql.LastInsertId()
+	resp, err := u.str.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 	usr := &payd.User{
-		ID:           uint64(id),
+		ID:           resp.ID,
 		Name:         user.Name,
 		Email:        user.Email,
 		Avatar:       user.Avatar,
@@ -50,6 +46,6 @@ func (u *users) UpdateUser(ctx context.Context, userID uint64, d payd.User) (*pa
 }
 
 // Delete will return the current owner of the wallet.
-func (u *users) DeleteUser(ctx context.Context, userID uint64) (*payd.User, error) {
-	return nil, nil
+func (u *users) DeleteUser(ctx context.Context, userID uint64) error {
+	return u.str.DeleteUser(ctx, userID)
 }

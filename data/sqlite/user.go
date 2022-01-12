@@ -2,55 +2,68 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
 )
 
-func (s *sqliteStore) CreateUser(ctx context.Context, user payd.User) (sql.Result, error) {
-	sqlCreateUser := fmt.Sprintf(`
-		INSERT INTO users(name, is_owner, handle, avatar_url, email, address, phone_number) 
-		VALUES('%s', 0, '%s', '%s', '%s', '%s');
-	`, user.Name, user.Avatar, user.Email, user.Address, user.PhoneNumber)
-	res, err := s.db.ExecContext(ctx, sqlCreateUser)
+const (
+	sqlCreateUser = `
+		INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
+		VALUES(:name, 0, :avatar_url, :email, :address, :phone_number)
+		RETURNING user_id, name, avatar_url, email, address, phone_number
+	`
+
+	sqlGetUserByID = `
+		SELECT u.user_id, u.name, u.avatar_url, u.email, u.phone_number, u.address, k.xprv 
+		FROM users u
+		JOIN keys k ON u.user_id = k.user_id
+		WHERE k.user_id = :user_id
+	`
+
+	sqlDeleteUserByID = `
+		DELETE FROM users
+		WHERE user_id = :user_id
+	`
+)
+
+func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs) (*payd.CreateUserResponse, error) {
+	tx, err := s.newTx(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get wallet owner")
+		return nil, errors.Wrapf(err, "failed to create new user for: %s", req.Name)
 	}
-	return res, nil
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
+	var resp payd.CreateUserResponse
+	err = tx.GetContext(ctx, &resp, sqlCreateUser, req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create new user: %s", req.Name)
+	}
+	if err := commit(ctx, tx); err != nil {
+		return nil, errors.Wrapf(err, "failed to commit transaction when creating new user: %s", req.Name)
+	}
+	return &resp, nil
 }
 
 func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, error) {
-	user := payd.User{
-		ExtendedData: make(map[string]interface{}),
+	var data struct {
+		ID          uint64 `db:"user_id"`
+		Name        string `db:"name"`
+		Email       string `db:"email"`
+		PhoneNumber string `db:"phone_number"`
+		Address     string `db:"address"`
+		Avatar      string `db:"avatar_url"`
+		Xprv        string `db:"xprv"`
 	}
 
-	sqlGetUserByID := fmt.Sprintf(`
-		SELECT user_id, name, avatar_url, email, address, phone_number
-		FROM users
-		WHERE (user_id = %d)
-	`, userID)
-
-	if err := s.db.GetContext(ctx, &user, sqlGetUserByID); err != nil {
+	if err := s.db.GetContext(ctx, &data, sqlGetUserByID, userID); err != nil {
 		return nil, errors.Wrap(err, "failed to get wallet owner")
 	}
 
-	sqlGetKeysByID := fmt.Sprintf(`
-		SELECT user_id, xprv
-		FROM keys
-		WHERE (user_id = %d)
-	`, userID)
-
-	var keys payd.PrivateKey
-
-	if err := s.db.GetContext(ctx, &keys, sqlGetKeysByID); err != nil {
-		return nil, errors.Wrap(err, "failed to get wallet owner")
-	}
-
-	xPriv, err := bip32.NewKeyFromString(keys.Xprv)
+	xPriv, err := bip32.NewKeyFromString(data.Xprv)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
 	}
@@ -67,6 +80,16 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
 	}
 
+	user := payd.User{
+		ID:           data.ID,
+		Name:         data.Name,
+		Email:        data.Email,
+		Avatar:       data.Avatar,
+		Address:      data.Address,
+		PhoneNumber:  data.PhoneNumber,
+		ExtendedData: make(map[string]interface{}, 3),
+	}
+
 	for _, m := range meta {
 		user.ExtendedData[m.Key] = m.Value
 	}
@@ -80,6 +103,15 @@ func (s *sqliteStore) UpdateUser(ctx context.Context, ID uint64, d payd.User) (*
 	return nil, nil
 }
 
-func (s *sqliteStore) DeleteUser(ctx context.Context, ID uint64) (*payd.User, error) {
-	return nil, nil
+func (s *sqliteStore) DeleteUser(ctx context.Context, userID uint64) error {
+	data := struct {
+		ID uint64 `db:"user_id"`
+	}{
+		ID: userID,
+	}
+	_, err := s.db.NamedExec(sqlDeleteUserByID, data)
+	if err != nil {
+		return errors.Wrap(err, "failed to get wallet owner")
+	}
+	return nil
 }

@@ -1,10 +1,7 @@
-/*
-required tables:
-keys            - to store all our extended private keys created
-paymentOutputs  - to store the outputs generated in PaymentRequests
-txos            - to store our outputs and note when they have been spent
-
- */
+-- required tables:
+-- keys            - to store all our extended private keys created
+-- paymentOutputs  - to store the outputs generated in PaymentRequests
+-- txos            - to store our outputs and note when they have been spent
 
 CREATE TABLE users(
     user_id         INTEGER PRIMARY KEY AUTOINCREMENT
@@ -18,7 +15,7 @@ CREATE TABLE users(
 
 CREATE TABLE keys (
     name        VARCHAR NOT NULL PRIMARY KEY
-    user_id     INTEGER NOT NULL
+    ,user_id     INTEGER NOT NULL
     ,xprv       VARCHAR NOT NULL
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (user_id) REFERENCES users(user_id)
