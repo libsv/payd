@@ -53,6 +53,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() (uint64, error) {
 				return 0, nil
@@ -87,6 +88,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() func() (uint64, error) {
 				itr := uint64(0)
@@ -123,6 +125,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() (uint64, error) {
 				return 0, nil
@@ -143,6 +146,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() (uint64, error) {
 				return 0, errors.New("no seed 4 u")
@@ -160,6 +164,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() (uint64, error) {
 				return 0, nil
@@ -178,6 +183,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 			req: payd.DestinationsCreate{
 				InvoiceID: null.StringFrom("abc123"),
 				Satoshis:  1000,
+				UserID:    1,
 			},
 			uint64Func: func() (uint64, error) {
 				return 0, nil
@@ -203,6 +209,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 		"satoshis below dust limit rejected": {
 			req: payd.DestinationsCreate{
 				Satoshis: 100,
+				UserID:   1,
 			},
 			destinationsCreateFunc: destinationsToOutputs,
 			expErr:                 errors.New("[satoshis: value 100 is smaller than minimum 136]"),

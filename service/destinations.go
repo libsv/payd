@@ -12,11 +12,6 @@ import (
 	"github.com/libsv/payd"
 )
 
-const (
-	// TODO - this will need changed.
-	keyname = "masterkey"
-)
-
 type destinations struct {
 	deployCfg  *config.Wallet
 	privKeySvc payd.PrivateKeyService
