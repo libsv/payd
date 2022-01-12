@@ -77,13 +77,13 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
 	}
 
-	// meta := make([]struct {
-	// 	Key   string `db:"key"`
-	// 	Value string `db:"value"`
-	// }, 0)
-	// if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
-	// 	return nil, errors.Wrap(err, "failed to get wallet owner extended info")
-	// }
+	meta := make([]struct {
+		Key   string `db:"key"`
+		Value string `db:"value"`
+	}, 0)
+	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
+		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
+	}
 
 	user := payd.User{
 		ID:           data.ID,
@@ -95,9 +95,9 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		ExtendedData: make(map[string]interface{}, 3),
 	}
 
-	// for _, m := range meta {
-	// 	user.ExtendedData[m.Key] = m.Value
-	// }
+	for _, m := range meta {
+		user.ExtendedData[m.Key] = m.Value
+	}
 
 	user.ExtendedData["pki"] = hex.EncodeToString(pki)
 
