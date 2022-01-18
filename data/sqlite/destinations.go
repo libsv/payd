@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	sqlDestinationCreate = `
+	sqlDestinationCreateFromMasterKey = `
 	INSERT INTO destinations (key_name, locking_script, derivation_path, satoshis, state)
-	VALUES(:key_name, :locking_script, :derivation_path, :satoshis, 'pending')
+	VALUES("masterkey", :locking_script, :derivation_path, :satoshis, 'pending')
 	`
 
 	sqlDestinationInvoiceCreate = `
@@ -46,7 +46,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
-	if err := handleNamedExec(tx, sqlDestinationCreate, req); err != nil {
+	if err := handleNamedExec(tx, sqlDestinationCreateFromMasterKey, req); err != nil {
 		return nil, errors.Wrapf(err, "failed to insert payment destinations for invoiceID '%s'", args.InvoiceID.ValueOrZero())
 	}
 	ll := make([]string, 0, len(req))
