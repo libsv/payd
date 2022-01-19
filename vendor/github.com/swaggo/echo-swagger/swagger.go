@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
+	"golang.org/x/net/webdav"
 )
 
 // Config stores echoSwagger configuration variables.
@@ -19,6 +20,7 @@ type Config struct {
 	DeepLinking  bool
 	DocExpansion string
 	DomID        string
+	InstanceName string
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
@@ -49,14 +51,19 @@ func DomID(domID string) func(c *Config) {
 	}
 }
 
+// InstanceName specified swag instance name
+func InstanceName(instanceName string) func(c *Config) {
+	return func(c *Config) {
+		c.InstanceName = instanceName
+	}
+}
+
 // WrapHandler wraps swaggerFiles.Handler and returns echo.HandlerFunc
 var WrapHandler = EchoWrapHandler()
 
 // EchoWrapHandler wraps `http.Handler` into `echo.HandlerFunc`.
 func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 	var once sync.Once
-
-	h := swaggerFiles.Handler
 
 	config := &Config{
 		URL:          "doc.json",
@@ -74,6 +81,11 @@ func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 	index, _ := t.Parse(indexTemplate)
 
 	var re = regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
+
+	h := webdav.Handler{
+		FileSystem: swaggerFiles.FS,
+		LockSystem: webdav.NewMemLS(),
+	}
 
 	return func(c echo.Context) error {
 		matches := re.FindStringSubmatch(c.Request().RequestURI)
@@ -96,16 +108,21 @@ func EchoWrapHandler(configFns ...func(c *Config)) echo.HandlerFunc {
 			c.Response().Header().Set("Content-Type", "image/png")
 		}
 
-		defer c.Response().Flush()
+		response := c.Response()
+		// This check fixes an error introduced here: https://github.com/labstack/echo/blob/8da8e161380fd926d4341721f0328f1e94d6d0a2/response.go#L86-L88
+		if _, ok := response.Writer.(http.Flusher); ok {
+			defer response.Flush()
+		}
+
 		switch path {
 		case "":
 			c.Redirect(301, h.Prefix+"index.html")
 		case "index.html":
 			_ = index.Execute(c.Response().Writer, config)
 		case "doc.json":
-			doc, err := swag.ReadDoc()
+			doc, err := swag.ReadDoc(config.InstanceName)
 			if err != nil {
-				http.Error(c.Response().Writer, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				c.Error(err)
 
 				return nil
 			}
