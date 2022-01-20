@@ -91,6 +91,7 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 			DerivationPath: path,
 			Script:         s.String(),
 			Satoshis:       req.Satoshis,
+			KeyName:        key,
 		})
 	}
 	oo, err := d.destRdrWtr.DestinationsCreate(ctx, payd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)

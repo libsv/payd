@@ -15,7 +15,7 @@ CREATE TABLE users(
 
 CREATE TABLE keys (
     name        VARCHAR NOT NULL
-    ,user_id     INTEGER NOT NULL PRIMARY KEY
+    ,user_id     INTEGER NOT NULL
     ,xprv       VARCHAR NOT NULL
     ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -79,13 +79,12 @@ CREATE TABLE destinations(
     ,locking_script  VARCHAR(50) NOT NULL
     ,satoshis        BIGINT NOT NULL
     ,derivation_path TEXT NOT NULL
-    ,key_name        VARCHAR NOT NULL
+    ,key_name        VARCHAR NOT NULL DEFAULT 'masterkey'
     ,user_id     INTEGER NOT NULL
     ,state           VARCHAR(10) NOT NULL
     ,created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,deleted_at      TIMESTAMP
-    ,FOREIGN KEY (key_name) REFERENCES keys(name)
     ,FOREIGN KEY (user_id) REFERENCES users(user_id)
     ,CONSTRAINT destinations_locking_script UNIQUE(locking_script)
 );
@@ -146,5 +145,3 @@ INSERT INTO
 VALUES
     (1, 'likes', 'Stoicism & placeholder data'),
     (1, 'dislikes', 'Malfeasance');
-
-    

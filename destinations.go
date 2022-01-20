@@ -30,6 +30,7 @@ type DestinationCreate struct {
 	DerivationPath string `db:"derivation_path"`
 	Satoshis       uint64 `db:"satoshis"`
 	UserID         uint64 `db:"user_id"`
+	KeyName        string `db:"key_name"`
 }
 
 // Destination contains outputs and current fees
