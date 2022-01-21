@@ -8,7 +8,9 @@ import (
 
 // BroadcastArgs sends some meta identifying the invoice used when broadcasting.
 type BroadcastArgs struct {
-	InvoiceID string
+	InvoiceID   string
+	CallbackURL string
+	Token       string
 }
 
 // BroadcastWriter is used to submit a transaction for public broadcast to nodes.

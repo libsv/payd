@@ -2,11 +2,15 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-p4"
+	"github.com/libsv/go-spvchannels"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	validator "github.com/theflyingcodr/govalidator"
 
 	"github.com/libsv/payd"
@@ -45,4 +49,37 @@ func (p *proofs) Create(ctx context.Context, args p4.ProofCreateArgs, req envelo
 		return errors.Wrap(err, "failed to save proof")
 	}
 	return nil
+}
+
+func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels.MessagesReply) (bool, error) {
+	for _, msg := range msgs {
+		payload, err := base64.StdEncoding.DecodeString(msg.Payload)
+		if err != nil {
+			return false, errors.Wrap(err, "error decoding payload")
+		}
+		var env envelope.JSONEnvelope
+		if err := json.Unmarshal(payload, &env); err != nil {
+			return false, errors.Wrap(err, "error unmarshalling json envelope")
+		}
+
+		mm := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(env.Payload), &mm); err != nil {
+			return false, errors.Wrap(err, "error unmarshalling payload")
+		}
+
+		fmt.Printf("%#v\n", mm)
+
+		if mm["callbackReason"].(string) != "merkleProof" {
+			log.Info().Msg("skipping msg")
+			continue
+		}
+
+		txID := mm["callbackTxId"].(string)
+		if err := p.Create(ctx, p4.ProofCreateArgs{
+			TxID: txID,
+		}, env); err != nil {
+			return false, errors.Wrap(err, "failed to store proof msg")
+		}
+	}
+	return true, nil
 }

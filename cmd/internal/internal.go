@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gorilla/websocket"
@@ -104,6 +105,22 @@ func SetupSocketServer(cfg config.Socket, e *echo.Echo) *server.SocketServer {
 // SetupHealthEndpoint setup the health check.
 func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client) {
 	thttp.NewHealthHandler(service.NewHealthService(c, cfg.P4)).RegisterRoutes(g)
+}
+
+func ResumeActiveChannels(deps *SocketDeps) error {
+	ctx := context.Background()
+	channels, err := deps.PeerChannelsService.ActiveProofChannels(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, channel := range channels {
+		if err := deps.PeerChannelsNotifyService.Subscribe(ctx, &channel); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func wsHandler(svr *server.SocketServer) echo.HandlerFunc {

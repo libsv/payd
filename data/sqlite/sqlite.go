@@ -43,6 +43,7 @@ func commit(ctx context.Context, tx *sqlx.Tx) error {
 			return nil
 		}
 	}
+
 	return tx.Commit()
 }
 

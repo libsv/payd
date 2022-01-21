@@ -116,6 +116,13 @@ func (v *ViperConfig) WithTransports() ConfigurationLoader {
 	return v
 }
 
+func (v *ViperConfig) WithPeerChannels() ConfigurationLoader {
+	v.PeerChannels = &PeerChannels{
+		Host: viper.GetString(EnvPeerChannelsHost),
+	}
+	return v
+}
+
 // Load will return the underlying config setup.
 func (v *ViperConfig) Load() *Config {
 	return v.Config

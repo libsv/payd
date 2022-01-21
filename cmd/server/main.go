@@ -59,6 +59,7 @@ func main() {
 		WithMapi().
 		WithSocket().
 		WithTransports().
+		WithPeerChannels().
 		Load()
 	log := log.NewZero(cfg.Logging)
 	// validate the config, fail if it fails.
@@ -93,6 +94,10 @@ func main() {
 	// setup socket endpoints
 	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
 	internal.SetupHealthEndpoint(*cfg, g, c)
+
+	if err := internal.ResumeActiveChannels(deps); err != nil {
+		log.Fatal(err, "failed to resume active peer channels")
+	}
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)

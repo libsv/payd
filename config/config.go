@@ -39,6 +39,7 @@ const (
 	EnvSocketMaxMessageBytes   = "socket.maxmessage.bytes"
 	EnvTransportHTTPEnabled    = "transport.http.enabled"
 	EnvTransportSocketsEnabled = "transport.sockets.enabled"
+	EnvPeerChannelsHost        = "peerchannels.host"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -83,6 +84,7 @@ type Config struct {
 	Db            *Db
 	HeadersClient *HeadersClient
 	Wallet        *Wallet
+	PeerChannels  *PeerChannels
 	P4            *P4
 	Mapi          *MApi
 	Socket        *Socket
@@ -157,6 +159,12 @@ type Wallet struct {
 	PaymentExpiryHours int64
 }
 
+// PeerChannels information relating to peer channel interactions.
+type PeerChannels struct {
+	// Host the peer channels host.
+	Host string
+}
+
 // P4 contains information relating to a p4 interactions.
 type P4 struct {
 	Timeout    int
@@ -196,5 +204,6 @@ type ConfigurationLoader interface {
 	WithSocket() ConfigurationLoader
 	WithTransports() ConfigurationLoader
 	WithMapi() ConfigurationLoader
+	WithPeerChannels() ConfigurationLoader
 	Load() *Config
 }

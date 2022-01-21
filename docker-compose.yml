@@ -10,6 +10,7 @@ services:
       LOG_LEVEL: "info"
       P4_HOST: "ws://p4:8445/ws"
       MAPI_CALLBACK_HOST: "http://p4:8445"
+      PEERCHANNELS_HOST: "peerchannels:25009"
     healthcheck:
       test: [ "CMD", "curl", "-f", "localhost:8443/api/v1/health" ]
       interval: 30s
@@ -32,6 +33,7 @@ services:
       LOG_LEVEL: "info"
       P4_HOST: "ws://p4-merchant:28445/ws"
       MAPI_CALLBACK_HOST: "http://p4-merchant:28445"
+      PEERCHANNELS_HOST: "peerchannels:25009"
     healthcheck:
       test: [ "CMD", "curl", "-f", "localhost:28443/api/v1/health" ]
       interval: 30s

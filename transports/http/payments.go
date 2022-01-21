@@ -40,8 +40,9 @@ func (p *payments) create(e echo.Context) error {
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to bind request")
 	}
-	if err := p.svc.PaymentCreate(e.Request().Context(), payd.PaymentCreateArgs{InvoiceID: e.Param("invoiceID")}, req); err != nil {
+	ack, err := p.svc.PaymentCreate(e.Request().Context(), payd.PaymentCreateArgs{InvoiceID: e.Param("invoiceID")}, req)
+	if err != nil {
 		return errors.WithStack(err)
 	}
-	return e.NoContent(http.StatusNoContent)
+	return e.JSON(http.StatusCreated, ack)
 }

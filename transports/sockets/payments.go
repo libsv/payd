@@ -33,7 +33,8 @@ func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.M
 		return nil, errors.Wrap(err, "failed to bind request")
 	}
 	resp := msg.NewFrom(RoutePaymentACK)
-	if err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req); err != nil {
+	_, err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req)
+	if err != nil {
 		log.Err(err).Msg("failed to create payment, returning ack")
 		_ = resp.WithBody(p4.PaymentACK{
 			Payment: &req,

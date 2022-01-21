@@ -9,6 +9,7 @@ import (
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
@@ -16,19 +17,25 @@ import (
 )
 
 type pay struct {
-	storeTx payd.Transacter
-	p4      http.P4
-	spvc    payd.EnvelopeService
-	svrCfg  *config.Server
+	storeTx    payd.Transacter
+	txWtr      payd.TransactionWriter
+	p4         http.P4
+	spvc       payd.EnvelopeService
+	pcStr      payd.PeerChannelsStore
+	pcNotifSvc payd.PeerChannelsNotifyService
+	svrCfg     *config.Server
 }
 
 // NewPayService returns a pay service.
-func NewPayService(storeTx payd.Transacter, p4 http.P4, spvc payd.EnvelopeService, svrCfg *config.Server) payd.PayService {
+func NewPayService(storeTx payd.Transacter, p4 http.P4, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
 	return &pay{
-		storeTx: storeTx,
-		p4:      p4,
-		spvc:    spvc,
-		svrCfg:  svrCfg,
+		storeTx:    storeTx,
+		txWtr:      txWtr,
+		p4:         p4,
+		spvc:       spvc,
+		svrCfg:     svrCfg,
+		pcStr:      pcStr,
+		pcNotifSvc: pcNotifSvc,
 	}
 }
 
@@ -82,9 +89,6 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 	// Send the payment to the p4 server.
 	ack, err := p.p4.PaymentSend(ctx, req, p4.Payment{
 		SPVEnvelope: env,
-		ProofCallbacks: map[string]p4.ProofCallback{
-			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
-		},
 		MerchantData: p4.Merchant{
 			Name:         payReq.MerchantData.Name,
 			Email:        payReq.MerchantData.Email,
@@ -94,10 +98,50 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 		},
 	})
 	if err != nil {
+		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
+			log.Error().Err(errors.Wrap(err, "failed to update tx after failed broadcast"))
+		}
 		return nil, errors.Wrapf(err, "failed to send payment %s", req.PayToURL)
 	}
 	if ack.Error > 0 {
 		return nil, fmt.Errorf("failed to send payment. Code '%d' reason '%s'", ack.Error, ack.Memo)
+	}
+
+	// Update tx state to broadcast
+	// Just logging errors here as I don't want to roll back tx now tx is broadcast.
+	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxBroadcast}); err != nil {
+		log.Error().Err(errors.Wrap(err, "failed to update tx to broadcast state"))
+	}
+
+	peerChannelHost := ack.Payment.MerchantData.ExtendedData["peerChannelHost"].(string)
+	peerChannelID := ack.Payment.MerchantData.ExtendedData["peerChannelID"].(string)
+	peerChannelToken := ack.Payment.MerchantData.ExtendedData["peerChannelToken"].(string)
+
+	if err := p.pcStr.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
+		PeerChannelAccountID: 0,
+		ChannelID:            peerChannelID,
+		ChannelHost:          peerChannelHost,
+		ChannelType:          payd.PeerChannelHandlerTypeProof,
+	}); err != nil {
+		return nil, errors.Wrapf(err, "failed to store channel %s in db", peerChannelHost)
+	}
+	if err := p.pcStr.PeerChannelAPITokenCreate(ctx, &payd.PeerChannelAPITokenStoreArgs{
+		Token:                 peerChannelToken,
+		CanRead:               true,
+		CanWrite:              false,
+		PeerChannelsChannelID: peerChannelID,
+		Role:                  "notification",
+	}); err != nil {
+		return nil, errors.Wrapf(err, "failed to store token %s", peerChannelToken)
+	}
+
+	if err := p.pcNotifSvc.Subscribe(context.Background(), &payd.PeerChannel{
+		ID:    peerChannelID,
+		Token: peerChannelToken,
+		Host:  peerChannelHost,
+		Type:  payd.PeerChannelHandlerTypeProof,
+	}); err != nil {
+		log.Err(err)
 	}
 	if err := p.storeTx.Commit(ctx); err != nil {
 		return nil, errors.Wrap(err, "failed to commit tx")
