@@ -43,7 +43,7 @@ func (c *Client) FastestQuote(ctx context.Context, timeout time.Duration) (*FeeQ
 func (c *Client) fetchFastestQuote(ctx context.Context, timeout time.Duration) *internalResult {
 
 	// The channel for the internal results
-	resultsChannel := make(chan *internalResult, len(c.Miners))
+	resultsChannel := make(chan *internalResult, len(c.miners))
 
 	// Create a context (to cancel or timeout)
 	ctxWithCancel, cancel := context.WithTimeout(ctx, timeout)
@@ -51,7 +51,7 @@ func (c *Client) fetchFastestQuote(ctx context.Context, timeout time.Duration) *
 
 	// Loop each miner (break into a Go routine for each quote request)
 	var wg sync.WaitGroup
-	for _, miner := range c.Miners {
+	for _, miner := range c.miners {
 		wg.Add(1)
 		go func(ctx context.Context, wg *sync.WaitGroup, client *Client, miner *Miner) {
 			defer wg.Done()
