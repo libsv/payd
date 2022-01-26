@@ -79,7 +79,7 @@ func TestPayService_Pay(t *testing.T) {
 			},
 			paymentSendFunc: func(context.Context, payd.PayRequest, p4.Payment) (*p4.PaymentACK, error) {
 				return &p4.PaymentACK{
-					PeerChannel: p4.PeerChannelInfo{
+					PeerChannel: &p4.PeerChannelData{
 						Host:      "myhost",
 						ChannelID: "abc123",
 						Token:     "def456",
