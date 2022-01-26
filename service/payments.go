@@ -235,7 +235,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errors.Wrap(err, "failed to broadcast tx")
 	}
 
-	if err := p.pcNotif.Subscribe(context.Background(), &payd.PeerChannel{
+	if err := p.pcNotif.Subscribe(ctx, &payd.PeerChannel{
 		ID:        ch.ID,
 		Token:     tokens[1].Token,
 		CreatedAt: ch.CreatedAt,

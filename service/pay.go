@@ -138,7 +138,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 		return nil, errors.Wrapf(err, "failed to store token %s", ack.PeerChannel.Token)
 	}
 
-	if err := p.pcNotifSvc.Subscribe(context.Background(), &payd.PeerChannel{
+	if err := p.pcNotifSvc.Subscribe(ctx, &payd.PeerChannel{
 		ID:    ack.PeerChannel.ChannelID,
 		Token: ack.PeerChannel.Token,
 		Host:  ack.PeerChannel.Host,
