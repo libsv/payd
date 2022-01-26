@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/libsv/go-spvchannels"
 	"github.com/libsv/payd"
@@ -14,6 +15,7 @@ type peerChannelsSvc struct {
 	str payd.PeerChannelsStore
 }
 
+// NewPeerChannelsSvc return a new peer channel service.
 func NewPeerChannelsSvc(str payd.PeerChannelsStore, cfg *config.PeerChannels) payd.PeerChannelsService {
 	return &peerChannelsSvc{
 		cfg: cfg,
@@ -21,7 +23,7 @@ func NewPeerChannelsSvc(str payd.PeerChannelsStore, cfg *config.PeerChannels) pa
 	}
 }
 
-func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels.ChannelCreateRequest) (*spvchannels.ChannelCreateReply, error) {
+func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels.ChannelCreateRequest) (*payd.PeerChannel, error) {
 	c := spvchannels.NewClient(
 		spvchannels.WithUser("username"),
 		spvchannels.WithPassword("password"),
@@ -34,16 +36,23 @@ func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels
 		return nil, errors.Wrap(err, "error creating channel")
 	}
 
+	createdAt := time.Now()
 	if err := p.str.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
 		PeerChannelAccountID: req.AccountID,
 		ChannelHost:          p.cfg.Host,
 		ChannelID:            ch.ID,
 		ChannelType:          payd.PeerChannelHandlerTypeProof,
+		CreatedAt:            createdAt,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to store peer channel information for channel %s", ch.ID)
 	}
 
-	return ch, nil
+	return &payd.PeerChannel{
+		ID:        ch.ID,
+		Host:      p.cfg.Host,
+		CreatedAt: createdAt,
+		Type:      payd.PeerChannelHandlerTypeProof,
+	}, nil
 }
 
 func (p peerChannelsSvc) PeerChannelAPITokensCreate(ctx context.Context, reqs ...*payd.PeerChannelAPITokenCreateArgs) ([]*spvchannels.TokenCreateReply, error) {

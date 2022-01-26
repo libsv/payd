@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"path"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/libsv/payd"
@@ -22,6 +23,7 @@ type peerChannelsNotifySvc struct {
 	handlers      map[payd.PeerChannelHandlerType]payd.PeerChannelsMessageHandler
 }
 
+// NewPeerChannelsNotifyService build and return a new peer channels notify service.
 func NewPeerChannelsNotifyService(cfg *config.PeerChannels, pcSvc payd.PeerChannelsService) payd.PeerChannelsNotifyService {
 	return &peerChannelsNotifySvc{
 		cfg:           cfg,
@@ -41,22 +43,37 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 		return fmt.Errorf("unrecognised channel type '%s'", string(channel.Type))
 	}
 
+	if channel.CreatedAt.IsZero() {
+		channel.CreatedAt = time.Now()
+	}
+
 	u := url.URL{
 		Scheme: "ws",
 		Host:   p.cfg.Host,
-		Path:   path.Join("/api/v1/channel", string(channel.ID), "/notify"),
+		Path:   path.Join("/api/v1/channel", channel.ID, "/notify"),
 	}
 	q := u.Query()
 	q.Set("token", channel.Token)
 	u.RawQuery = q.Encode()
 
+	lCtx, cancel := context.WithDeadline(context.Background(), channel.CreatedAt.Add(p.cfg.TTL))
+	if _, ok := lCtx.Deadline(); !ok {
+		log.Info().Msgf("deadline exceeded closing channel %s", channel.ID)
+		defer cancel()
+		return p.pcSvc.CloseChannel(ctx, channel.ID)
+	}
+
 	ws, resp, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		if err == websocket.ErrBadHandshake {
+		defer cancel()
+		if errors.Is(err, websocket.ErrBadHandshake) {
 			return errors.Wrapf(err, "notification subscription handshake failed %d", resp.StatusCode)
 		}
+		return errors.Wrapf(err, "error dailing websocket")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	sub := payd.PeerChannelSubscription{
 		ChannelID:   channel.ID,
@@ -71,28 +88,40 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 		p.subscriptions[channel.ID] = &sub
 	}()
 
-	go p.listen(context.Background(), &sub)
+	go p.listen(lCtx, &sub, cancel)
 	return nil
 }
 
-func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChannelSubscription) {
-	if err := func() error {
-		defer sub.Conn.Close()
-		_, msg, err := sub.Conn.ReadMessage()
-		if err != nil {
-			return err
+func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChannelSubscription, cancel context.CancelFunc) {
+	defer func() {
+		_ = sub.Conn.Close()
+	}()
+	defer p.cleanup(sub.ChannelID)
+
+	defer cancel()
+
+	in := make(chan bool)
+
+	go func() {
+		if _, _, err := sub.Conn.ReadMessage(); err != nil {
+			log.Error().Err(errors.WithStack(err))
 		}
 
-		log.Info().Msg(sub.ChannelID + " " + string(msg))
-		return nil
-	}(); err != nil {
-		log.Error().Err(errors.WithStack(err))
-	}
+		in <- true
+	}()
 
-	log.Error().Err(errors.WithStack(p.handleNotification(ctx, sub)))
+	for {
+		select {
+		case <-ctx.Done():
+			log.Error().Err(p.pcSvc.CloseChannel(context.Background(), sub.ChannelID))
+			return
+		case <-in:
+			log.Error().Err(errors.WithStack(p.handleNotification(context.Background(), sub, cancel)))
+		}
+	}
 }
 
-func (p *peerChannelsNotifySvc) handleNotification(ctx context.Context, sub *payd.PeerChannelSubscription) error {
+func (p *peerChannelsNotifySvc) handleNotification(ctx context.Context, sub *payd.PeerChannelSubscription, cancel context.CancelFunc) error {
 	msgs, err := p.pcSvc.PeerChannelsMessage(ctx, &payd.PeerChannelMessageArgs{
 		ChannelID: sub.ChannelID,
 		Token:     sub.Token,
@@ -110,7 +139,7 @@ func (p *peerChannelsNotifySvc) handleNotification(ctx context.Context, sub *pay
 	}
 
 	if finished {
-		return p.pcSvc.CloseChannel(ctx, sub.ChannelID)
+		defer cancel()
 	}
 
 	return nil

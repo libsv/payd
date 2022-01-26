@@ -9,7 +9,9 @@ import (
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/go-p4"
+	"github.com/libsv/go-spvchannels"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/log"
 	"github.com/libsv/payd/mocks"
 	"github.com/libsv/payd/service"
@@ -165,9 +167,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return bt.NewFeeQuote(), nil
 			},
-			args:   payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:    p4.Payment{},
-			expErr: errors.New("Unprocessable: fee quote has expired, please make a new payment request"),
+			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req:           p4.Payment{},
+			expVerifyOpts: []spv.VerifyOpt{},
+			expErr:        errors.New("Unprocessable: fee quote has expired, please make a new payment request"),
 		},
 		"tx with insufficient fees is rejected": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
@@ -431,6 +434,9 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {
 				return nil
 			},
+			commitFunc: func(context.Context) error {
+				return nil
+			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: p4.Payment{
 				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
@@ -534,9 +540,26 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				&mocks.ProofCallbackWriterMock{
 					ProofCallBacksCreateFunc: test.proofCallbackCreateFunc,
 				},
+				&mocks.PeerChannelsServiceMock{
+					PeerChannelCreateFunc: func(context.Context, spvchannels.ChannelCreateRequest) (*payd.PeerChannel, error) {
+						return &payd.PeerChannel{}, nil
+					},
+					PeerChannelAPITokensCreateFunc: func(context.Context, ...*payd.PeerChannelAPITokenCreateArgs) ([]*spvchannels.TokenCreateReply, error) {
+						return []*spvchannels.TokenCreateReply{{}, {}, {}}, nil
+					},
+				},
+				&mocks.PeerChannelsNotifyServiceMock{
+					SubscribeFunc: func(context.Context, *payd.PeerChannel) error {
+						return nil
+					},
+				},
+				&config.PeerChannels{
+					Host: "peerchannels",
+					TTL:  1 * time.Minute,
+				},
 			)
 
-			err := svc.PaymentCreate(context.TODO(), test.args, test.req)
+			_, err := svc.PaymentCreate(context.TODO(), test.args, test.req)
 			if test.expErr != nil {
 				assert.Error(t, err)
 				assert.EqualError(t, test.expErr, err.Error())

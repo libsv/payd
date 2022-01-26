@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-p4"
@@ -67,8 +66,6 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 			return false, errors.Wrap(err, "error unmarshalling payload")
 		}
 
-		fmt.Printf("%#v\n", mm)
-
 		if mm["callbackReason"].(string) != "merkleProof" {
 			log.Info().Msg("skipping msg")
 			continue
@@ -81,5 +78,5 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 			return false, errors.Wrap(err, "failed to store proof msg")
 		}
 	}
-	return true, nil
+	return false, nil
 }

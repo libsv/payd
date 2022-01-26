@@ -40,6 +40,7 @@ const (
 	EnvTransportHTTPEnabled    = "transport.http.enabled"
 	EnvTransportSocketsEnabled = "transport.sockets.enabled"
 	EnvPeerChannelsHost        = "peerchannels.host"
+	EnvPeerChannelsTTL         = "peerchannels.ttl.minutes"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -163,6 +164,8 @@ type Wallet struct {
 type PeerChannels struct {
 	// Host the peer channels host.
 	Host string
+	// TTL the life of the peer channel.
+	TTL time.Duration
 }
 
 // P4 contains information relating to a p4 interactions.

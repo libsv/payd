@@ -7,6 +7,7 @@ import (
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
+	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/go-p4"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -45,10 +46,18 @@ func TestPayService_Pay(t *testing.T) {
 					Destinations: p4.PaymentDestinations{
 						Outputs: []p4.Output{{
 							Amount: 1000,
-							Script: "76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}, {
 							Amount: 2000,
-							Script: "76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}},
 					},
 					CreationTimestamp:   ts,
@@ -69,7 +78,13 @@ func TestPayService_Pay(t *testing.T) {
 					RawTx: "0100000002402b8ff345f8d428bfc4e553c5755d9ee771c99d38142608f290aba379585077010000006a47304402206a9c351ba35f43b3b3c4eac4cbaade8ce3e405fa9e8c9cf7bd74df084ea4396d02202073e344b6e7c21c97a5e0b2beb7c667784208f50d306f87b37bac92658e1db1412102f46acbd7a9825d5220464b761b6477a600a50664a6b8765a77ec7e1b19e8f36bffffffffac0025c8519afefca6ae96398a255b98239bbf4ab92fac1bbadf4b550244942e000000006a47304402207b80e3da87295641ffb9dfd5823cfb9a74634174774cdd0fc88f1dcd541f3558022001c88cdaaf1b4c5b8dfaf80de7fd9de45b1df3a4ebafc3dd13e3b1ca4820bf4041210251c7b5806db15e127a986611aa23f71a84879acb2ceef610f9eabbf355790a29ffffffff03e8030000000000001976a9146e912a2a1c28448522c1eba7d73ce0719b0636b388acd0070000000000001976a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac1c030000000000001976a9148b1ca598db87cfe283229bf724ad39cc4f1a665788ac00000000"}, nil
 			},
 			paymentSendFunc: func(context.Context, payd.PayRequest, p4.Payment) (*p4.PaymentACK, error) {
-				return &p4.PaymentACK{}, nil
+				return &p4.PaymentACK{
+					PeerChannel: p4.PeerChannelInfo{
+						Host:      "myhost",
+						ChannelID: "abc123",
+						Token:     "def456",
+					},
+				}, nil
 			},
 			expDeficits:     []uint64{3039, 1113},
 			expCallbackURL:  "https://myserver/api/v1/proofs/",
@@ -92,10 +107,18 @@ func TestPayService_Pay(t *testing.T) {
 					Destinations: p4.PaymentDestinations{
 						Outputs: []p4.Output{{
 							Amount: 1000,
-							Script: "76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}, {
 							Amount: 2000,
-							Script: "76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}},
 					},
 					CreationTimestamp:   ts,
@@ -149,10 +172,18 @@ func TestPayService_Pay(t *testing.T) {
 					Destinations: p4.PaymentDestinations{
 						Outputs: []p4.Output{{
 							Amount: 1000,
-							Script: "76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}, {
 							Amount: 2000,
-							Script: "76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}},
 					},
 					CreationTimestamp:   ts,
@@ -186,10 +217,18 @@ func TestPayService_Pay(t *testing.T) {
 					Destinations: p4.PaymentDestinations{
 						Outputs: []p4.Output{{
 							Amount: 1000,
-							Script: "76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}, {
 							Amount: 2000,
-							Script: "76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}},
 					},
 					CreationTimestamp:   ts,
@@ -224,10 +263,18 @@ func TestPayService_Pay(t *testing.T) {
 					Destinations: p4.PaymentDestinations{
 						Outputs: []p4.Output{{
 							Amount: 1000,
-							Script: "76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}, {
 							Amount: 2000,
-							Script: "76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac",
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
 						}},
 					},
 					CreationTimestamp:   ts,
@@ -282,6 +329,24 @@ func TestPayService_Pay(t *testing.T) {
 				},
 				&mocks.EnvelopeServiceMock{EnvelopeFunc: test.envelopeFunc},
 				&config.Server{Hostname: "myserver"},
+				&mocks.PeerChannelsNotifyServiceMock{
+					SubscribeFunc: func(ctx context.Context, args *payd.PeerChannel) error {
+						return nil
+					},
+				},
+				&mocks.PeerChannelsStoreMock{
+					PeerChannelCreateFunc: func(ctx context.Context, args *payd.PeerChannelCreateArgs) error {
+						return nil
+					},
+					PeerChannelAPITokenCreateFunc: func(ctx context.Context, args *payd.PeerChannelAPITokenStoreArgs) error {
+						return nil
+					},
+				},
+				&mocks.TransactionWriterMock{
+					TransactionUpdateStateFunc: func(ctx context.Context, args payd.TransactionArgs, req payd.TransactionStateUpdate) error {
+						return nil
+					},
+				},
 			)
 
 			_, err := svc.Pay(context.TODO(), test.req)

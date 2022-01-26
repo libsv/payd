@@ -89,6 +89,9 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 	// Send the payment to the p4 server.
 	ack, err := p.p4.PaymentSend(ctx, req, p4.Payment{
 		SPVEnvelope: env,
+		ProofCallbacks: map[string]p4.ProofCallback{
+			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
+		},
 		MerchantData: p4.Merchant{
 			Name:         payReq.MerchantData.Name,
 			Email:        payReq.MerchantData.Email,
@@ -113,32 +116,32 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 		log.Error().Err(errors.Wrap(err, "failed to update tx to broadcast state"))
 	}
 
-	peerChannelHost := ack.Payment.MerchantData.ExtendedData["peerChannelHost"].(string)
-	peerChannelID := ack.Payment.MerchantData.ExtendedData["peerChannelID"].(string)
-	peerChannelToken := ack.Payment.MerchantData.ExtendedData["peerChannelToken"].(string)
+	if ack.PeerChannel == nil {
+		return ack, nil
+	}
 
 	if err := p.pcStr.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
 		PeerChannelAccountID: 0,
-		ChannelID:            peerChannelID,
-		ChannelHost:          peerChannelHost,
+		ChannelID:            ack.PeerChannel.ChannelID,
+		ChannelHost:          ack.PeerChannel.Host,
 		ChannelType:          payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
-		return nil, errors.Wrapf(err, "failed to store channel %s in db", peerChannelHost)
+		return nil, errors.Wrapf(err, "failed to store channel %s/%s in db", ack.PeerChannel.Host, ack.PeerChannel.ChannelID)
 	}
 	if err := p.pcStr.PeerChannelAPITokenCreate(ctx, &payd.PeerChannelAPITokenStoreArgs{
-		Token:                 peerChannelToken,
+		Token:                 ack.PeerChannel.Token,
 		CanRead:               true,
 		CanWrite:              false,
-		PeerChannelsChannelID: peerChannelID,
+		PeerChannelsChannelID: ack.PeerChannel.ChannelID,
 		Role:                  "notification",
 	}); err != nil {
-		return nil, errors.Wrapf(err, "failed to store token %s", peerChannelToken)
+		return nil, errors.Wrapf(err, "failed to store token %s", ack.PeerChannel.Token)
 	}
 
 	if err := p.pcNotifSvc.Subscribe(context.Background(), &payd.PeerChannel{
-		ID:    peerChannelID,
-		Token: peerChannelToken,
-		Host:  peerChannelHost,
+		ID:    ack.PeerChannel.ChannelID,
+		Token: ack.PeerChannel.Token,
+		Host:  ack.PeerChannel.Host,
 		Type:  payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
 		log.Err(err)

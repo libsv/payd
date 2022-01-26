@@ -90,8 +90,9 @@ type ProofCallback struct {
 
 // AckArgs are used to identify a payment we are acknowledging.
 type AckArgs struct {
-	InvoiceID string
-	TxID      string
+	InvoiceID   string
+	TxID        string
+	PeerChannel *PeerChannel
 }
 
 // Ack contains the status of the payment.

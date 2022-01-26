@@ -107,6 +107,7 @@ func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client) {
 	thttp.NewHealthHandler(service.NewHealthService(c, cfg.P4)).RegisterRoutes(g)
 }
 
+// ResumeActiveChannels resume listening to active peer channels.
 func ResumeActiveChannels(deps *SocketDeps) error {
 	ctx := context.Background()
 	channels, err := deps.PeerChannelsService.ActiveProofChannels(ctx)
@@ -115,7 +116,8 @@ func ResumeActiveChannels(deps *SocketDeps) error {
 	}
 
 	for _, channel := range channels {
-		if err := deps.PeerChannelsNotifyService.Subscribe(ctx, &channel); err != nil {
+		ch := channel
+		if err := deps.PeerChannelsNotifyService.Subscribe(ctx, &ch); err != nil {
 			return err
 		}
 	}

@@ -90,10 +90,8 @@ require (
 )
 
 require (
-	github.com/libsv/go-p4 v0.0.7
-	github.com/libsv/go-spvchannels v0.0.0-20210917130154-e3b65a7aa2a5
+	github.com/libsv/go-p4 v0.0.8
+	github.com/libsv/go-spvchannels v0.0.1
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-
-replace github.com/libsv/go-spvchannels => /Users/t.carroll/go/src/github.com/libsv/go-spvchannels

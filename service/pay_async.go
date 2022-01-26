@@ -12,8 +12,7 @@ import (
 // payChannel is used to initiate payments down an async payment channel.
 // This differs enough from the pay service to need it's own service.
 type payChannel struct {
-	wtr        payd.PayWriter
-	pcNotifSvc payd.PeerChannelsNotifyService
+	wtr payd.PayWriter
 }
 
 // NewPayChannel will setup and return a new payment channel handler.

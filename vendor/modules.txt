@@ -133,10 +133,10 @@ github.com/libsv/go-bt/sighash
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
 github.com/libsv/go-bt/v2/sighash
-# github.com/libsv/go-p4 v0.0.7
+# github.com/libsv/go-p4 v0.0.8
 ## explicit; go 1.17
 github.com/libsv/go-p4
-# github.com/libsv/go-spvchannels v0.0.0-20210917130154-e3b65a7aa2a5 => /Users/t.carroll/go/src/github.com/libsv/go-spvchannels
+# github.com/libsv/go-spvchannels v0.0.1
 ## explicit; go 1.16
 github.com/libsv/go-spvchannels
 # github.com/magiconair/properties v1.8.5
@@ -349,4 +349,3 @@ gopkg.in/yaml.v2
 ## explicit
 gopkg.in/yaml.v3
 # github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-# github.com/libsv/go-spvchannels => /Users/t.carroll/go/src/github.com/libsv/go-spvchannels

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"time"
 
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
@@ -13,13 +14,13 @@ const sqlPeerChannelAccountSelect = `
 `
 
 const sqlPeerChannelInsert = `
-	INSERT INTO peerchannels (peerchannels_account_id, channel_id, channel_host, channel_type)
-	VALUES (:peerchannels_account_id, :channel_id, :channel_host, :channel_type)
+	INSERT INTO peerchannels (peerchannels_account_id, channel_id, channel_host, channel_type, created_at)
+	VALUES (:peerchannels_account_id, :channel_id, :channel_host, :channel_type, :created_at)
 `
 
-const sqlPeerChannelsAPITokenInsert = `
-	INSERT INTO peerchannels_api_tokens (peerchannels_channel_id, token, role, can_read, can_write)
-	VALUES (:peerchannels_channel_id, :token, :role, :can_read, :can_write)
+const sqlPeerChannelsAPITokInsert = `
+	INSERT INTO peerchannels_toks (peerchannels_channel_id, tok, role, can_read, can_write)
+	VALUES (:peerchannels_channel_id, :tok, :role, :can_read, :can_write)
 `
 
 const sqlPeerChannelsCloseUpdate = `
@@ -29,9 +30,9 @@ const sqlPeerChannelsCloseUpdate = `
 `
 
 const sqlPeerChannelsOpenSelect = `
-	SELECT pc.channel_host, pc.channel_id, pc.channel_type, pat.token
+	SELECT pc.channel_host, pc.channel_id, pc.channel_type, pc.created_at, pt.tok
 	FROM peerchannels pc
-	JOIN peerchannels_api_tokens pat ON pc.channel_id = pat.peerchannels_channel_id
+	JOIN peerchannels_toks pt ON pc.channel_id = pt.peerchannels_channel_id
 	WHERE pc.closed = 0 AND pc.channel_type = :channel_type
 `
 
@@ -59,6 +60,9 @@ func (s *sqliteStore) PeerChannelCreate(ctx context.Context, args *payd.PeerChan
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
+	if args.CreatedAt.IsZero() {
+		args.CreatedAt = time.Now()
+	}
 	if err := handleNamedExec(tx, sqlPeerChannelInsert, args); err != nil {
 		return errors.Wrapf(err, "failed to insert channel %s", args.ChannelID)
 	}
@@ -74,7 +78,7 @@ func (s *sqliteStore) PeerChannelAPITokenCreate(ctx context.Context, args *payd.
 		_ = rollback(ctx, tx)
 	}()
 
-	if err := handleNamedExec(tx, sqlPeerChannelsAPITokenInsert, args); err != nil {
+	if err := handleNamedExec(tx, sqlPeerChannelsAPITokInsert, args); err != nil {
 		return errors.Wrapf(err, "failed to insert api token %s for channel %s", args.Token, args.PeerChannelsChannelID)
 	}
 	return errors.Wrapf(commit(ctx, tx), "failed to commit creating token %s for channel %s", args.Token, args.PeerChannelsChannelID)

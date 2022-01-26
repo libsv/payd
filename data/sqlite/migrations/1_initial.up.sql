@@ -46,20 +46,21 @@ CREATE TABLE peerchannels(
     ,channel_id                 VARCHAR NOT NULL
     ,channel_host               VARCHAR NOT NULL
     ,channel_type               VARCHAR NOT NULL
+	,created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,closed                     BOOLEAN NOT NULL DEFAULT 0
     ,FOREIGN KEY (peerchannels_account_id) REFERENCES users_peerchannels(account_id)
     ,CONSTRAINT channel_id_host_key UNIQUE(channel_id, channel_host)
 );
 
-CREATE TABLE peerchannels_api_tokens(
+CREATE TABLE peerchannels_toks(
     id                          INTEGER PRIMARY KEY AUTOINCREMENT
     ,peerchannels_channel_id    VARCHAR NOT NULL
-    ,token                      VARCHAR NOT NULL
+    ,tok                        VARCHAR NOT NULL
     ,role                       VARCHAR NOT NULL
     ,can_read                   BOOLEAN NOT NULL
     ,can_write                  BOOLEAN NOT NULL
     --,FOREIGN KEY (peerchannels_channel_id) REFERENCES peerchannels(channel_id)
-    ,CONSTRAINT token_key UNIQUE(token)
+    ,CONSTRAINT tok_key UNIQUE(tok)
 );
 
 

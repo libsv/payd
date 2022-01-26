@@ -52,7 +52,7 @@ type PaymentRequestArgs struct {
 // PaymentRequestService can be implemented to enforce business rules
 // and process in order to fulfil a PaymentRequest.
 type PaymentRequestService interface {
-	PaymentRequest(ctx context.Context, args PaymentRequestArgs) (*PaymentRequest, error)
+	PaymentRequestReader
 }
 
 // PaymentRequestReader will return a new payment request.

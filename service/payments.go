@@ -30,6 +30,7 @@ type payments struct {
 	callbackWtr   payd.ProofCallbackWriter
 	broadcaster   payd.BroadcastWriter
 	pcSvc         payd.PeerChannelsService
+	pcStr         payd.PeerChannelsStore
 	pcNotif       payd.PeerChannelsNotifyService
 	feeRdr        payd.FeeQuoteReader
 	pCfg          *config.PeerChannels
@@ -145,8 +146,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 	ctx = p.transacter.WithTx(ctx)
 	defer func() {
-		//_ = p.transacter.Rollback(ctx)
-		_ = p.transacter.Commit(ctx)
+		_ = p.transacter.Rollback(ctx)
 	}()
 	// Store tx
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
@@ -216,9 +216,11 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 	}
 
-	req.MerchantData.ExtendedData["peerChannelHost"] = p.pCfg.Host
-	req.MerchantData.ExtendedData["peerChannelID"] = ch.ID
-	req.MerchantData.ExtendedData["peerChannelToken"] = tokens[2].Token
+	pc := &p4.PeerChannelData{
+		Host:      p.pCfg.Host,
+		ChannelID: ch.ID,
+		Token:     tokens[2].Token,
+	}
 
 	// Broadcast the transaction
 	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{
@@ -234,9 +236,10 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	if err := p.pcNotif.Subscribe(context.Background(), &payd.PeerChannel{
-		ID:    ch.ID,
-		Token: tokens[1].Token,
-		Type:  payd.PeerChannelHandlerTypeProof,
+		ID:        ch.ID,
+		Token:     tokens[1].Token,
+		CreatedAt: ch.CreatedAt,
+		Type:      payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
 		p.l.Error(err, "failed to subscribe to proof notifications")
 	}
@@ -264,14 +267,15 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	return &p4.PaymentACK{
-		Payment: &req,
-		Memo:    req.Memo,
+		ID:          inv.ID,
+		TxID:        tx.TxID(),
+		PeerChannel: pc,
 	}, nil
 }
 
 // Ack will handle an acknowledgement after a payment has been processed.
 func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) error {
-	err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: args.TxID}, payd.TransactionStateUpdate{
+	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: args.TxID}, payd.TransactionStateUpdate{
 		State: func() payd.TxState {
 			if req.Failed {
 				return payd.StateTxFailed
@@ -284,8 +288,33 @@ func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) err
 			}
 			return null.StringFrom(req.Reason)
 		}(),
-	})
-	return errors.Wrap(err, "failed to update transaction state after payment ack")
+	}); err != nil {
+		return errors.Wrap(err, "failed to update transaction state after payment ack")
+	}
+	if req.Failed {
+		return nil
+	}
+
+	if err := p.pcStr.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
+		PeerChannelAccountID: 0,
+		ChannelHost:          args.PeerChannel.Host,
+		ChannelID:            args.PeerChannel.ID,
+		ChannelType:          args.PeerChannel.Type,
+	}); err != nil {
+		return errors.Wrapf(err, "failed to store channel '%s'", args.PeerChannel.Host)
+	}
+
+	if err := p.pcStr.PeerChannelAPITokenCreate(ctx, &payd.PeerChannelAPITokenStoreArgs{
+		Token:                 args.PeerChannel.Token,
+		CanRead:               true,
+		CanWrite:              false,
+		PeerChannelsChannelID: args.PeerChannel.ID,
+		Role:                  "notifications",
+	}); err != nil {
+		return errors.Wrapf(err, "failed to store token '%s' for channel '%s'", args.PeerChannel.Token, args.PeerChannel.ID)
+	}
+
+	return errors.Wrapf(p.pcNotif.Subscribe(ctx, args.PeerChannel), "failed to subscribe to channel '%s'", args.PeerChannel.ID)
 }
 
 func (p *payments) paymentVerifyOpts(verifySPV bool, fq *bt.FeeQuote) []spv.VerifyOpt {
