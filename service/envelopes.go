@@ -52,10 +52,6 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req p4
 	tx := bt.NewTx()
 	// Add funds to new tx.
 	for _, out := range req.Destinations.Outputs {
-		//lockingScript, err := bscript.NewFromHexString(out.Script)
-		//if err != nil {
-		//	return nil, errors.Wrapf(err, "failed to parsed script %s", out.Script)
-		//}
 		if err = tx.AddP2PKHOutputFromScript(out.LockingScript, out.Amount); err != nil {
 			return nil, errors.Wrapf(err, "failed to add locking script to tx for script %s, amount %d", out.LockingScript.String(), out.Amount)
 		}
