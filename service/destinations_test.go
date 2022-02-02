@@ -70,6 +70,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Script:         "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
 				DerivationPath: "2147483648/2147483648/2147483648",
 				UserID:         1,
+				KeyName:        "masterkey",
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
@@ -110,6 +111,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Script:         "76a9141a4cc80bc3ee6567cb37f9c5121841a5f8e0b87d88ac",
 				DerivationPath: "2147483648/2147483648/2147483650",
 				UserID:         1,
+				KeyName:        "masterkey",
 			}},
 			expDestination: &payd.Destination{
 				Outputs: []payd.Output{{
@@ -202,6 +204,7 @@ func TestDestinationService_DestinationsCreate(t *testing.T) {
 				Script:         "76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac",
 				DerivationPath: "2147483648/2147483648/2147483648",
 				UserID:         1,
+				KeyName:        "masterkey",
 			}},
 			expErr:              errors.New("failed to store destinations: finaldestination"),
 			expDerivationChecks: 1,
