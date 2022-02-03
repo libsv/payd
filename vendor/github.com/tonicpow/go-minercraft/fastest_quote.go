@@ -30,7 +30,7 @@ func (c *Client) FastestQuote(ctx context.Context, timeout time.Duration) (*FeeQ
 	}
 
 	// Parse the response
-	quote, err := result.parseQuote()
+	quote, err := result.parseFeeQuote()
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *Client) fetchFastestQuote(ctx context.Context, timeout time.Duration) *
 		wg.Add(1)
 		go func(ctx context.Context, wg *sync.WaitGroup, client *Client, miner *Miner) {
 			defer wg.Done()
-			res := getQuote(ctx, client, miner)
+			res := getQuote(ctx, client, miner, routeFeeQuote)
 			if res.Response.Error == nil {
 				resultsChannel <- res
 			}

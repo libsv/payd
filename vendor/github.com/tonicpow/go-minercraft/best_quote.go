@@ -25,7 +25,7 @@ func (c *Client) BestQuote(ctx context.Context, feeCategory, feeType string) (*F
 		go func(ctx context.Context, wg *sync.WaitGroup, client *Client,
 			miner *Miner, resultsChannel chan *internalResult) {
 			defer wg.Done()
-			resultsChannel <- getQuote(ctx, client, miner)
+			resultsChannel <- getQuote(ctx, client, miner, routeFeeQuote)
 		}(ctx, &wg, c, miner, resultsChannel)
 	}
 
@@ -47,12 +47,14 @@ func (c *Client) BestQuote(ctx context.Context, feeCategory, feeType string) (*F
 
 		// Parse the response
 		var quote FeeQuoteResponse
-		if quote, lastErr = result.parseQuote(); lastErr != nil {
+		if quote, lastErr = result.parseFeeQuote(); lastErr != nil {
 			continue
 		}
 
 		// Get a test rate
-		if testRate, lastErr = quote.Quote.CalculateFee(feeCategory, feeType, 1000); lastErr != nil {
+		if testRate, lastErr = quote.Quote.CalculateFee(
+			feeCategory, feeType, 1000,
+		); lastErr != nil {
 			continue
 		}
 

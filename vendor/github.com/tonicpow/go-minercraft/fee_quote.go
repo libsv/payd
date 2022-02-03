@@ -30,7 +30,7 @@ const (
 Example feeQuote response from Merchant API:
 
 {
-	"payload": "{\"apiVersion\":\"0.1.0\",\"timestamp\":\"2020-10-07T21:13:04.335Z\",\"expiryTime\":\"2020-10-07T21:23:04.335Z\",\"minerId\":\"0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087\",\"currentHighestBlockHash\":\"000000000000000000edb30c3bbbc8e6a07e522e85522e6a213f7e933e6e2d8d\",\"currentHighestBlockHeight\":655874,\"minerReputation\":null,\"fees\":[{\"feeType\":\"standard\",\"miningFee\":{\"satoshis\":500,\"bytes\":1000},\"relayFee\":{\"satoshis\":250,\"bytes\":1000}},{\"feeType\":\"data\",\"miningFee\":{\"satoshis\":500,\"bytes\":1000},\"relayFee\":{\"satoshis\":250,\"bytes\":1000}}]}",
+	"payload": "{\"apiVersion\":\"1.4.0\",\"timestamp\":\"2020-10-07T21:13:04.335Z\",\"expiryTime\":\"2020-10-07T21:23:04.335Z\",\"minerId\":\"0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087\",\"currentHighestBlockHash\":\"000000000000000000edb30c3bbbc8e6a07e522e85522e6a213f7e933e6e2d8d\",\"currentHighestBlockHeight\":655874,\"minerReputation\":null,\"fees\":[{\"feeType\":\"standard\",\"miningFee\":{\"satoshis\":500,\"bytes\":1000},\"relayFee\":{\"satoshis\":250,\"bytes\":1000}},{\"feeType\":\"data\",\"miningFee\":{\"satoshis\":500,\"bytes\":1000},\"relayFee\":{\"satoshis\":250,\"bytes\":1000}}]}",
 	"signature": "304402206443bea5bdd98a16e23eb61c36b4b998bd68ceb9c84983c7e695e267b21a30440220191571e9b9632c8337d9196723ca20eefa63966ef6360170db0e57a04047453f",
 	"publicKey": "0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087",
 	"encoding": "UTF-8",
@@ -40,7 +40,7 @@ Example feeQuote response from Merchant API:
 
 // FeeQuoteResponse is the raw response from the Merchant API request
 //
-// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#get-fee-quote
+// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi#2-get-fee-quote
 type FeeQuoteResponse struct {
 	JSONEnvelope
 	Quote *FeePayload `json:"quote"` // Custom field for unmarshalled payload data
@@ -50,7 +50,7 @@ type FeeQuoteResponse struct {
 Example FeeQuoteResponse.Payload (unmarshalled):
 
 {
-  "apiVersion": "0.1.0",
+  "apiVersion": "1.4.0",
   "timestamp": "2020-10-07T21:13:04.335Z",
   "expiryTime": "2020-10-07T21:23:04.335Z",
   "minerId": "0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087",
@@ -160,7 +160,7 @@ func (f *FeePayload) GetFee(feeType string) *bt.Fee {
 // It returns a JSONEnvelope with a payload that contains the fees charged by a specific BSV miner.
 // The purpose of the envelope is to ensure strict consistency in the message content for the purpose of signing responses.
 //
-// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi/tree/v1.2-beta#get-fee-quote
+// Specs: https://github.com/bitcoin-sv-specs/brfc-merchantapi#2-get-fee-quote
 func (c *Client) FeeQuote(ctx context.Context, miner *Miner) (*FeeQuoteResponse, error) {
 
 	// Make sure we have a valid miner
@@ -169,13 +169,13 @@ func (c *Client) FeeQuote(ctx context.Context, miner *Miner) (*FeeQuoteResponse,
 	}
 
 	// Make the HTTP request
-	result := getQuote(ctx, c, miner)
+	result := getQuote(ctx, c, miner, routeFeeQuote)
 	if result.Response.Error != nil {
 		return nil, result.Response.Error
 	}
 
 	// Parse the response
-	response, err := result.parseQuote()
+	response, err := result.parseFeeQuote()
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +195,8 @@ type internalResult struct {
 	Miner    *Miner
 }
 
-// parseQuote will convert the HTTP response into a struct and also unmarshal the payload JSON data
-func (i *internalResult) parseQuote() (response FeeQuoteResponse, err error) {
+// parseFeeQuote will convert the HTTP response into a struct and also unmarshal the payload JSON data
+func (i *internalResult) parseFeeQuote() (response FeeQuoteResponse, err error) {
 
 	// Process the initial response payload
 	if err = response.process(i.Miner, i.Response.BodyContents); err != nil {
@@ -210,12 +210,12 @@ func (i *internalResult) parseQuote() (response FeeQuoteResponse, err error) {
 	return
 }
 
-// getQuote will fire the HTTP request to retrieve the fee quote
-func getQuote(ctx context.Context, client *Client, miner *Miner) (result *internalResult) {
+// getQuote will fire the HTTP request to retrieve the fee/policy quote
+func getQuote(ctx context.Context, client *Client, miner *Miner, route string) (result *internalResult) {
 	result = &internalResult{Miner: miner}
 	result.Response = httpRequest(ctx, client, &httpPayload{
 		Method: http.MethodGet,
-		URL:    miner.URL + routeFeeQuote,
+		URL:    miner.URL + route,
 		Token:  miner.Token,
 	})
 	return
