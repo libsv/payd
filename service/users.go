@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/libsv/payd"
+	"github.com/pkg/errors"
 )
 
 type users struct {
@@ -21,6 +22,10 @@ func NewUsersService(str payd.UserStore, pks payd.PrivateKeyService) payd.UserSe
 
 // CreateUser allows you to add user data to the payd instance, and it will return the same data plus a user_id to confirm acceptance.
 func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd.User, error) {
+	// Check for a valid set of data
+	if user.Name == "" || user.Email == "" {
+		return nil, errors.New("Please specify a name and email address for the user")
+	}
 	resp, err := u.str.CreateUser(ctx, user, u.pks)
 	if err != nil {
 		return nil, err

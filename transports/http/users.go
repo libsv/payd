@@ -48,10 +48,14 @@ func (u *users) create(e echo.Context) error {
 	if err := e.Bind(&req); err != nil {
 		return errors.Wrap(err, "failed to bind request")
 	}
-	sql, err := u.svc.CreateUser(e.Request().Context(), req)
+	res, err := u.svc.CreateUser(e.Request().Context(), req)
 	if err != nil {
-		return errors.WithStack(err)
+		return e.JSON(http.StatusBadRequest, struct {
+			Error string `json:"error"`
+		}{
+			Error: err.Error(),
+		})
 	}
 
-	return e.JSON(http.StatusOK, sql)
+	return e.JSON(http.StatusOK, res)
 }
