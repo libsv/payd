@@ -53,7 +53,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
 	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID})
-	if err != nil {
+	if err != nil || inv.State == "" {
 		return errors.Wrapf(err, "failed to get invoice with ID '%s'", args.InvoiceID)
 	}
 	if inv.State != payd.StateInvoicePending {
