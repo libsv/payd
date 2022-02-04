@@ -19,7 +19,7 @@ func NewUsersService(str payd.UserStore, pks payd.PrivateKeyService) payd.UserSe
 	}
 }
 
-// Owner will return the current owner of the wallet.
+// CreateUser allows you to add user data to the payd instance, and it will return the same data plus a user_id to confirm acceptance.
 func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd.User, error) {
 	resp, err := u.str.CreateUser(ctx, user, u.pks)
 	if err != nil {
@@ -37,17 +37,17 @@ func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd
 	return usr, nil
 }
 
-// Read will return the current owner of the wallet.
+// ReadUser will return the  user associated with a particular user_id of the wallet.
 func (u *users) ReadUser(ctx context.Context, userID uint64) (*payd.User, error) {
 	return u.str.ReadUser(ctx, userID)
 }
 
-// Update will return the current owner of the wallet.
+// UpdateUser is not required for MVP, not implemented.
 func (u *users) UpdateUser(ctx context.Context, userID uint64, d payd.User) (*payd.User, error) {
 	return nil, nil
 }
 
-// Delete will return the current owner of the wallet.
+// DeleteUser is not required for MVP, is implemented but not attached to any endpoints.
 func (u *users) DeleteUser(ctx context.Context, userID uint64) error {
 	return u.str.DeleteUser(ctx, userID)
 }
