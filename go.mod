@@ -22,7 +22,7 @@ require (
 	github.com/swaggo/swag v1.7.9
 	github.com/theflyingcodr/govalidator v0.1.3
 	github.com/theflyingcodr/lathos v0.0.6
-	github.com/tonicpow/go-minercraft v0.4.0
+	github.com/tonicpow/go-minercraft v0.6.2
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gopkg.in/guregu/null.v3 v3.5.0
@@ -79,7 +79,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
-	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e // indirect
+	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
