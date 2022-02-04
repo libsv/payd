@@ -78,7 +78,7 @@ func TestPayService_Pay(t *testing.T) {
 				Satoshis:       796,
 				DerivationPath: "2147483648/2147483723/2147483648",
 				Script:         "76a9148b1ca598db87cfe283229bf724ad39cc4f1a665788ac",
-				Keyname:        "masterkey",
+				UserID:         1,
 			},
 			expKeyName: "masterkey",
 		},

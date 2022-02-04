@@ -34,10 +34,10 @@ var _ payd.PrivateKeyService = &PrivateKeyServiceMock{}
 // 	}
 type PrivateKeyServiceMock struct {
 	// CreateFunc mocks the Create method.
-	CreateFunc func(ctx context.Context, keyName string) error
+	CreateFunc func(ctx context.Context, keyName string, userID uint64) error
 
 	// PrivateKeyFunc mocks the PrivateKey method.
-	PrivateKeyFunc func(ctx context.Context, keyName string) (*bip32.ExtendedKey, error)
+	PrivateKeyFunc func(ctx context.Context, keyName string, userID uint64) (*bip32.ExtendedKey, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -61,7 +61,7 @@ type PrivateKeyServiceMock struct {
 }
 
 // Create calls CreateFunc.
-func (mock *PrivateKeyServiceMock) Create(ctx context.Context, keyName string) error {
+func (mock *PrivateKeyServiceMock) Create(ctx context.Context, keyName string, userID uint64) error {
 	if mock.CreateFunc == nil {
 		panic("PrivateKeyServiceMock.CreateFunc: method is nil but PrivateKeyService.Create was just called")
 	}
@@ -75,7 +75,7 @@ func (mock *PrivateKeyServiceMock) Create(ctx context.Context, keyName string) e
 	mock.lockCreate.Lock()
 	mock.calls.Create = append(mock.calls.Create, callInfo)
 	mock.lockCreate.Unlock()
-	return mock.CreateFunc(ctx, keyName)
+	return mock.CreateFunc(ctx, keyName, userID)
 }
 
 // CreateCalls gets all the calls that were made to Create.
@@ -96,7 +96,7 @@ func (mock *PrivateKeyServiceMock) CreateCalls() []struct {
 }
 
 // PrivateKey calls PrivateKeyFunc.
-func (mock *PrivateKeyServiceMock) PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error) {
+func (mock *PrivateKeyServiceMock) PrivateKey(ctx context.Context, keyName string, userID uint64) (*bip32.ExtendedKey, error) {
 	if mock.PrivateKeyFunc == nil {
 		panic("PrivateKeyServiceMock.PrivateKeyFunc: method is nil but PrivateKeyService.PrivateKey was just called")
 	}
@@ -110,7 +110,7 @@ func (mock *PrivateKeyServiceMock) PrivateKey(ctx context.Context, keyName strin
 	mock.lockPrivateKey.Lock()
 	mock.calls.PrivateKey = append(mock.calls.PrivateKey, callInfo)
 	mock.lockPrivateKey.Unlock()
-	return mock.PrivateKeyFunc(ctx, keyName)
+	return mock.PrivateKeyFunc(ctx, keyName, userID)
 }
 
 // PrivateKeyCalls gets all the calls that were made to PrivateKey.

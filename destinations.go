@@ -14,6 +14,7 @@ type DestinationsCreate struct {
 	InvoiceID     null.String
 	Satoshis      uint64
 	Denominations uint64
+	UserID        uint64
 }
 
 // Validate will ensure arguments for destinationsCreate are valid, otherwise an error is returned.
@@ -28,7 +29,8 @@ type DestinationCreate struct {
 	Script         string `db:"locking_script"`
 	DerivationPath string `db:"derivation_path"`
 	Satoshis       uint64 `db:"satoshis"`
-	Keyname        string `db:"key_name"`
+	UserID         uint64 `db:"user_id"`
+	KeyName        string `db:"key_name"`
 }
 
 // Destination contains outputs and current fees

@@ -1,15 +1,7 @@
-/*
-required tables:
-keys            - to store all our extended private keys created
-paymentOutputs  - to store the outputs generated in PaymentRequests
-txos            - to store our outputs and note when they have been spent
-
- */
-CREATE TABLE keys (
-    name        VARCHAR NOT NULL PRIMARY KEY
-    ,xprv       VARCHAR NOT NULL
-    ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- required tables:
+-- keys            - to store all our extended private keys created
+-- paymentOutputs  - to store the outputs generated in PaymentRequests
+-- txos            - to store our outputs and note when they have been spent
 
 CREATE TABLE users(
     user_id         INTEGER PRIMARY KEY AUTOINCREMENT
@@ -21,8 +13,16 @@ CREATE TABLE users(
     ,phone_number   VARCHAR
 );
 
+CREATE TABLE keys (
+    name        VARCHAR NOT NULL
+    ,user_id     INTEGER NOT NULL
+    ,xprv       VARCHAR NOT NULL
+    ,createdAt  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 CREATE TABLE users_meta(
-    user_id      INTEGER NOT NULL
+    user_id         INTEGER NOT NULL
     ,key            VARCHAR NOT NULL
     ,value          VARCHAR NOT NULL
     ,FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -49,10 +49,10 @@ CREATE TABLE invoices (
 CREATE INDEX idx_invoices_payment_reference ON invoices (payment_reference);
 
 CREATE TABLE fee_rates (
-	fee_rate_id INTEGER PRIMARY KEY
-	,invoice_id VARCHAR
-	,fee_json TEXT
-	,expires_at TIMESTAMP
+	fee_rate_id     INTEGER PRIMARY KEY
+	,invoice_id     VARCHAR
+	,fee_json       TEXT
+	,expires_at     TIMESTAMP
 	,FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
     ,CONSTRAINT fee_key UNIQUE(invoice_id)
 );
@@ -75,25 +75,26 @@ CREATE TABLE transaction_invoice (
 );
 
 CREATE TABLE destinations(
-    destination_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    locking_script VARCHAR(50) NOT NULL,
-    satoshis       BIGINT NOT NULL,
-    derivation_path TEXT NOT NULL,
-    key_name VARCHAR NOT NULL,
-    state VARCHAR(10) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-    FOREIGN KEY (key_name) REFERENCES keys(name),
-    CONSTRAINT destinations_locking_script UNIQUE(locking_script)
+    destination_id  INTEGER PRIMARY KEY AUTOINCREMENT
+    ,locking_script  VARCHAR(50) NOT NULL
+    ,satoshis        BIGINT NOT NULL
+    ,derivation_path TEXT NOT NULL
+    ,key_name        VARCHAR NOT NULL DEFAULT 'masterkey'
+    ,user_id     INTEGER NOT NULL
+    ,state           VARCHAR(10) NOT NULL
+    ,created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,deleted_at      TIMESTAMP
+    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
+    ,CONSTRAINT destinations_locking_script UNIQUE(locking_script)
 );
 
 CREATE INDEX idx_destinations_locking_script ON invoices (payment_reference);
 CREATE INDEX idx_destinations_derivation_path ON destinations (derivation_path);
 
 CREATE TABLE destination_invoice(
-    destination_id INTEGER NOT NULL,
-    invoice_id VARCHAR NOT NULL,
+    destination_id  INTEGER NOT NULL,
+    invoice_id      VARCHAR NOT NULL,
     FOREIGN KEY (destination_id) REFERENCES destinations(destination_id),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id)
 );
@@ -137,8 +138,10 @@ CREATE TABLE proof_callbacks(
 );
 
 INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
-VALUES('Merchant Name',1, 'http://url.com', 'merchant@demo.com', '123 Street Fake', '123456789');
+VALUES('Epictetus', 1, 'epic@nchain.com', 'https://thispersondoesnotexist.com/image', '1 Athens Avenue', '0800-call-me');
 
-INSERT INTO users_meta(user_id, key, value)
-VALUES(1, 'likes', 'walks in the park at night'),
-      (1, 'dislikes', 'trying to think up placeholder data');
+INSERT INTO
+    users_meta(user_id, key, value)
+VALUES
+    (1, 'likes', 'Stoicism & placeholder data'),
+    (1, 'dislikes', 'Malfeasance');

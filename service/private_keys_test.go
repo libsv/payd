@@ -77,7 +77,7 @@ func TestPrivateKeyService_Create(t *testing.T) {
 				},
 			}, false)
 
-			err := svc.Create(context.Background(), test.keyname)
+			err := svc.Create(context.Background(), test.keyname, 1)
 			if test.expErr != nil {
 				assert.Error(t, err)
 				assert.EqualError(t, err, test.expErr.Error())
@@ -128,7 +128,7 @@ func TestPrivateKeyService_PrivateKey(t *testing.T) {
 				PrivateKeyFunc: test.privateKeyFunc,
 			}, false)
 
-			key, err := svc.PrivateKey(context.Background(), test.keyname)
+			key, err := svc.PrivateKey(context.Background(), test.keyname, 1)
 			if test.expErr != nil {
 				assert.Error(t, err)
 				assert.EqualError(t, err, test.expErr.Error())

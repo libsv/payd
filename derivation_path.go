@@ -8,6 +8,7 @@ import (
 // master key and path.
 type DerivationExistsArgs struct {
 	KeyName string `db:"key_name"`
+	UserID  uint64 `db:"user_id"`
 	Path    string `db:"derivation_path"`
 }
 

@@ -14,6 +14,8 @@ const (
 	// User management.
 	RouteV1Balance = "api/v1/balance"
 	RouteV1Owner   = "api/v1/owner"
+	RouteV1UserID  = "api/v1/user/:id"
+	RouteV1User    = "api/v1/user"
 
 	// Sending payments.
 	RouteV1Pay           = "api/v1/pay"

@@ -27,12 +27,13 @@ func NewPrivateKeys(store payd.PrivateKeyReaderWriter, useMainNet bool) *private
 }
 
 // Create creates a extended private key for a keyName.
-func (svc *privateKey) Create(ctx context.Context, keyName string) error { // get keyname from settings in caller
-	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName})
+func (svc *privateKey) Create(ctx context.Context, keyName string, userID uint64) error { // get keyname from settings in caller
+	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName, UserID: userID})
 	if err != nil {
 		return errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}
 	if key != nil {
+		// This is unhelpful because when we try to create a new key and it already exists, there is no error.
 		return nil
 	}
 	seed, err := bip32.GenerateSeed(bip32.RecommendedSeedLen)
@@ -48,8 +49,9 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 		return errors.Wrap(err, "failed to create master node for given seed and chain")
 	}
 	if _, err := svc.store.PrivateKeyCreate(ctx, payd.PrivateKey{
-		Name: keyName,
-		Xprv: xprv.String(),
+		UserID: userID,
+		Name:   keyName,
+		Xprv:   xprv.String(),
 	}); err != nil {
 		return errors.Wrap(err, "failed to create private key")
 	}
@@ -57,8 +59,8 @@ func (svc *privateKey) Create(ctx context.Context, keyName string) error { // ge
 }
 
 // PrivateKey returns the extended private key for a keyname.
-func (svc *privateKey) PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error) {
-	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName})
+func (svc *privateKey) PrivateKey(ctx context.Context, keyName string, userID uint64) (*bip32.ExtendedKey, error) {
+	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName, UserID: userID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get key %s by name", keyName)
 	}

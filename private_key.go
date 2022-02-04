@@ -9,6 +9,7 @@ import (
 
 // PrivateKey describes a named private key.
 type PrivateKey struct {
+	UserID uint64 `db:"user_id"`
 	// Name of the private key.
 	Name string `db:"name"`
 	// Xprv is the private key.
@@ -21,14 +22,16 @@ type PrivateKey struct {
 type KeyArgs struct {
 	// Name is the name of the key to return.
 	Name string `db:"name"`
+	// user id associated with this key.
+	UserID uint64 `db:"user_id"`
 }
 
 // PrivateKeyService can be implemented to get and create PrivateKeys.
 type PrivateKeyService interface {
 	// Create will create a new private key if it doesn't exist already.
-	Create(ctx context.Context, keyName string) error
+	Create(ctx context.Context, keyName string, userID uint64) error
 	// PrivateKey will return a private key.
-	PrivateKey(ctx context.Context, keyName string) (*bip32.ExtendedKey, error)
+	PrivateKey(ctx context.Context, keyName string, userID uint64) (*bip32.ExtendedKey, error)
 }
 
 // PrivateKeyReader reads private info from a data store.

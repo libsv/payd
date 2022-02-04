@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	sqlDestinationCreate = `
-	INSERT INTO destinations (key_name, locking_script, derivation_path, satoshis, state)
-	VALUES(:key_name, :locking_script, :derivation_path, :satoshis, 'pending')
+	sqlDestinationCreateFromMasterKey = `
+	INSERT INTO destinations (key_name, user_id, locking_script, derivation_path, satoshis, state)
+	VALUES(:key_name, :user_id, :locking_script, :derivation_path, :satoshis, 'pending')
 	`
 
 	sqlDestinationInvoiceCreate = `
@@ -46,8 +46,8 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
-	if err := handleNamedExec(tx, sqlDestinationCreate, req); err != nil {
-		return nil, errors.Wrapf(err, "failed to insert payment destinations for invoiceID '%s'", args.InvoiceID.ValueOrZero())
+	if err := handleNamedExec(tx, sqlDestinationCreateFromMasterKey, req); err != nil {
+		return nil, errors.Wrapf(err, "failed to insert payment destinations for invoiceID '%s' sqlDestinationCreateFromMasterKey", args.InvoiceID.ValueOrZero())
 	}
 	ll := make([]string, 0, len(req))
 	for _, d := range req {
@@ -111,7 +111,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 		})
 	}
 	if err := handleNamedExec(tx, sqlDestinationInvoiceCreate, destInv); err != nil {
-		return nil, errors.Wrapf(err, "failed to insert payment destinations for invoiceID '%s'", args.InvoiceID.ValueOrZero())
+		return nil, errors.Wrapf(err, "failed to create invoice for invoiceID '%s' sqlDestinationInvoiceCreate", args.InvoiceID.ValueOrZero())
 	}
 	return dd, errors.Wrapf(commit(ctx, tx), "failed to commit transaction when creating payment destinations")
 }

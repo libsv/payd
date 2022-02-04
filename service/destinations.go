@@ -12,11 +12,6 @@ import (
 	"github.com/libsv/payd"
 )
 
-const (
-	// TODO - this will need changed.
-	keyname = "masterkey"
-)
-
 type destinations struct {
 	deployCfg  *config.Wallet
 	privKeySvc payd.PrivateKeyService
@@ -44,8 +39,9 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	// get our master private key
-	priv, err := d.privKeySvc.PrivateKey(ctx, keyname)
+	// Get the master key associated with the beneficiary of the invoice.
+	key := "masterkey"
+	priv, err := d.privKeySvc.PrivateKey(ctx, key, req.UserID)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -64,7 +60,8 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 			}
 			path = bip32.DerivePath(seed)
 			exists, err := d.derivRdr.DerivationPathExists(ctx, payd.DerivationExistsArgs{
-				KeyName: keyname,
+				KeyName: key,
+				UserID:  req.UserID,
 				Path:    path,
 			})
 			if err != nil {
@@ -90,10 +87,11 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 			sats = args.Denomination
 		}*/
 		destinations = append(destinations, payd.DestinationCreate{
-			Keyname:        keyname,
+			UserID:         req.UserID,
 			DerivationPath: path,
 			Script:         s.String(),
 			Satoshis:       req.Satoshis,
+			KeyName:        key,
 		})
 	}
 	oo, err := d.destRdrWtr.DestinationsCreate(ctx, payd.DestinationsCreateArgs{InvoiceID: req.InvoiceID}, destinations)
