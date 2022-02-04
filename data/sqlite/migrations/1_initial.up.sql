@@ -138,7 +138,7 @@ CREATE TABLE proof_callbacks(
 );
 
 INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
-VALUES('Epictetus', 1, 'epic@nchain.com', 'https://thispersondoesnotexist.com/image', '1 Athens Avenue', '0800-call-me');
+VALUES('Epictetus', 1, 'https://thispersondoesnotexist.com/image', 'epic@nchain.com', '1 Athens Avenue', '0800-call-me');
 
 INSERT INTO
     users_meta(user_id, key, value)
