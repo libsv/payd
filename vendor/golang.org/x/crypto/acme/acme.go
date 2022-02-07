@@ -4,7 +4,7 @@
 
 // Package acme provides an implementation of the
 // Automatic Certificate Management Environment (ACME) spec.
-// The intial implementation was based on ACME draft-02 and
+// The initial implementation was based on ACME draft-02 and
 // is now being extended to comply with RFC 8555.
 // See https://tools.ietf.org/html/draft-ietf-acme-acme-02
 // and https://tools.ietf.org/html/rfc8555 for details.
@@ -125,7 +125,9 @@ type Client struct {
 
 	cacheMu sync.Mutex
 	dir     *Directory // cached result of Client's Discover method
-	kid     keyID      // cached Account.URI obtained from registerRFC or getAccountRFC
+	// KID is the key identifier provided by the CA. If not provided it will be
+	// retrieved from the CA by making a call to the registration endpoint.
+	KID KeyID
 
 	noncesMu sync.Mutex
 	nonces   map[string]struct{} // nonces collected from previous responses
@@ -140,21 +142,21 @@ type Client struct {
 //
 // When in pre-RFC mode or when c.getRegRFC responds with an error, accountKID
 // returns noKeyID.
-func (c *Client) accountKID(ctx context.Context) keyID {
+func (c *Client) accountKID(ctx context.Context) KeyID {
 	c.cacheMu.Lock()
 	defer c.cacheMu.Unlock()
 	if !c.dir.rfcCompliant() {
 		return noKeyID
 	}
-	if c.kid != noKeyID {
-		return c.kid
+	if c.KID != noKeyID {
+		return c.KID
 	}
 	a, err := c.getRegRFC(ctx)
 	if err != nil {
 		return noKeyID
 	}
-	c.kid = keyID(a.URI)
-	return c.kid
+	c.KID = KeyID(a.URI)
+	return c.KID
 }
 
 // Discover performs ACME server discovery using c.DirectoryURL.
