@@ -36,7 +36,7 @@ require (
 	github.com/theflyingcodr/sockets v0.0.11-beta
 )
 
-require github.com/libsv/go-p4 v0.0.7
+require github.com/libsv/go-p4 v0.0.8
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
