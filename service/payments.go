@@ -56,6 +56,9 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if err != nil || inv.State == "" {
 		return errors.Wrapf(err, "failed to get invoice with ID '%s'", args.InvoiceID)
 	}
+	if inv.State == payd.StateInvoiceDeleted {
+		return lathos.NewErrNotAvailable("D001", fmt.Sprintf("invoice '%s' has been deleted", args.InvoiceID))
+	}
 	if inv.State != payd.StateInvoicePending {
 		return lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
