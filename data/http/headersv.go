@@ -7,16 +7,17 @@ import (
 	"net/http"
 
 	"github.com/libsv/go-bc"
+	"github.com/libsv/payd/data"
 	"github.com/pkg/errors"
 )
 
 type hsvConnection struct {
-	client Client
+	client data.Client
 	host   string
 }
 
 // NewHeaderSVConnection returns a bc.BlockHeaderChain using a header client.
-func NewHeaderSVConnection(client Client, host string) bc.BlockHeaderChain {
+func NewHeaderSVConnection(client data.Client, host string) bc.BlockHeaderChain {
 	return &hsvConnection{
 		client: client,
 		host:   host,

@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"encoding/hex"
 
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/payd"
@@ -72,10 +71,6 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
 	}
-	pki, err := xPriv.DerivePublicKeyFromPath("0/0/0")
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
-	}
 
 	meta := make([]struct {
 		Key   string `db:"key"`
@@ -93,13 +88,12 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		Address:      data.Address,
 		PhoneNumber:  data.PhoneNumber,
 		ExtendedData: make(map[string]interface{}, 3),
+		MasterKey:    xPriv,
 	}
 
 	for _, m := range meta {
 		user.ExtendedData[m.Key] = m.Value
 	}
-
-	user.ExtendedData["pki"] = hex.EncodeToString(pki)
 
 	return &user, nil
 }

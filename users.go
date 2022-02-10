@@ -2,6 +2,8 @@ package payd
 
 import (
 	"context"
+
+	"github.com/libsv/go-bk/bip32"
 )
 
 // User information on wallet users.
@@ -13,6 +15,7 @@ type User struct {
 	Address      string                 `json:"address" db:"address"`
 	PhoneNumber  string                 `json:"phoneNumber" db:"phone_number"`
 	ExtendedData map[string]interface{} `json:"extendedData"`
+	MasterKey    *bip32.ExtendedKey     `json:"-"`
 }
 
 // OwnerService interfaces with owners.

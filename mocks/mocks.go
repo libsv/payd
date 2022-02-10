@@ -5,6 +5,8 @@ package mocks
 //go:generate moq -pkg mocks -out private_key_service.go ../ PrivateKeyService
 //go:generate moq -pkg mocks -out envelope_service.go ../ EnvelopeService
 //go:generate moq -pkg mocks -out seed_service.go ../ SeedService
+//go:generate moq -pkg mocks -out peerchannels_service.go ../ PeerChannelsService
+//go:generate moq -pkg mocks -out peerchannels_notify_service.go ../ PeerChannelsNotifyService
 
 //go:generate moq -pkg mocks -out transacter.go ../ Transacter
 //go:generate moq -pkg mocks -out fee_quote_reader.go ../ FeeQuoteReader
@@ -15,6 +17,7 @@ package mocks
 //go:generate moq -pkg mocks -out tx_writer.go ../ TransactionWriter
 //go:generate moq -pkg mocks -out broadcast_writer.go ../ BroadcastWriter
 //go:generate moq -pkg mocks -out derivation_reader.go ../ DerivationReader
+//go:generate moq -pkg mocks -out peerchannels_store.go ../ PeerChannelsStore
 //go:generate moq -pkg mocks -out proof_callback_writer.go ../ ProofCallbackWriter
 //go:generate moq -pkg mocks -out invoice_reader_writer.go ../ InvoiceReaderWriter
 //go:generate moq -pkg mocks -out private_key_reader_writer.go ../ PrivateKeyReaderWriter

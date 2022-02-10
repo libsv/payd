@@ -47,28 +47,31 @@ go-doc-linux:
 	@xdg-open http://localhost:6060 && \
 	godoc -http=:6060
 
-run-compose:
+create-pc-account:
+	@docker exec peerchannels ./SPVChannels.API.Rest -createaccount admin username password 2>/dev/null || true
+
+run-compose: create-pc-account
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up
 
-run-compose-d:
+run-compose-d: create-pc-account
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up -d
 
-run-compose-dev:
+run-compose-dev: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml up
 
-run-compose-local:
+run-compose-local: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up
 
-run-compose-local-d:
+run-compose-local-d: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up -d
 
-run-compose-testnet:
+run-compose-testnet: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.testnet.yml up
 
 build-image:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
 
-run-compose-dev-d:
+run-compose-dev-d: create-pc-account
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up -d
 
 stop-compose:

@@ -55,4 +55,7 @@ func SetupDefaults() {
 	// Transport settings
 	viper.SetDefault(EnvTransportHTTPEnabled, true)
 	viper.SetDefault(EnvTransportSocketsEnabled, true)
+
+	// Peer channels
+	viper.SetDefault(EnvPeerChannelsTTL, 120)
 }

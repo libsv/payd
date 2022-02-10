@@ -49,6 +49,12 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 		l.Fatal(err, "failed to setup mapi client")
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
+	proofSvc := service.NewProofsService(sqlLiteStore)
+
+	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels)
+	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
+	pcNotifSvc.RegisterHandler(payd.PeerChannelHandlerTypeProof, proofSvc)
+
 	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
@@ -63,10 +69,10 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	seedSvc := service.NewSeedService()
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc)
-	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore)
+	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
 		"http", "https",
 	).Register(
 		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
@@ -76,7 +82,6 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
 	invoiceSvc.SetConnectionService(connectService)
-	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	userSvc := service.NewUsersService(sqlLiteStore, privKeySvc)
 
@@ -104,17 +109,19 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 
 // SocketDeps contains all dependencies of the socket server.
 type SocketDeps struct {
-	DestinationService    payd.DestinationsService
-	PaymentService        payd.PaymentsService
-	PayService            payd.PayService
-	EnvelopeService       payd.EnvelopeService
-	InvoiceService        payd.InvoiceService
-	BalanceService        payd.BalanceService
-	ProofService          payd.ProofsService
-	OwnerService          payd.OwnerService
-	PaymentRequestService payd.PaymentRequestService
-	ConnectService        payd.ConnectService
-	TransactionService    payd.TransactionService
+	DestinationService        payd.DestinationsService
+	PaymentService            payd.PaymentsService
+	PayService                payd.PayService
+	EnvelopeService           payd.EnvelopeService
+	InvoiceService            payd.InvoiceService
+	BalanceService            payd.BalanceService
+	ProofService              payd.ProofsService
+	OwnerService              payd.OwnerService
+	PaymentRequestService     payd.PaymentRequestService
+	ConnectService            payd.ConnectService
+	TransactionService        payd.TransactionService
+	PeerChannelsService       payd.PeerChannelsService
+	PeerChannelsNotifyService payd.PeerChannelsNotifyService
 }
 
 // SetupSocketDeps will setup dependencies used in the socket server.
@@ -130,6 +137,10 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 		l.Fatal(err, "failed to setup mapi client")
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
+	proofSvc := service.NewProofsService(sqlLiteStore)
+	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels)
+	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
+	pcNotifSvc.RegisterHandler(payd.PeerChannelHandlerTypeProof, proofSvc)
 	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
@@ -144,15 +155,14 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	seedSvc := service.NewSeedService()
 	privKeySvc := service.NewPrivateKeys(sqlLiteStore, cfg.Wallet.Network == "mainnet")
 	destSvc := service.NewDestinationsService(cfg.Wallet, privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc)
-	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore)
+	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
 		"http", "https",
 	).Register(service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss")
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
-	proofSvc := service.NewProofsService(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
@@ -165,16 +175,18 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	}
 
 	return &SocketDeps{
-		DestinationService:    destSvc,
-		PaymentService:        paymentSvc,
-		PayService:            paySvc,
-		EnvelopeService:       envSvc,
-		InvoiceService:        invoiceSvc,
-		BalanceService:        balanceSvc,
-		ProofService:          proofSvc,
-		OwnerService:          ownerSvc,
-		PaymentRequestService: paymentReqSvc,
-		ConnectService:        connectService,
-		TransactionService:    transactionService,
+		DestinationService:        destSvc,
+		PaymentService:            paymentSvc,
+		PayService:                paySvc,
+		EnvelopeService:           envSvc,
+		InvoiceService:            invoiceSvc,
+		BalanceService:            balanceSvc,
+		ProofService:              proofSvc,
+		OwnerService:              ownerSvc,
+		PaymentRequestService:     paymentReqSvc,
+		ConnectService:            connectService,
+		TransactionService:        transactionService,
+		PeerChannelsService:       pcSvc,
+		PeerChannelsNotifyService: pcNotifSvc,
 	}
 }

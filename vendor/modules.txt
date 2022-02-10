@@ -133,9 +133,12 @@ github.com/libsv/go-bt/sighash
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
 github.com/libsv/go-bt/v2/sighash
-# github.com/libsv/go-p4 v0.0.7
+# github.com/libsv/go-p4 v0.0.8
 ## explicit; go 1.17
 github.com/libsv/go-p4
+# github.com/libsv/go-spvchannels v0.0.1
+## explicit; go 1.16
+github.com/libsv/go-spvchannels
 # github.com/magiconair/properties v1.8.5
 ## explicit; go 1.13
 github.com/magiconair/properties

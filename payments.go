@@ -90,8 +90,9 @@ type ProofCallback struct {
 
 // AckArgs are used to identify a payment we are acknowledging.
 type AckArgs struct {
-	InvoiceID string
-	TxID      string
+	InvoiceID   string
+	TxID        string
+	PeerChannel *PeerChannel
 }
 
 // Ack contains the status of the payment.
@@ -103,7 +104,7 @@ type Ack struct {
 // PaymentsService is used for handling payments.
 type PaymentsService interface {
 	// PaymentCreate will validate a new payment.
-	PaymentCreate(ctx context.Context, args PaymentCreateArgs, req p4.Payment) error
+	PaymentCreate(ctx context.Context, args PaymentCreateArgs, req p4.Payment) (*p4.PaymentACK, error)
 	// Ack will handle a payment acknowledgement and can set a transaction as broadcast or failed.
 	Ack(ctx context.Context, args AckArgs, req Ack) error
 }

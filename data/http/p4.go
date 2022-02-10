@@ -9,15 +9,16 @@ import (
 
 	"github.com/libsv/go-p4"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/data"
 	"github.com/theflyingcodr/lathos/errs"
 )
 
 type p4Client struct {
-	c Client
+	c data.Client
 }
 
 // NewP4 returns a new p4 interface.
-func NewP4(c Client) P4 {
+func NewP4(c data.Client) P4 {
 	return &p4Client{c: c}
 }
 

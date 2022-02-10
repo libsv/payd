@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/libsv/payd/cmd/internal"
+	"github.com/libsv/payd/transports/http/middleware"
 	"github.com/theflyingcodr/sockets/client"
 
 	"github.com/libsv/payd/config"
@@ -59,6 +60,7 @@ func main() {
 		WithMapi().
 		WithSocket().
 		WithTransports().
+		WithPeerChannels().
 		Load()
 	log := log.NewZero(cfg.Logging)
 	// validate the config, fail if it fails.
@@ -83,9 +85,11 @@ func main() {
 	defer c.Close()
 
 	g := e.Group("/")
+	rDeps := internal.SetupRestDeps(cfg, log, db, c)
+	g.Use(middleware.AuthUser(log, rDeps.UserService))
 
 	// setup transports
-	internal.SetupHTTPEndpoints(*cfg, internal.SetupRestDeps(cfg, log, db, c), g)
+	internal.SetupHTTPEndpoints(*cfg, rDeps, g)
 
 	// setup sockets
 	deps := internal.SetupSocketDeps(cfg, log, db, c)
@@ -93,6 +97,10 @@ func main() {
 	// setup socket endpoints
 	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
 	internal.SetupHealthEndpoint(*cfg, g, c)
+
+	if err := internal.ResumeActiveChannels(deps); err != nil {
+		log.Fatal(err, "failed to resume active peer channels")
+	}
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)

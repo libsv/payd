@@ -33,19 +33,16 @@ func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.M
 		return nil, errors.Wrap(err, "failed to bind request")
 	}
 	resp := msg.NewFrom(RoutePaymentACK)
-	if err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req); err != nil {
+	ack, err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req)
+	if err != nil {
 		log.Err(err).Msg("failed to create payment, returning ack")
 		_ = resp.WithBody(p4.PaymentACK{
-			Payment: &req,
-			Memo:    err.Error(),
-			Error:   1,
+			Memo:  err.Error(),
+			Error: 1,
 		})
 		return resp, nil
 	}
-	_ = resp.WithBody(p4.PaymentACK{
-		Payment: &req,
-		Memo:    req.Memo,
-	})
+	_ = resp.WithBody(ack)
 	return resp, nil
 }
 
@@ -53,7 +50,7 @@ func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.M
 // This isn't fully fleshed out yet, it could notify a front end
 // via another message, for now it just logs an error or returns no content.
 func (p *payments) ack(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
-	var req payd.PaymentACK
+	var req p4.PaymentACK
 	if err := msg.Bind(&req); err != nil {
 		return nil, errors.Wrap(err, "failed to bind request")
 	}
@@ -62,7 +59,7 @@ func (p *payments) ack(ctx context.Context, msg *sockets.Message) (*sockets.Mess
 		// ack the error
 		log.Err(p.svc.Ack(ctx, payd.AckArgs{
 			InvoiceID: msg.ChannelID(),
-			TxID:      req.Payment.SPVEnvelope.TxID,
+			TxID:      req.TxID,
 		}, payd.Ack{
 			Failed: true,
 			Reason: req.Memo,
@@ -73,7 +70,13 @@ func (p *payments) ack(ctx context.Context, msg *sockets.Message) (*sockets.Mess
 	// handle the success
 	if err := p.svc.Ack(ctx, payd.AckArgs{
 		InvoiceID: msg.ChannelID(),
-		TxID:      req.Payment.SPVEnvelope.TxID,
+		TxID:      req.TxID,
+		PeerChannel: &payd.PeerChannel{
+			Host:  req.PeerChannel.Host,
+			ID:    req.PeerChannel.ChannelID,
+			Token: req.PeerChannel.Token,
+			Type:  payd.PeerChannelHandlerTypeProof,
+		},
 	}, payd.Ack{
 		Failed: false,
 		Reason: "",

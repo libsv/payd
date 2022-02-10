@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -112,6 +113,15 @@ func (v *ViperConfig) WithTransports() ConfigurationLoader {
 	v.Transports = &Transports{
 		HTTPEnabled:    viper.GetBool(EnvTransportHTTPEnabled),
 		SocketsEnabled: viper.GetBool(EnvTransportSocketsEnabled),
+	}
+	return v
+}
+
+// WithPeerChannels reads peer channels config.
+func (v *ViperConfig) WithPeerChannels() ConfigurationLoader {
+	v.PeerChannels = &PeerChannels{
+		Host: viper.GetString(EnvPeerChannelsHost),
+		TTL:  time.Duration(viper.GetInt64(EnvPeerChannelsTTL)) * time.Minute,
 	}
 	return v
 }

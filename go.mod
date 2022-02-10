@@ -36,8 +36,6 @@ require (
 	github.com/theflyingcodr/sockets v0.0.11-beta
 )
 
-require github.com/libsv/go-p4 v0.0.7
-
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -89,6 +87,11 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+)
+
+require (
+	github.com/libsv/go-p4 v0.0.8
+	github.com/libsv/go-spvchannels v0.0.1
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e

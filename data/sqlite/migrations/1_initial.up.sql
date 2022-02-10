@@ -29,6 +29,41 @@ CREATE TABLE users_meta(
     ,CONSTRAINT users_key UNIQUE(user_id, key)
 );
 
+CREATE TABLE users_peerchannels(
+    id                          INTEGER PRIMARY KEY AUTOINCREMENT
+    ,user_id                    INTEGER
+    ,account_id                 INTEGER NOT NULL
+    ,user_name                  VARCHAR NOT NULL
+    ,password                   VARCHAR NOT NULL
+    ,FOREIGN KEY (user_id) REFERENCES users(user_id)
+    ,CONSTRAINT user_id_key UNIQUE(user_id)
+    ,CONSTRAINT account_id_key UNIQUE(account_id)
+);
+
+CREATE TABLE peerchannels(
+    id                          INTEGER PRIMARY KEY AUTOINCREMENT
+    ,peerchannels_account_id    INTEGER NOT NULL
+    ,channel_id                 VARCHAR NOT NULL
+    ,channel_host               VARCHAR NOT NULL
+    ,channel_type               VARCHAR NOT NULL
+	,created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ,closed                     BOOLEAN NOT NULL DEFAULT 0
+    ,FOREIGN KEY (peerchannels_account_id) REFERENCES users_peerchannels(account_id)
+    ,CONSTRAINT channel_id_host_key UNIQUE(channel_id, channel_host)
+);
+
+CREATE TABLE peerchannels_toks(
+    id                          INTEGER PRIMARY KEY AUTOINCREMENT
+    ,peerchannels_channel_id    VARCHAR NOT NULL
+    ,tok                        VARCHAR NOT NULL
+    ,role                       VARCHAR NOT NULL
+    ,can_read                   BOOLEAN NOT NULL
+    ,can_write                  BOOLEAN NOT NULL
+    --,FOREIGN KEY (peerchannels_channel_id) REFERENCES peerchannels(channel_id)
+    ,CONSTRAINT tok_key UNIQUE(tok)
+);
+
+
 -- TODO - we will maybe need a payments table as an invoice can have many payments
 CREATE TABLE invoices (
     invoice_id              VARCHAR PRIMARY KEY
@@ -137,11 +172,14 @@ CREATE TABLE proof_callbacks(
     PRIMARY KEY(invoice_id,url)
 );
 
-INSERT INTO users(name, is_owner, avatar_url, email, address, phone_number)
-VALUES('Epictetus', 1, 'https://thispersondoesnotexist.com/image', 'epic@nchain.com', '1 Athens Avenue', '0800-call-me');
+INSERT INTO users(user_id, name, is_owner, avatar_url, email, address, phone_number)
+VALUES(0, 'Userless', 0, '', 'user@less.com', '123 Street Fake', '123456789'),
+      (1, 'Epictetus', 1, 'https://thispersondoesnotexist.com/image', 'epic@nchain.com', '1 Athens Avenue', '0800-call-me');
 
-INSERT INTO
-    users_meta(user_id, key, value)
-VALUES
-    (1, 'likes', 'Stoicism & placeholder data'),
-    (1, 'dislikes', 'Malfeasance');
+INSERT INTO users_meta(user_id, key, value)
+VALUES(1, 'likes', 'Stoicism & placeholder data'),
+      (1, 'dislikes', 'Malfeasance');
+
+INSERT INTO users_peerchannels(user_id, account_id, user_name, password)
+VALUES(0, 0, '', ''), -- userless, for receiving change proofs
+      (1, 1, 'username', 'password');
