@@ -10,6 +10,7 @@ import (
 
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
+	"github.com/libsv/payd/session"
 
 	"github.com/speps/go-hashids"
 )
@@ -75,6 +76,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	user := session.MustUserFromContext(ctx)
 	hd := hashids.NewData()
 	hd.Alphabet = hashids.DefaultAlphabet
 	hd.Salt = fmt.Sprintf("%s:%d:%s:%s", i.cfg.Hostname, req.Satoshis, req.Reference.ValueOrZero(), req.ExpiresAt.ValueOrZero())
@@ -110,7 +112,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	if _, err := i.destSvc.DestinationsCreate(ctx, payd.DestinationsCreate{
 		InvoiceID: null.StringFrom(req.InvoiceID),
 		Satoshis:  req.Satoshis,
-		UserID:    req.UserID,
+		UserID:    user.ID,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to create payment destinations for invoice")
 	}

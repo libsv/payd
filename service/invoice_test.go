@@ -10,6 +10,7 @@ import (
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/mocks"
 	"github.com/libsv/payd/service"
+	"github.com/libsv/payd/session"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/guregu/null.v3"
@@ -383,7 +384,8 @@ func TestInvoiceService_Create(t *testing.T) {
 					NowUTCFunc:     test.nowUTCFunc,
 				})
 
-			_, err := svc.Create(context.TODO(), test.req)
+			ctx := session.WithUser(context.Background(), &payd.User{})
+			_, err := svc.Create(ctx, test.req)
 			if test.expErr != nil {
 				assert.Error(t, err)
 				assert.EqualError(t, err, test.expErr.Error())

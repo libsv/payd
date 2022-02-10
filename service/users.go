@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
@@ -44,6 +45,16 @@ func (u *users) CreateUser(ctx context.Context, user payd.CreateUserArgs) (*payd
 
 // ReadUser will return the  user associated with a particular user_id of the wallet.
 func (u *users) ReadUser(ctx context.Context, userID uint64) (*payd.User, error) {
+	user, err := u.str.ReadUser(ctx, userID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read user")
+	}
+	pki, err := user.MasterKey.DerivePublicKeyFromPath("0/0/0")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse key from database xpriv")
+	}
+	user.ExtendedData["pki"] = hex.EncodeToString(pki)
+
 	return u.str.ReadUser(ctx, userID)
 }
 
