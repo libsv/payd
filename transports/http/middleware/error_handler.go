@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/libsv/payd/log"
+	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	"github.com/theflyingcodr/lathos"
 	"github.com/theflyingcodr/lathos/errs"
@@ -14,9 +14,11 @@ import (
 // ErrorHandler we can flesh this out.
 func ErrorHandler(l log.Logger) echo.HTTPErrorHandler {
 	return func(err error, c echo.Context) {
+		l.Info("pls")
 		if err == nil {
 			return
 		}
+		l.Info("why")
 		var valErr validator.ErrValidation
 		if errors.As(err, &valErr) {
 			resp := map[string]interface{}{
@@ -24,6 +26,11 @@ func ErrorHandler(l log.Logger) echo.HTTPErrorHandler {
 			}
 			_ = c.JSON(http.StatusBadRequest, resp)
 			return
+		}
+
+		l.Info("why me")
+		if errors.Is(err, echo.ErrNotFound) {
+			err = errs.NewErrNotFound("404", "Not found")
 		}
 
 		type errResp struct {

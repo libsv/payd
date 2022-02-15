@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
+	"github.com/theflyingcodr/lathos"
 	"github.com/theflyingcodr/sockets"
 	"github.com/theflyingcodr/sockets/client"
 
@@ -42,7 +43,11 @@ func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*soc
 	invoiceID := msg.ChannelID()
 	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{InvoiceID: invoiceID})
 	if err != nil {
-		return nil, errors.WithStack(err)
+		if !lathos.IsClientError(err) {
+			return nil, errors.WithStack(err)
+		}
+		resp := msg.ToError(err)
+		return resp, nil
 	}
 	pr.PaymentURL = fmt.Sprintf("%s/%s", p.p4Cfg.ServerHost, invoiceID)
 	resp := msg.NewFrom(RoutePaymentRequestResponse)

@@ -84,10 +84,10 @@ func main() {
 	c := client.New(client.WithMaxMessageSize(10000), client.WithPongTimeout(360*time.Second))
 	defer c.Close()
 
-	g := e.Group("/")
 	rDeps := internal.SetupRestDeps(cfg, log, db, c)
-	g.Use(middleware.AuthUser(log, rDeps.UserService))
+	e.Use(middleware.AuthUser(log, rDeps.UserService))
 
+	g := e.Group("/")
 	// setup transports
 	internal.SetupHTTPEndpoints(*cfg, rDeps, g)
 

@@ -14,6 +14,7 @@ import (
 	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
+	"github.com/theflyingcodr/lathos/errs"
 	lathos "github.com/theflyingcodr/lathos/errs"
 	"gopkg.in/guregu/null.v3"
 
@@ -68,6 +69,9 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 	if inv.State != payd.StateInvoicePending {
 		return nil, lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
+	}
+	if !inv.ExpiresAt.IsZero() && inv.ExpiresAt.ValueOrZero().Before(time.Now().UTC()) {
+		return nil, errs.NewErrUnprocessable("U102", "payment expired")
 	}
 	fq, err := p.feeRdr.FeeQuote(ctx, args.InvoiceID)
 	if err != nil {
