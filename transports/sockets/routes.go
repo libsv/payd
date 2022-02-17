@@ -7,6 +7,7 @@ const (
 	RouteProofCreate            = "proof.create"
 	RoutePaymentRequestCreate   = "paymentrequest.create"
 	RoutePaymentRequestResponse = "paymentrequest.response"
+	RoutePaymentRequestError    = "paymentrequest.error"
 )
 
 // Common headers for sockets.

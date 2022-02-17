@@ -43,10 +43,30 @@ func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*soc
 	invoiceID := msg.ChannelID()
 	pr, err := p.prSvc.PaymentRequest(ctx, payd.PaymentRequestArgs{InvoiceID: invoiceID})
 	if err != nil {
-		if !lathos.IsClientError(err) {
+		resp := msg.NewFrom(RoutePaymentRequestError)
+
+		var marshalErr error
+		var clientErr lathos.ClientError
+		if errors.As(err, &clientErr) {
+			marshalErr = resp.WithBody(payd.ClientError{
+				ID:      clientErr.ID(),
+				Code:    clientErr.Code(),
+				Title:   clientErr.Title(),
+				Message: clientErr.Detail(),
+			})
+		} else {
+			log.Error().Err(err)
+			marshalErr = resp.WithBody(payd.ClientError{
+				ID:      "",
+				Code:    "500",
+				Title:   "Internal Server Error",
+				Message: "Internal server error",
+			})
+		}
+		if marshalErr != nil {
 			return nil, errors.WithStack(err)
 		}
-		resp := msg.ToError(err)
+
 		return resp, nil
 	}
 	pr.PaymentURL = fmt.Sprintf("%s/%s", p.p4Cfg.ServerHost, invoiceID)
