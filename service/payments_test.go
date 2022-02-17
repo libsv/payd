@@ -17,6 +17,8 @@ import (
 	"github.com/libsv/payd/service"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	lathos "github.com/theflyingcodr/lathos/errs"
+	"gopkg.in/guregu/null.v3"
 )
 
 func TestPaymentsService_PaymentCreate(t *testing.T) {
@@ -170,7 +172,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req:           p4.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{},
-			expErr:        errors.New("Unprocessable: fee quote has expired, please make a new payment request"),
+			expErr:        lathos.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request"),
 		},
 		"tx with insufficient fees is rejected": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
@@ -490,6 +492,52 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			expTxState:    payd.StateTxBroadcast,
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("oh no"),
+		},
+		"expired invoice": {
+			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
+				earlier := null.Time{Time: time.Now().Add(-time.Second), Valid: true}
+				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending, ExpiresAt: earlier}, nil
+			},
+			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
+				return fq, nil
+			},
+			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
+			},
+			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
+				return []payd.Output{{
+					LockingScript: func() *bscript.Script {
+						s, _ := bscript.NewFromHexString("76a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac")
+						return s
+					}(),
+					DerivationPath: "2147483648/2147483648/2147483648",
+					Satoshis:       1000,
+					State:          "pending",
+				}}, nil
+			},
+			txCreateFunc: func(context.Context, payd.TransactionCreate) error {
+				return nil
+			},
+			proofCallbackCreateFunc: func(context.Context, payd.ProofCallbackArgs, map[string]p4.ProofCallback) error {
+				return nil
+			},
+			broadcastFunc: func(context.Context, payd.BroadcastArgs, *bt.Tx) error {
+				return nil
+			},
+			txUpdateStateFunc: func(context.Context, payd.TransactionArgs, payd.TransactionStateUpdate) error {
+				return nil
+			},
+			commitFunc: func(context.Context) error {
+				return nil
+			},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: p4.Payment{
+				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+			},
+			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
+			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
+			expTxState:    payd.StateTxBroadcast,
+			expErr:        lathos.NewErrUnprocessable("E001", "invoice you are attempting to pay has expired"),
 		},
 	}
 

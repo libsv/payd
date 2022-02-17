@@ -69,8 +69,8 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if inv.State != payd.StateInvoicePending {
 		return nil, errs.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
-	if !inv.ExpiresAt.IsZero() && inv.ExpiresAt.ValueOrZero().Before(time.Now().UTC()) {
-		return nil, errs.NewErrUnprocessable("U102", "payment expired")
+	if !inv.ExpiresAt.ValueOrZero().IsZero() && inv.ExpiresAt.Time.Before(time.Now().UTC()) {
+		return nil, errs.NewErrUnprocessable("E001", "invoice you are attempting to pay has expired")
 	}
 	fq, err := p.feeRdr.FeeQuote(ctx, args.InvoiceID)
 	if err != nil {
