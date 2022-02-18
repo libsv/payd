@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/errcodes"
 	"github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
@@ -102,7 +103,7 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 
 	if err = handleNamedExec(tx, sqlInvoiceSetPaid, invUpdate); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return lathos.NewErrNotFound("N0007", fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
+			return lathos.NewErrNotFound(errcodes.ErrInvoiceNotFound, fmt.Sprintf("invoiceID '%s' not found when updating payment received info", req.InvoiceID))
 		}
 	}
 
@@ -171,7 +172,7 @@ func (s *sqliteStore) Tx(ctx context.Context, txID string) (*bt.Tx, error) {
 	}
 	if err := s.db.GetContext(ctx, &txhex, sqlTransactionGet, txID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("T001", fmt.Sprintf("tx '%s' not in store", txID))
+			return nil, lathos.NewErrNotFound(errcodes.ErrTxNotFound, fmt.Sprintf("tx '%s' not in store", txID))
 		}
 		return nil, errors.Wrapf(err, "failed to retrieve transaction for id %s", txID)
 	}

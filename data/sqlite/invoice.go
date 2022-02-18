@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/errcodes"
 	"github.com/pkg/errors"
 	lathos "github.com/theflyingcodr/lathos/errs"
 )
@@ -21,6 +22,7 @@ const (
 	SELECT invoice_id, satoshis, description, spv_required, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
 	FROM invoices
 	WHERE invoice_id = :invoice_id
+	AND state != 'deleted'
 	`
 
 	sqlInvoices = `
@@ -48,7 +50,7 @@ func (s *sqliteStore) Invoice(ctx context.Context, args payd.InvoiceArgs) (*payd
 	var resp payd.Invoice
 	if err := s.db.GetContext(ctx, &resp, sqlInvoiceByID, args.InvoiceID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("N0001", fmt.Sprintf("invoice with invoiceID %s not found", args.InvoiceID))
+			return nil, lathos.NewErrNotFound(errcodes.ErrInvoiceNotFound, fmt.Sprintf("invoice with invoiceID %s not found", args.InvoiceID))
 		}
 		return nil, errors.Wrapf(err, "failed to get invoice with invoiceID %s", args.InvoiceID)
 	}
@@ -60,7 +62,7 @@ func (s *sqliteStore) Invoices(ctx context.Context) ([]payd.Invoice, error) {
 	var resp []payd.Invoice
 	if err := s.db.SelectContext(ctx, &resp, sqlInvoices); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("N0002", "no invoices found")
+			return nil, lathos.NewErrNotFound(errcodes.ErrInvoicesNotFound, "no invoices found")
 		}
 		return nil, errors.Wrapf(err, "failed to get invoices")
 	}
@@ -130,7 +132,7 @@ func (s *sqliteStore) InvoiceDelete(ctx context.Context, args payd.InvoiceArgs) 
 	}
 	if err := handleNamedExec(tx, sqlInvoiceDelete, delInv); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return lathos.NewErrNotFound("N0003", fmt.Sprintf("invoice with ID %s not found", args.InvoiceID))
+			return lathos.NewErrNotFound(errcodes.ErrInvoiceNotFound, fmt.Sprintf("invoice with ID %s not found", args.InvoiceID))
 		}
 		return errors.Wrapf(err, "failed to delete invoice for invoiceID %s", args.InvoiceID)
 	}
