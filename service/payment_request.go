@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
+	"github.com/theflyingcodr/lathos/errs"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/libsv/go-bt/v2"
@@ -55,6 +57,10 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 			}
 		}
 		dd = destinations
+
+		if !dd.ExpiresAt.IsZero() && dd.ExpiresAt.Before(time.Now().UTC()) {
+			return errs.NewErrUnprocessable("U102", "payment expired")
+		}
 		return nil
 	})
 

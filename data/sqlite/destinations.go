@@ -11,6 +11,7 @@ import (
 	lathos "github.com/theflyingcodr/lathos/errs"
 
 	"github.com/libsv/payd"
+	"github.com/libsv/payd/errcodes"
 	"github.com/libsv/payd/internal"
 )
 
@@ -61,7 +62,7 @@ func (s *sqliteStore) DestinationsCreate(ctx context.Context, args payd.Destinat
 	rows, err := tx.Query(query, sqlArgs...)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("N0004", "destinations not found, did the create fail?")
+			return nil, lathos.NewErrNotFound(errcodes.ErrDestinationsFailedCreate, "destinations not found, did the create fail?")
 		}
 	}
 	defer func() {
@@ -133,12 +134,12 @@ func (s *sqliteStore) Destinations(ctx context.Context, args payd.DestinationsAr
 	var oo []dbOutput
 	if err := s.db.SelectContext(ctx, &oo, sqlDestinationsByInvoiceID, args.InvoiceID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
+			return nil, lathos.NewErrNotFound(errcodes.ErrDestinationsNotFound, fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
 		}
 		return nil, errors.Wrapf(err, "failed to get destinations with invoiceID %s", args.InvoiceID)
 	}
 	if len(oo) == 0 {
-		return nil, lathos.NewErrNotFound("N0002", fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
+		return nil, lathos.NewErrNotFound(errcodes.ErrDestinationsNotFound, fmt.Sprintf("destinations with invoiceID %s not found", args.InvoiceID))
 	}
 	outs := make([]payd.Output, len(oo))
 	for i := 0; i < len(oo); i++ {

@@ -14,7 +14,7 @@ import (
 	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
-	lathos "github.com/theflyingcodr/lathos/errs"
+	"github.com/theflyingcodr/lathos/errs"
 	"gopkg.in/guregu/null.v3"
 
 	"github.com/libsv/payd"
@@ -67,17 +67,17 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errors.Wrapf(err, "failed to get invoice with ID '%s'", args.InvoiceID)
 	}
 	if inv.State != payd.StateInvoicePending {
-		return nil, lathos.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
+		return nil, errs.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
 	if !inv.ExpiresAt.ValueOrZero().IsZero() && inv.ExpiresAt.Time.Before(time.Now().UTC()) {
-		return nil, lathos.NewErrUnprocessable("E001", "invoice you are attempting to pay has expired")
+		return nil, errs.NewErrUnprocessable("E001", "invoice you are attempting to pay has expired")
 	}
 	fq, err := p.feeRdr.FeeQuote(ctx, args.InvoiceID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read fees for payment with id %s", args.InvoiceID)
 	}
 	if fq.Expired() {
-		return nil, lathos.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
+		return nil, errs.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
 	tx, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
