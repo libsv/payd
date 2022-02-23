@@ -43,6 +43,15 @@ func (m *minercraftMapi) Broadcast(ctx context.Context, args payd.BroadcastArgs,
 	if resp.Results.ReturnResult == minercraft.QueryTransactionSuccess {
 		return nil
 	}
+	if resp.Results.ResultDescription == "Transaction already in the mempool" {
+		// This is a hack for paymail where both parties broadcast the transaction from their own end.
+		// What ends up happening is one beats the other to the punch.
+		// If the transaction is already in the mempool then the status is a success with regards the intention of the request.
+		// Despite the fact that the miner's mapi will say 500 Error.
+		// Although it's not clear whether we will still get the merkleproofs or not.
+		// This should be fixed in MAPI not here, long term.
+		return nil
+	}
 	return errors.Errorf("failed to submit transaction %s", resp.Results.ResultDescription)
 }
 
