@@ -101,6 +101,9 @@ func main() {
 	if err := internal.ResumeActiveChannels(deps); err != nil {
 		log.Fatal(err, "failed to resume active peer channels")
 	}
+	if err := internal.ResumeSocketConnections(deps, cfg.P4); err != nil {
+		log.Error(err, "failed to reconnect invoices with p4")
+	}
 
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)

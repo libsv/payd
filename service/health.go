@@ -31,7 +31,9 @@ func (h *healthSvc) Health(ctx context.Context) error {
 	}
 	switch u.Scheme {
 	case "ws", "wss":
-		if err := h.c.JoinChannel(h.cfg.ServerHost, "health", nil); err != nil {
+		if err := h.c.JoinChannel(h.cfg.ServerHost, "health", nil, map[string]string{
+			"internal": "true",
+		}); err != nil {
 			return err
 		}
 		if err := h.c.Publish(sockets.Request{

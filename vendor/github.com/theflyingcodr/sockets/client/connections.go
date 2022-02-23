@@ -120,7 +120,7 @@ func (c *Client) reconnect(url string) (*websocket.Conn, bool) {
 	for {
 		i++
 		time.Sleep(c.opts.reconnectTimeout)
-		ws, _, err := websocket.DefaultDialer.Dial(url, nil)
+		ws, resp, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			log.Err(err).Msgf("failed to reconnect to '%s' after '%d' attempts", url, i)
 			if c.opts.reconnectAttempts != -1 && i > c.opts.reconnectAttempts {
@@ -128,6 +128,9 @@ func (c *Client) reconnect(url string) (*websocket.Conn, bool) {
 			}
 			continue
 		}
+		defer func() {
+			_ = resp.Body.Close()
+		}()
 		return ws, true
 	}
 }
