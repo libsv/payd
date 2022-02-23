@@ -3,10 +3,13 @@ package internal
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 	paydSQL "github.com/libsv/payd/data/sqlite"
 	"github.com/libsv/payd/docs"
@@ -16,6 +19,7 @@ import (
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 	tsoc "github.com/libsv/payd/transports/sockets"
 	socMiddleware "github.com/libsv/payd/transports/sockets/middleware"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/theflyingcodr/sockets/client"
@@ -119,6 +123,37 @@ func ResumeActiveChannels(deps *SocketDeps) error {
 		ch := channel
 		if err := deps.PeerChannelsNotifyService.Subscribe(ctx, &ch); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// ResumeSocketConnections resume socket connections with the P4 host.
+func ResumeSocketConnections(deps *SocketDeps, cfg *config.P4) error {
+	u, err := url.Parse(cfg.ServerHost)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse p4 host")
+	}
+
+	// No need to re-establish socket conn when running over http
+	if u.Scheme != "ws" && u.Scheme != "wss" {
+		return nil
+	}
+
+	ctx := context.Background()
+	invoices, err := deps.InvoiceService.Invoices(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve invoices")
+	}
+
+	for _, invoice := range invoices {
+		if time.Now().UTC().Unix() <= invoice.ExpiresAt.Time.UTC().Unix() && invoice.State == payd.StateInvoicePending {
+			if err := deps.ConnectService.Connect(ctx, payd.ConnectArgs{
+				InvoiceID: invoice.ID,
+			}); err != nil {
+				return errors.Wrapf(err, "failed to connect invoice %s", invoice.ID)
+			}
 		}
 	}
 

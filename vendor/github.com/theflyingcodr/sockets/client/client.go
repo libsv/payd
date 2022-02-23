@@ -1,13 +1,14 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
 	"github.com/theflyingcodr/sockets"
@@ -244,9 +245,20 @@ func (c *Client) Close() {
 // it cannot connect.
 //
 // If you need to authenticate with the server or send meta, add header/s.
-func (c *Client) JoinChannel(host, channelID string, headers http.Header) error {
+func (c *Client) JoinChannel(host, channelID string, headers http.Header, params map[string]string) error {
 	log.Info().Msgf("joining channel %s", channelID)
-	ws, resp, err := websocket.DefaultDialer.Dial(fmt.Sprintf("%s/%s", host, channelID), headers)
+	u, err := url.Parse(fmt.Sprintf("%s/%s", host, channelID))
+	if err != nil {
+		return errors.Wrap(err, "failed to parse channel url")
+	}
+	if params != nil {
+		q := u.Query()
+		for k, v := range params {
+			q.Add(k, v)
+		}
+		u.RawQuery = q.Encode()
+	}
+	ws, resp, err := websocket.DefaultDialer.Dial(u.String(), headers)
 	if err != nil {
 		return err
 	}
@@ -254,7 +266,7 @@ func (c *Client) JoinChannel(host, channelID string, headers http.Header) error 
 		_ = resp.Body.Close()
 	}()
 	c.channelJoin <- &connection{
-		url:       fmt.Sprintf("%s/%s", host, channelID),
+		url:       u.String(),
 		channelID: channelID,
 		ws:        ws,
 		closer:    make(chan bool),

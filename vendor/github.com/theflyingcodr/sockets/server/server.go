@@ -112,6 +112,7 @@ type SocketServer struct {
 	register        chan register
 	channelSender   chan sender
 	directSender    chan sender
+	channelChecker  chan checker
 	close           chan struct{}
 	done            chan struct{}
 	channelCloser   chan string
@@ -142,6 +143,7 @@ func New(opts ...OptFunc) *SocketServer {
 		register:           make(chan register, 1),
 		channelSender:      make(chan sender, 256),
 		directSender:       make(chan sender, 256),
+		channelChecker:     make(chan checker, 256),
 		close:              make(chan struct{}, 1),
 		done:               make(chan struct{}, 1),
 		opts:               defaults,
@@ -258,6 +260,9 @@ func (s *SocketServer) channelManager() {
 				}
 				go func() { ch.send <- m.msg }()
 			}
+		case c := <-s.channelChecker:
+			_, ok := s.channels[c.ID]
+			c.exists <- ok
 		case <-ticker.C:
 			for channelID, channel := range s.channels {
 				if channel.expires.IsZero() { // doesn't expire
@@ -480,12 +485,31 @@ func (s *SocketServer) BroadcastDirect(clientID string, msg *sockets.Message) {
 	}
 }
 
+// HasChannel will check to see if the server has a channel connection established.
+func (s *SocketServer) HasChannel(channelID string) bool {
+	log.Debug().Msgf("checking if channel %s exists", channelID)
+	exists := make(chan bool)
+	defer close(exists)
+
+	s.channelChecker <- checker{
+		ID:     channelID,
+		exists: exists,
+	}
+
+	result := <-exists
+	log.Debug().Msgf("channel %s exists: %t", channelID, result)
+	return result
+}
+
 // BroadcastAwait will send a broadcast to a channel and wait for a response,
 // this will simply act on the first response to hit the server, if multiple peers respond, only the
 // first will be returned.
 //
 // The function will return if a msg is returned OR an error is returned OR the ctx times out.
 func (s *SocketServer) BroadcastAwait(ctx context.Context, channelID string, msg *sockets.Message) (*sockets.Message, error) {
+	if !s.HasChannel(channelID) {
+		return nil, sockets.ErrChannelNotFound
+	}
 	defer s.waitingMsgs.delete(msg.CorrelationID)
 	wm := newWaitMessage()
 	s.waitingMsgs.add(msg.CorrelationID, wm)
@@ -520,4 +544,9 @@ type unregister struct {
 type sender struct {
 	ID  string
 	msg interface{}
+}
+
+type checker struct {
+	ID     string
+	exists chan bool
 }

@@ -245,7 +245,7 @@ github.com/theflyingcodr/govalidator
 ## explicit; go 1.17
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/theflyingcodr/sockets v0.0.11-beta
+# github.com/theflyingcodr/sockets v0.0.11-beta.0.20220222160101-76100ef886b5
 ## explicit; go 1.17
 github.com/theflyingcodr/sockets
 github.com/theflyingcodr/sockets/client

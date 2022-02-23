@@ -36,7 +36,7 @@ func (c *paymentChannel) Pay(ctx context.Context, req payd.PayRequest) error {
 	// parse url to get host connection and invoiceID
 	parts := reURL.FindStringSubmatch(req.PayToURL)
 	invoiceID := parts[2]
-	if err := c.cli.JoinChannel(parts[1], invoiceID, nil); err != nil {
+	if err := c.cli.JoinChannel(parts[1], invoiceID, nil, nil); err != nil {
 		return errors.Wrapf(err, "failed to connect to channel %s", invoiceID)
 	}
 	// kick off the process - we will receive the messages via the socket transport listeners.
