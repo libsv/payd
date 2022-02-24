@@ -37,6 +37,7 @@ require (
 )
 
 require (
+	github.com/InVisionApp/go-logger v1.0.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -90,8 +91,11 @@ require (
 )
 
 require (
+	github.com/InVisionApp/go-health/v2 v2.1.2
 	github.com/libsv/go-p4 v0.0.8
 	github.com/libsv/go-spvchannels v0.0.1
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
+
+replace github.com/theflyingcodr/sockets => /Users/t.carroll/go/src/github.com/Tigh-Gherr/sockets

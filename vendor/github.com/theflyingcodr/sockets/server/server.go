@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/theflyingcodr/sockets"
+	"github.com/theflyingcodr/sockets/internal"
 	"github.com/theflyingcodr/sockets/middleware"
 )
 
@@ -112,7 +113,7 @@ type SocketServer struct {
 	register        chan register
 	channelSender   chan sender
 	directSender    chan sender
-	channelChecker  chan checker
+	channelChecker  chan internal.ChannelCheck
 	close           chan struct{}
 	done            chan struct{}
 	channelCloser   chan string
@@ -143,7 +144,7 @@ func New(opts ...OptFunc) *SocketServer {
 		register:           make(chan register, 1),
 		channelSender:      make(chan sender, 256),
 		directSender:       make(chan sender, 256),
-		channelChecker:     make(chan checker, 256),
+		channelChecker:     make(chan internal.ChannelCheck, 256),
 		close:              make(chan struct{}, 1),
 		done:               make(chan struct{}, 1),
 		opts:               defaults,
@@ -262,7 +263,7 @@ func (s *SocketServer) channelManager() {
 			}
 		case c := <-s.channelChecker:
 			_, ok := s.channels[c.ID]
-			c.exists <- ok
+			c.Exists <- ok
 		case <-ticker.C:
 			for channelID, channel := range s.channels {
 				if channel.expires.IsZero() { // doesn't expire
@@ -491,9 +492,9 @@ func (s *SocketServer) HasChannel(channelID string) bool {
 	exists := make(chan bool)
 	defer close(exists)
 
-	s.channelChecker <- checker{
+	s.channelChecker <- internal.ChannelCheck{
 		ID:     channelID,
-		exists: exists,
+		Exists: exists,
 	}
 
 	result := <-exists
@@ -544,9 +545,4 @@ type unregister struct {
 type sender struct {
 	ID  string
 	msg interface{}
-}
-
-type checker struct {
-	ID     string
-	exists chan bool
 }

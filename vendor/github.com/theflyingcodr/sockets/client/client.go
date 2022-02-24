@@ -116,6 +116,7 @@ type Client struct {
 	channelJoin      chan *connection
 	channelLeave     chan string
 	channelReconnect chan reconnectChannel
+	channelChecker   chan internal.ChannelCheck
 	join             chan joinSuccess
 	opts             *opts
 	sync.RWMutex
@@ -147,6 +148,7 @@ func New(opts ...OptFunc) *Client {
 		channelJoin:      make(chan *connection, 1),
 		channelLeave:     make(chan string, 1),
 		channelReconnect: make(chan reconnectChannel, 1),
+		channelChecker:   make(chan internal.ChannelCheck, 256),
 		join:             make(chan joinSuccess, 1),
 		RWMutex:          sync.RWMutex{},
 		opts:             o,
@@ -281,6 +283,22 @@ func (c *Client) LeaveChannel(channelID string, headers http.Header) {
 	c.channelLeave <- channelID
 }
 
+// HasChannel will check to see if a client is conencted to a channel.
+func (c *Client) HasChannel(channelID string) bool {
+	log.Debug().Msgf("checking if channel %s exists", channelID)
+	exists := make(chan bool)
+	defer close(exists)
+
+	c.channelChecker <- internal.ChannelCheck{
+		ID:     channelID,
+		Exists: exists,
+	}
+
+	result := <-exists
+	log.Debug().Msgf("channel %s exists: %t", channelID, result)
+	return result
+}
+
 func (c *Client) channelManager() {
 	for {
 		select {
@@ -330,6 +348,9 @@ func (c *Client) channelManager() {
 				continue
 			}
 			ch.ws = r.conn
+		case e := <-c.channelChecker:
+			_, ok := c.conn[e.ID]
+			e.Exists <- ok
 		}
 	}
 }

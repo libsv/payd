@@ -17,3 +17,9 @@ func WriteJSON(ws *websocket.Conn, timeout time.Duration, payload interface{}) e
 	_ = ws.SetWriteDeadline(time.Now().Add(timeout))
 	return ws.WriteJSON(payload)
 }
+
+// ChannelCheck for sending channel check messages.
+type ChannelCheck struct {
+	ID     string
+	Exists chan bool
+}

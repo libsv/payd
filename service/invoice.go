@@ -71,6 +71,15 @@ func (i *invoice) Invoices(ctx context.Context) ([]payd.Invoice, error) {
 	return ii, nil
 }
 
+// InvoicesPending will return all currently stored invoices.
+func (i *invoice) InvoicesPending(ctx context.Context) ([]payd.Invoice, error) {
+	ii, err := i.store.Invoices(ctx)
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed to get invoices")
+	}
+	return ii, nil
+}
+
 // Create will add a new invoice to the system.
 func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Invoice, error) {
 	if err := req.Validate(); err != nil {

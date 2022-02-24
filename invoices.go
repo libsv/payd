@@ -125,6 +125,7 @@ func (i *InvoiceArgs) Validate() error {
 type InvoiceService interface {
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
 	Invoices(ctx context.Context) ([]Invoice, error)
+	InvoicesPending(ctx context.Context) ([]Invoice, error)
 	Create(ctx context.Context, req InvoiceCreate) (*Invoice, error)
 	Delete(ctx context.Context, args InvoiceArgs) error
 }
@@ -152,4 +153,5 @@ type InvoiceReader interface {
 	Invoice(ctx context.Context, args InvoiceArgs) (*Invoice, error)
 	// Invoices returns all currently stored invoices TODO: update to support search args
 	Invoices(ctx context.Context) ([]Invoice, error)
+	InvoicesPending(ctx context.Context) ([]Invoice, error)
 }
