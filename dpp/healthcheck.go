@@ -21,6 +21,7 @@ type healthCheck struct {
 	invSvc payd.InvoiceService
 }
 
+// NewHealthCheck return a new DPP health check.
 func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceService, cfg *config.P4) payd.HealthCheck {
 	return &healthCheck{
 		h:      h,
@@ -30,6 +31,7 @@ func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceServi
 	}
 }
 
+// Start the health check.
 func (h *healthCheck) Start() error {
 	u, err := url.Parse(h.cfg.ServerHost)
 	if err != nil {
