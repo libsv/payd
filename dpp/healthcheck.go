@@ -15,19 +15,21 @@ import (
 )
 
 type healthCheck struct {
-	h      health.IHealth
-	c      *client.Client
-	cfg    *config.P4
-	invSvc payd.InvoiceService
+	h       health.IHealth
+	c       *client.Client
+	cfg     *config.P4
+	invSvc  payd.InvoiceService
+	connSvc payd.ConnectService
 }
 
 // NewHealthCheck return a new DPP health check.
-func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceService, cfg *config.P4) payd.HealthCheck {
+func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceService, connSvc payd.ConnectService, cfg *config.P4) payd.HealthCheck {
 	return &healthCheck{
-		h:      h,
-		c:      c,
-		cfg:    cfg,
-		invSvc: invSvc,
+		h:       h,
+		c:       c,
+		cfg:     cfg,
+		invSvc:  invSvc,
+		connSvc: connSvc,
 	}
 }
 
@@ -64,9 +66,10 @@ func (h *healthCheck) commsCheck() error {
 	if err := h.h.AddCheck(&health.Config{
 		Name: "p4-channel-conn",
 		Checker: &channelCheck{
-			c:      h.c,
-			host:   h.cfg.ServerHost,
-			invSvc: h.invSvc,
+			c:       h.c,
+			host:    h.cfg.ServerHost,
+			invSvc:  h.invSvc,
+			connSvc: h.connSvc,
 		},
 		Interval: time.Duration(10) * time.Second,
 	}); err != nil {
@@ -103,13 +106,17 @@ func (ch *commsCheck) Status() (interface{}, error) {
 }
 
 type channelCheck struct {
-	c      *client.Client
-	host   string
-	invSvc payd.InvoiceService
+	c       *client.Client
+	host    string
+	invSvc  payd.InvoiceService
+	connSvc payd.ConnectService
 }
 
 // Status of channels.
 func (ch *channelCheck) Status() (interface{}, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	defer cancel()
+
 	invoices, err := ch.invSvc.InvoicesPending(context.Background())
 	if err != nil {
 		if lathos.IsNotFound(err) {
@@ -125,11 +132,12 @@ func (ch *channelCheck) Status() (interface{}, error) {
 			continue
 		}
 
-		if err := ch.c.JoinChannel(ch.host, invoice.ID, nil, map[string]string{
-			"internal": "true",
+		if err := ch.connSvc.Connect(ctx, payd.ConnectArgs{
+			InvoiceID: invoice.ID,
 		}); err != nil {
-			return nil, errors.Wrapf(err, "failed rejoining channel for invoice '%s'", invoice.ID)
+			return nil, errors.Wrapf(err, "failed reconnecting to channel for invoice '%s'", invoice.ID)
 		}
+
 	}
 	return nil, nil
 }

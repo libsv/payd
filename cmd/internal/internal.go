@@ -112,7 +112,7 @@ func SetupSocketServer(cfg config.Socket, e *echo.Echo) *server.SocketServer {
 func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client, deps *SocketDeps) error {
 	h := health.New()
 
-	if err := dpp.NewHealthCheck(h, c, deps.InvoiceService, cfg.P4).Start(); err != nil {
+	if err := dpp.NewHealthCheck(h, c, deps.InvoiceService, deps.ConnectService, cfg.P4).Start(); err != nil {
 		return errors.Wrap(err, "failed to start dpp health check")
 	}
 
@@ -152,13 +152,13 @@ func ResumeSocketConnections(deps *SocketDeps, cfg *config.P4) error {
 	}
 
 	ctx := context.Background()
-	invoices, err := deps.InvoiceService.Invoices(ctx)
+	invoices, err := deps.InvoiceService.InvoicesPending(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve invoices")
 	}
 
 	for _, invoice := range invoices {
-		if time.Now().UTC().Unix() <= invoice.ExpiresAt.Time.UTC().Unix() && invoice.State == payd.StateInvoicePending {
+		if time.Now().UTC().Unix() <= invoice.ExpiresAt.Time.UTC().Unix() {
 			if err := deps.ConnectService.Connect(ctx, payd.ConnectArgs{
 				InvoiceID: invoice.ID,
 			}); err != nil {

@@ -75,6 +75,7 @@ func (s *sqliteStore) Invoices(ctx context.Context) ([]payd.Invoice, error) {
 	return resp, nil
 }
 
+// InvoicesPending will return any invoices that have the status 'pending`.
 func (s *sqliteStore) InvoicesPending(ctx context.Context) ([]payd.Invoice, error) {
 	var resp []payd.Invoice
 	if err := s.db.SelectContext(ctx, &resp, sqlPendingInvoices); err != nil {
