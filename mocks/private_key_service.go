@@ -20,10 +20,10 @@ var _ payd.PrivateKeyService = &PrivateKeyServiceMock{}
 //
 // 		// make and configure a mocked payd.PrivateKeyService
 // 		mockedPrivateKeyService := &PrivateKeyServiceMock{
-// 			CreateFunc: func(ctx context.Context, keyName string) error {
+// 			CreateFunc: func(ctx context.Context, keyName string, userID uint64) error {
 // 				panic("mock out the Create method")
 // 			},
-// 			PrivateKeyFunc: func(ctx context.Context, keyName string) (*bip32.ExtendedKey, error) {
+// 			PrivateKeyFunc: func(ctx context.Context, keyName string, userID uint64) (*bip32.ExtendedKey, error) {
 // 				panic("mock out the PrivateKey method")
 // 			},
 // 		}
@@ -47,6 +47,8 @@ type PrivateKeyServiceMock struct {
 			Ctx context.Context
 			// KeyName is the keyName argument value.
 			KeyName string
+			// UserID is the userID argument value.
+			UserID uint64
 		}
 		// PrivateKey holds details about calls to the PrivateKey method.
 		PrivateKey []struct {
@@ -54,6 +56,8 @@ type PrivateKeyServiceMock struct {
 			Ctx context.Context
 			// KeyName is the keyName argument value.
 			KeyName string
+			// UserID is the userID argument value.
+			UserID uint64
 		}
 	}
 	lockCreate     sync.RWMutex
@@ -68,9 +72,11 @@ func (mock *PrivateKeyServiceMock) Create(ctx context.Context, keyName string, u
 	callInfo := struct {
 		Ctx     context.Context
 		KeyName string
+		UserID  uint64
 	}{
 		Ctx:     ctx,
 		KeyName: keyName,
+		UserID:  userID,
 	}
 	mock.lockCreate.Lock()
 	mock.calls.Create = append(mock.calls.Create, callInfo)
@@ -84,10 +90,12 @@ func (mock *PrivateKeyServiceMock) Create(ctx context.Context, keyName string, u
 func (mock *PrivateKeyServiceMock) CreateCalls() []struct {
 	Ctx     context.Context
 	KeyName string
+	UserID  uint64
 } {
 	var calls []struct {
 		Ctx     context.Context
 		KeyName string
+		UserID  uint64
 	}
 	mock.lockCreate.RLock()
 	calls = mock.calls.Create
@@ -103,9 +111,11 @@ func (mock *PrivateKeyServiceMock) PrivateKey(ctx context.Context, keyName strin
 	callInfo := struct {
 		Ctx     context.Context
 		KeyName string
+		UserID  uint64
 	}{
 		Ctx:     ctx,
 		KeyName: keyName,
+		UserID:  userID,
 	}
 	mock.lockPrivateKey.Lock()
 	mock.calls.PrivateKey = append(mock.calls.PrivateKey, callInfo)
@@ -119,10 +129,12 @@ func (mock *PrivateKeyServiceMock) PrivateKey(ctx context.Context, keyName strin
 func (mock *PrivateKeyServiceMock) PrivateKeyCalls() []struct {
 	Ctx     context.Context
 	KeyName string
+	UserID  uint64
 } {
 	var calls []struct {
 		Ctx     context.Context
 		KeyName string
+		UserID  uint64
 	}
 	mock.lockPrivateKey.RLock()
 	calls = mock.calls.PrivateKey

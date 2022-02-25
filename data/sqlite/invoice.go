@@ -31,6 +31,12 @@ const (
 	WHERE state != 'deleted'
 	`
 
+	sqlPendingInvoices = `
+	SELECT invoice_id, satoshis, description, spv_required, payment_reference, payment_received_at, expires_at, state, refund_to, refunded_at, created_at, updated_at, deleted_at
+	FROM invoices
+	WHERE state == 'pending'
+	`
+
 	// TODO - sort updates when working on rest of Invoice API.
 	sqlInvoiceUpdate = `
 		UPDATE invoices 
@@ -61,6 +67,18 @@ func (s *sqliteStore) Invoice(ctx context.Context, args payd.InvoiceArgs) (*payd
 func (s *sqliteStore) Invoices(ctx context.Context) ([]payd.Invoice, error) {
 	var resp []payd.Invoice
 	if err := s.db.SelectContext(ctx, &resp, sqlInvoices); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, lathos.NewErrNotFound(errcodes.ErrInvoicesNotFound, "no invoices found")
+		}
+		return nil, errors.Wrapf(err, "failed to get invoices")
+	}
+	return resp, nil
+}
+
+// InvoicesPending will return any invoices that have the status 'pending`.
+func (s *sqliteStore) InvoicesPending(ctx context.Context) ([]payd.Invoice, error) {
+	var resp []payd.Invoice
+	if err := s.db.SelectContext(ctx, &resp, sqlPendingInvoices); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, lathos.NewErrNotFound(errcodes.ErrInvoicesNotFound, "no invoices found")
 		}

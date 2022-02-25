@@ -34,6 +34,9 @@ var _ payd.InvoiceReaderWriter = &InvoiceReaderWriterMock{}
 // 			InvoicesFunc: func(ctx context.Context) ([]payd.Invoice, error) {
 // 				panic("mock out the Invoices method")
 // 			},
+// 			InvoicesPendingFunc: func(ctx context.Context) ([]payd.Invoice, error) {
+// 				panic("mock out the InvoicesPending method")
+// 			},
 // 		}
 //
 // 		// use mockedInvoiceReaderWriter in code that requires payd.InvoiceReaderWriter
@@ -55,6 +58,9 @@ type InvoiceReaderWriterMock struct {
 
 	// InvoicesFunc mocks the Invoices method.
 	InvoicesFunc func(ctx context.Context) ([]payd.Invoice, error)
+
+	// InvoicesPendingFunc mocks the InvoicesPending method.
+	InvoicesPendingFunc func(ctx context.Context) ([]payd.Invoice, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -93,12 +99,18 @@ type InvoiceReaderWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 		}
+		// InvoicesPending holds details about calls to the InvoicesPending method.
+		InvoicesPending []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+		}
 	}
-	lockInvoice       sync.RWMutex
-	lockInvoiceCreate sync.RWMutex
-	lockInvoiceDelete sync.RWMutex
-	lockInvoiceUpdate sync.RWMutex
-	lockInvoices      sync.RWMutex
+	lockInvoice         sync.RWMutex
+	lockInvoiceCreate   sync.RWMutex
+	lockInvoiceDelete   sync.RWMutex
+	lockInvoiceUpdate   sync.RWMutex
+	lockInvoices        sync.RWMutex
+	lockInvoicesPending sync.RWMutex
 }
 
 // Invoice calls InvoiceFunc.
@@ -273,5 +285,36 @@ func (mock *InvoiceReaderWriterMock) InvoicesCalls() []struct {
 	mock.lockInvoices.RLock()
 	calls = mock.calls.Invoices
 	mock.lockInvoices.RUnlock()
+	return calls
+}
+
+// InvoicesPending calls InvoicesPendingFunc.
+func (mock *InvoiceReaderWriterMock) InvoicesPending(ctx context.Context) ([]payd.Invoice, error) {
+	if mock.InvoicesPendingFunc == nil {
+		panic("InvoiceReaderWriterMock.InvoicesPendingFunc: method is nil but InvoiceReaderWriter.InvoicesPending was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+	}{
+		Ctx: ctx,
+	}
+	mock.lockInvoicesPending.Lock()
+	mock.calls.InvoicesPending = append(mock.calls.InvoicesPending, callInfo)
+	mock.lockInvoicesPending.Unlock()
+	return mock.InvoicesPendingFunc(ctx)
+}
+
+// InvoicesPendingCalls gets all the calls that were made to InvoicesPending.
+// Check the length with:
+//     len(mockedInvoiceReaderWriter.InvoicesPendingCalls())
+func (mock *InvoiceReaderWriterMock) InvoicesPendingCalls() []struct {
+	Ctx context.Context
+} {
+	var calls []struct {
+		Ctx context.Context
+	}
+	mock.lockInvoicesPending.RLock()
+	calls = mock.calls.InvoicesPending
+	mock.lockInvoicesPending.RUnlock()
 	return calls
 }

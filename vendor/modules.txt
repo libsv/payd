@@ -1,3 +1,9 @@
+# github.com/InVisionApp/go-health/v2 v2.1.2
+## explicit; go 1.13
+github.com/InVisionApp/go-health/v2
+# github.com/InVisionApp/go-logger v1.0.1
+## explicit
+github.com/InVisionApp/go-logger
 # github.com/KyleBanks/depth v1.2.1
 ## explicit
 github.com/KyleBanks/depth
@@ -245,7 +251,7 @@ github.com/theflyingcodr/govalidator
 ## explicit; go 1.17
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/theflyingcodr/sockets v0.0.11-beta.0.20220222160101-76100ef886b5
+# github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586
 ## explicit; go 1.17
 github.com/theflyingcodr/sockets
 github.com/theflyingcodr/sockets/client

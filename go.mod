@@ -33,10 +33,11 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/libsv/go-bc v0.1.8
 	github.com/rs/zerolog v1.26.1
-	github.com/theflyingcodr/sockets v0.0.11-beta.0.20220222160101-76100ef886b5
+	github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586
 )
 
 require (
+	github.com/InVisionApp/go-logger v1.0.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -90,6 +91,7 @@ require (
 )
 
 require (
+	github.com/InVisionApp/go-health/v2 v2.1.2
 	github.com/libsv/go-p4 v0.0.8
 	github.com/libsv/go-spvchannels v0.0.1
 )

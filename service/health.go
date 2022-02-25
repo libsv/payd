@@ -2,48 +2,36 @@ package service
 
 import (
 	"context"
-	"net/url"
 
+	"github.com/InVisionApp/go-health/v2"
 	"github.com/libsv/payd"
-	"github.com/libsv/payd/config"
-	"github.com/theflyingcodr/sockets"
-	"github.com/theflyingcodr/sockets/client"
+	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type healthSvc struct {
-	c   *client.Client
-	cfg *config.P4
+	h health.IHealth
 }
 
 // NewHealthService (NHS) will setup and return a new health service.
-func NewHealthService(c *client.Client, cfg *config.P4) payd.HealthService {
+func NewHealthService(h health.IHealth) payd.HealthService {
 	return &healthSvc{
-		c:   c,
-		cfg: cfg,
+		h: h,
 	}
 }
 
 // Health will return an error if the application is in an unhealthy state.
 func (h *healthSvc) Health(ctx context.Context) error {
-	u, err := url.Parse(h.cfg.ServerHost)
+	status, failed, err := h.h.State()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to check health state")
 	}
-	switch u.Scheme {
-	case "ws", "wss":
-		if err := h.c.JoinChannel(h.cfg.ServerHost, "health", nil, map[string]string{
-			"internal": "true",
-		}); err != nil {
-			return err
-		}
-		if err := h.c.Publish(sockets.Request{
-			ChannelID:  "health",
-			MessageKey: "my-p4",
-			Body:       "ping",
-		}); err != nil {
-			return err
-		}
-		h.c.LeaveChannel("health", nil)
+	if len(status) == 0 {
+		return nil
+	}
+	if failed {
+		log.Error().Interface("key check failed", status)
+		return errors.New("all healthchecks failed")
 	}
 
 	return nil

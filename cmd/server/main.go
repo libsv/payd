@@ -96,7 +96,9 @@ func main() {
 	internal.SetupSocketClient(*cfg, deps, c)
 	// setup socket endpoints
 	internal.SetupSocketHTTPEndpoints(*cfg.Deployment, deps, g)
-	internal.SetupHealthEndpoint(*cfg, g, c)
+	if err := internal.SetupHealthEndpoint(*cfg, g, c, deps); err != nil {
+		log.Fatal(err, "failed to create health checks")
+	}
 
 	if err := internal.ResumeActiveChannels(deps); err != nil {
 		log.Fatal(err, "failed to resume active peer channels")
