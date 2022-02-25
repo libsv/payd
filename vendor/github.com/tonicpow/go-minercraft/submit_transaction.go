@@ -175,7 +175,7 @@ func (i *internalResult) parseSubmission() (response SubmitTransactionResponse, 
 // submitTransaction will fire the HTTP request to submit a transaction
 func submitTransaction(ctx context.Context, client *Client, miner *Miner, tx *Transaction) (result *internalResult) {
 	result = &internalResult{Miner: miner}
-	data, _ := json.Marshal(tx) // Ignoring error - if it fails, the submission would also fail
+	data, _ := json.Marshal(tx) // nolint: errchkjson // Ignoring error - if it fails, the submission would also fail
 	result.Response = httpRequest(ctx, client, &httpPayload{
 		Method: http.MethodPost,
 		URL:    miner.URL + routeSubmitTx,

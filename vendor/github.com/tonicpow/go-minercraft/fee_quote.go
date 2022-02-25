@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/libsv/go-bt"
+	"github.com/libsv/go-bt/v2"
 )
 
 const (
@@ -86,15 +86,46 @@ Example FeeQuoteResponse.Payload (unmarshalled):
 
 // FeePayload is the unmarshalled version of the payload envelope
 type FeePayload struct {
-	APIVersion                string      `json:"apiVersion"`
-	Timestamp                 string      `json:"timestamp"`
-	ExpirationTime            string      `json:"expiryTime"`
-	MinerID                   string      `json:"minerId"`
-	CurrentHighestBlockHash   string      `json:"currentHighestBlockHash"`
-	CurrentHighestBlockHeight uint64      `json:"currentHighestBlockHeight"`
-	MinerReputation           interface{} `json:"minerReputation"` // Not sure what this value is
-	Fees                      []*bt.Fee   `json:"fees"`
+	feePayloadFields
+	Fees []*bt.Fee `json:"fees"`
 }
+
+type (
+
+	// rawFeePayload is the unmarshalled version of the payload envelope
+	rawFeePayload struct {
+		feePayloadFields
+		Fees []*feeObj `json:"fees"`
+	}
+
+	// feePayloadFields are the same fields in both payloads
+	feePayloadFields struct {
+		APIVersion                string      `json:"apiVersion"`
+		Timestamp                 string      `json:"timestamp"`
+		ExpirationTime            string      `json:"expiryTime"`
+		MinerID                   string      `json:"minerId"`
+		CurrentHighestBlockHash   string      `json:"currentHighestBlockHash"`
+		CurrentHighestBlockHeight uint64      `json:"currentHighestBlockHeight"`
+		MinerReputation           interface{} `json:"minerReputation"` // Not sure what this value is
+	}
+
+	// feeUnit displays the amount of Satoshis needed
+	// for a specific amount of Bytes in a transaction
+	// see https://github.com/bitcoin-sv-specs/brfc-merchantapi#expanded-payload-1
+	feeUnit struct {
+		Satoshis int `json:"satoshis"` // Fee in satoshis of the amount of Bytes
+		Bytes    int `json:"bytes"`    // Number of bytes that the Fee covers
+	}
+
+	// feeObj displays the MiningFee as well as the RelayFee for a specific
+	// FeeType, for example 'standard' or 'data'
+	// see https://github.com/bitcoin-sv-specs/brfc-merchantapi#expanded-payload-1
+	feeObj struct {
+		FeeType   string  `json:"feeType"` // standard || data
+		MiningFee feeUnit `json:"miningFee"`
+		RelayFee  feeUnit `json:"relayFee"` // Fee for retaining Tx in secondary mempool
+	}
+)
 
 // CalculateFee will return the fee for the given txBytes
 // Type: "FeeTypeData" or "FeeTypeStandard"
@@ -116,7 +147,7 @@ func (f *FeePayload) CalculateFee(feeCategory, feeType string, txBytes uint64) (
 	for _, fee := range f.Fees {
 
 		// Detect the type (data or standard)
-		if fee.FeeType != feeType {
+		if string(fee.FeeType) != feeType {
 			continue
 		}
 
@@ -146,7 +177,7 @@ func (f *FeePayload) GetFee(feeType string) *bt.Fee {
 
 	// Loop the fees for the given type
 	for index, fee := range f.Fees {
-		if fee.FeeType == feeType {
+		if string(fee.FeeType) == feeType {
 			return f.Fees[index]
 		}
 	}
@@ -205,9 +236,52 @@ func (i *internalResult) parseFeeQuote() (response FeeQuoteResponse, err error) 
 
 	// If we have a valid payload
 	if len(response.Payload) > 0 {
-		err = json.Unmarshal([]byte(response.Payload), &response.Quote)
+
+		// Create a raw payload shim
+		p := new(rawFeePayload)
+		if err = json.Unmarshal([]byte(response.Payload), &p); err != nil {
+			return
+		}
+		if response.Quote == nil {
+			response.Quote = new(FeePayload)
+		}
+
+		// Create the response payload
+		rawPayloadIntoQuote(p, response.Quote)
 	}
 	return
+}
+
+// rawPayloadIntoQuote will convert the raw parsed payload into a final quote payload
+func rawPayloadIntoQuote(payload *rawFeePayload, quote *FeePayload) {
+
+	// Set the fields from the raw payload into the quote
+	quote.MinerID = payload.MinerID
+	quote.APIVersion = payload.APIVersion
+	quote.Timestamp = payload.Timestamp
+	quote.ExpirationTime = payload.ExpirationTime
+	quote.CurrentHighestBlockHash = payload.CurrentHighestBlockHash
+	quote.CurrentHighestBlockHeight = payload.CurrentHighestBlockHeight
+	quote.MinerReputation = payload.MinerReputation
+
+	// Convert the mAPI fees into go-bt fees
+	for _, f := range payload.Fees {
+		t := bt.FeeTypeStandard
+		if f.FeeType == FeeTypeData {
+			t = bt.FeeTypeData
+		}
+		quote.Fees = append(quote.Fees, &bt.Fee{
+			FeeType: t,
+			MiningFee: bt.FeeUnit{
+				Satoshis: f.MiningFee.Satoshis,
+				Bytes:    f.MiningFee.Bytes,
+			},
+			RelayFee: bt.FeeUnit{
+				Satoshis: f.RelayFee.Satoshis,
+				Bytes:    f.RelayFee.Bytes,
+			},
+		})
+	}
 }
 
 // getQuote will fire the HTTP request to retrieve the fee/policy quote

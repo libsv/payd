@@ -16,11 +16,11 @@ func (c *Client) BestQuote(ctx context.Context, feeCategory, feeType string) (*F
 	var bestQuote FeeQuoteResponse
 
 	// The channel for the internal results
-	resultsChannel := make(chan *internalResult, len(c.Miners))
+	resultsChannel := make(chan *internalResult, len(c.miners))
 
 	// Loop each miner (break into a Go routine for each quote request)
 	var wg sync.WaitGroup
-	for _, miner := range c.Miners {
+	for _, miner := range c.miners {
 		wg.Add(1)
 		go func(ctx context.Context, wg *sync.WaitGroup, client *Client,
 			miner *Miner, resultsChannel chan *internalResult) {
