@@ -33,7 +33,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/libsv/go-bc v0.1.8
 	github.com/rs/zerolog v1.26.1
-	github.com/theflyingcodr/sockets v0.0.11-beta.0.20220222160101-76100ef886b5
+	github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586
 )
 
 require (
@@ -97,5 +97,3 @@ require (
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-
-replace github.com/theflyingcodr/sockets => /Users/t.carroll/go/src/github.com/Tigh-Gherr/sockets

@@ -283,7 +283,7 @@ func (c *Client) LeaveChannel(channelID string, headers http.Header) {
 	c.channelLeave <- channelID
 }
 
-// HasChannel will check to see if a client is conencted to a channel.
+// HasChannel will check to see if a client is connected to a channel.
 func (c *Client) HasChannel(channelID string) bool {
 	log.Debug().Msgf("checking if channel %s exists", channelID)
 	exists := make(chan bool)

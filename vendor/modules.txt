@@ -1,8 +1,6 @@
 # github.com/InVisionApp/go-health/v2 v2.1.2
 ## explicit; go 1.13
 github.com/InVisionApp/go-health/v2
-github.com/InVisionApp/go-health/v2/checkers
-github.com/InVisionApp/go-health/v2/handlers
 # github.com/InVisionApp/go-logger v1.0.1
 ## explicit
 github.com/InVisionApp/go-logger
@@ -253,7 +251,7 @@ github.com/theflyingcodr/govalidator
 ## explicit; go 1.17
 github.com/theflyingcodr/lathos
 github.com/theflyingcodr/lathos/errs
-# github.com/theflyingcodr/sockets v0.0.11-beta.0.20220222160101-76100ef886b5 => /Users/t.carroll/go/src/github.com/Tigh-Gherr/sockets
+# github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586
 ## explicit; go 1.17
 github.com/theflyingcodr/sockets
 github.com/theflyingcodr/sockets/client
@@ -357,4 +355,3 @@ gopkg.in/yaml.v2
 ## explicit
 gopkg.in/yaml.v3
 # github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
-# github.com/theflyingcodr/sockets => /Users/t.carroll/go/src/github.com/Tigh-Gherr/sockets
