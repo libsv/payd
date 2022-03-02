@@ -34,7 +34,8 @@ const (
 	sqlCreateUserMeta = `INSERT INTO users_meta(user_id, key, value) VALUES (:user_id, :key, :value)`
 )
 
-type UserMeta struct {
+// userMeta is the struct for meta data table
+type userMeta struct {
 	UserID uint64      `db:"user_id"`
 	Key    string      `db:"key"`
 	Value  interface{} `db:"value"`
@@ -55,9 +56,9 @@ func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, p
 		return nil, errors.Wrapf(err, "failed to create new user: %s", req.Name)
 	}
 
-	meta := make([]UserMeta, 0)
+	meta := make([]userMeta, 0)
 	for k, v := range req.ExtendedData {
-		meta = append(meta, UserMeta{
+		meta = append(meta, userMeta{
 			UserID: resp.ID,
 			Key:    k,
 			Value:  v,
