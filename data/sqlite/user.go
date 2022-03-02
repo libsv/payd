@@ -26,8 +26,22 @@ const (
 		DELETE FROM users
 		WHERE user_id = :user_id
 	`
+
+	sqlGetUserMetaByID = `
+		SELECT key, value FROM users_meta where user_id = :user_id
+	`
+
+	sqlCreateUserMeta = `INSERT INTO users_meta(user_id, key, value) VALUES (:user_id, :key, :value)`
 )
 
+// userMeta is the struct for meta data table.
+type userMeta struct {
+	UserID uint64      `db:"user_id"`
+	Key    string      `db:"key"`
+	Value  interface{} `db:"value"`
+}
+
+// CreateUser creates a new user in the system.
 func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, pks payd.PrivateKeyService) (*payd.CreateUserResponse, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
@@ -36,17 +50,31 @@ func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, p
 	defer func() {
 		_ = rollback(ctx, tx)
 	}()
+
 	var resp payd.CreateUserResponse
-	err = tx.GetContext(ctx, &resp, sqlCreateUser, req.Name, req.Avatar, req.Email, req.Address, req.PhoneNumber) //:name, :avatar_url, :email, :address, :phone_number
-	if err != nil {
+	if err = tx.GetContext(ctx, &resp, sqlCreateUser, req.Name, req.Avatar, req.Email, req.Address, req.PhoneNumber); err != nil {
 		return nil, errors.Wrapf(err, "failed to create new user: %s", req.Name)
 	}
+
+	meta := make([]userMeta, 0)
+	for k, v := range req.ExtendedData {
+		meta = append(meta, userMeta{
+			UserID: resp.ID,
+			Key:    k,
+			Value:  v,
+		})
+	}
+	_, err = tx.NamedExec(sqlCreateUserMeta, meta)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create new user meta data: %s", req.Name)
+	}
+
 	if err := commit(ctx, tx); err != nil {
 		return nil, errors.Wrapf(err, "failed to commit transaction when creating new user: %s", req.Name)
 	}
+
 	// Create a new xpriv for this new user
-	err = pks.Create(ctx, "masterkey", resp.ID)
-	if err != nil {
+	if err = pks.Create(ctx, "masterkey", resp.ID); err != nil {
 		return nil, errors.Wrap(err, "failed to create new xkey")
 	}
 	return &resp, nil
@@ -57,9 +85,9 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		ID          uint64 `db:"user_id"`
 		Name        string `db:"name"`
 		Email       string `db:"email"`
-		PhoneNumber string `db:"phone_number"`
-		Address     string `db:"address"`
 		Avatar      string `db:"avatar_url"`
+		Address     string `db:"address"`
+		PhoneNumber string `db:"phone_number"`
 		Xprv        string `db:"xprv"`
 	}
 
@@ -76,7 +104,8 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		Key   string `db:"key"`
 		Value string `db:"value"`
 	}, 0)
-	if err := s.db.SelectContext(ctx, &meta, sqlOwnerMetaGet, userID); err != nil {
+
+	if err := s.db.SelectContext(ctx, &meta, sqlGetUserMetaByID, userID); err != nil {
 		return nil, errors.Wrap(err, "failed to get wallet owner extended info")
 	}
 
@@ -87,12 +116,12 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 		Avatar:       data.Avatar,
 		Address:      data.Address,
 		PhoneNumber:  data.PhoneNumber,
-		ExtendedData: make(map[string]interface{}, 3),
+		ExtendedData: make(map[string]interface{}),
 		MasterKey:    xPriv,
 	}
 
-	for _, m := range meta {
-		user.ExtendedData[m.Key] = m.Value
+	for _, v := range meta {
+		user.ExtendedData[v.Key] = v.Value
 	}
 
 	return &user, nil
