@@ -34,14 +34,14 @@ const (
 	sqlCreateUserMeta = `INSERT INTO users_meta(user_id, key, value) VALUES (:user_id, :key, :value)`
 )
 
-// userMeta is the struct for meta data table
+// userMeta is the struct for meta data table.
 type userMeta struct {
 	UserID uint64      `db:"user_id"`
 	Key    string      `db:"key"`
 	Value  interface{} `db:"value"`
 }
 
-// CreateUser creates a new user in the system
+// CreateUser creates a new user in the system.
 func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, pks payd.PrivateKeyService) (*payd.CreateUserResponse, error) {
 	tx, err := s.newTx(ctx)
 	if err != nil {
