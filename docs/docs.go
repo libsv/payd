@@ -444,18 +444,18 @@ var doc = `{
                 }
             }
         },
-        "payd.P4Destination": {
+        "payd.DPPDestination": {
             "type": "object",
             "properties": {
                 "outputs": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/payd.P4Output"
+                        "$ref": "#/definitions/payd.DPPOutput"
                     }
                 }
             }
         },
-        "payd.P4Output": {
+        "payd.DPPOutput": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -484,7 +484,7 @@ var doc = `{
                     "type": "string"
                 },
                 "destinations": {
-                    "$ref": "#/definitions/payd.P4Destination"
+                    "$ref": "#/definitions/payd.DPPDestination"
                 },
                 "expirationTimestamp": {
                     "type": "string"

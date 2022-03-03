@@ -72,7 +72,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
 		"http", "https",
 	).Register(
 		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
@@ -80,7 +80,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
-	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
+	connectService := service.NewConnect(dsoc.NewConnect(cfg.DPP, c), invoiceSvc, cfg.DPP)
 	invoiceSvc.SetConnectionService(connectService)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	userSvc := service.NewUsersService(sqlLiteStore, privKeySvc)
@@ -158,14 +158,14 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewP4(&http.Client{Timeout: time.Duration(cfg.P4.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
 		"http", "https",
 	).Register(service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss")
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
 	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
-	connectService := service.NewConnect(dsoc.NewConnect(cfg.P4, c), invoiceSvc, cfg.P4)
+	connectService := service.NewConnect(dsoc.NewConnect(cfg.DPP, c), invoiceSvc, cfg.DPP)
 	invoiceSvc.SetConnectionService(connectService)
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)
 

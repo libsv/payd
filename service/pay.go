@@ -7,7 +7,7 @@ import (
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 
@@ -19,7 +19,7 @@ import (
 type pay struct {
 	storeTx    payd.Transacter
 	txWtr      payd.TransactionWriter
-	p4         http.P4
+	dpp        http.DPP
 	spvc       payd.EnvelopeService
 	pcStr      payd.PeerChannelsStore
 	pcNotifSvc payd.PeerChannelsNotifyService
@@ -27,11 +27,11 @@ type pay struct {
 }
 
 // NewPayService returns a pay service.
-func NewPayService(storeTx payd.Transacter, p4 http.P4, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
+func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
 	return &pay{
 		storeTx:    storeTx,
 		txWtr:      txWtr,
-		p4:         p4,
+		dpp:        dpp,
 		spvc:       spvc,
 		svrCfg:     svrCfg,
 		pcStr:      pcStr,
@@ -67,13 +67,13 @@ func (l derivationSigner) Unlocker(ctx context.Context, script *bscript.Script) 
 
 // Pay takes a pay-to url and performs a payment procedure, ultimately sending money to the
 // url.
-func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, error) {
+func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
 
 	// Retrieve the payment request information from the receiver.
-	payReq, err := p.p4.PaymentRequest(ctx, req)
+	payReq, err := p.dpp.PaymentRequest(ctx, req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to request payment for url %s", req.PayToURL)
 	}
@@ -86,13 +86,13 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*p4.PaymentACK, err
 	if err != nil {
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}
-	// Send the payment to the p4 server.
-	ack, err := p.p4.PaymentSend(ctx, req, p4.Payment{
+	// Send the payment to the dpp proxy server.
+	ack, err := p.dpp.PaymentSend(ctx, req, dpp.Payment{
 		SPVEnvelope: env,
-		ProofCallbacks: map[string]p4.ProofCallback{
+		ProofCallbacks: map[string]dpp.ProofCallback{
 			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
 		},
-		MerchantData: p4.Merchant{
+		MerchantData: dpp.Merchant{
 			Name:         payReq.MerchantData.Name,
 			Email:        payReq.MerchantData.Email,
 			AvatarURL:    payReq.MerchantData.AvatarURL,

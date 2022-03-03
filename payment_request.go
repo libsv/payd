@@ -20,17 +20,17 @@ func (p *PaymentRequestArgs) Validate() error {
 		Err()
 }
 
-// PaymentRequestResponse a payment request from p4.
+// PaymentRequestResponse a payment request from dpp.
 type PaymentRequestResponse struct {
-	Network             string        `json:"network"`
-	Destinations        P4Destination `json:"destinations"`
-	CreationTimestamp   time.Time     `json:"creationTimestamp"`
-	ExpirationTimestamp time.Time     `json:"expirationTimestamp"`
-	PaymentURL          string        `json:"paymentURL"`
-	Memo                string        `json:"memo"`
-	MerchantData        User          `json:"merchantData"`
-	Fee                 *bt.FeeQuote  `json:"fees"`
-	SPVRequired         bool          `json:"spvRequired" example:"true"`
+	Network             string         `json:"network"`
+	Destinations        DPPDestination `json:"destinations"`
+	CreationTimestamp   time.Time      `json:"creationTimestamp"`
+	ExpirationTimestamp time.Time      `json:"expirationTimestamp"`
+	PaymentURL          string         `json:"paymentURL"`
+	Memo                string         `json:"memo"`
+	MerchantData        User           `json:"merchantData"`
+	Fee                 *bt.FeeQuote   `json:"fees"`
+	SPVRequired         bool           `json:"spvRequired" example:"true"`
 }
 
 // PaymentRequestService will create and return a paymentRequest using the args provided.

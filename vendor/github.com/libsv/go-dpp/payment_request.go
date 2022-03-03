@@ -1,4 +1,4 @@
-package p4
+package dpp
 
 import (
 	"context"
@@ -18,7 +18,7 @@ type PaymentRequest struct {
 	// SPVRequired if true will expect the sender to submit an SPVEnvelope in the payment request, otherwise
 	// a rawTx will be required.
 	SPVRequired bool `json:"spvRequired" example:"true"`
-	// Destinations contains supported payment destinations by the merchant and p4 server, initial P2PKH outputs but can be extended.
+	// Destinations contains supported payment destinations by the merchant and dpp server, initial P2PKH outputs but can be extended.
 	// Required.
 	Destinations PaymentDestinations `json:"destinations"`
 	// CreationTimestamp Unix timestamp (seconds since 1-Jan-1970 UTC) when the PaymentRequest was created.

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/libsv/go-bc/spv"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	validator "github.com/theflyingcodr/govalidator"
 )
 
@@ -21,5 +21,5 @@ func (e EnvelopeArgs) Validate() error {
 
 // EnvelopeService will create an spv envelope from a paymentRequest.
 type EnvelopeService interface {
-	Envelope(ctx context.Context, args EnvelopeArgs, req p4.PaymentRequest) (*spv.Envelope, error)
+	Envelope(ctx context.Context, args EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error)
 }

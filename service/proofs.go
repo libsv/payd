@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/libsv/go-bk/envelope"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/go-spvchannels"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -28,8 +28,8 @@ func NewProofsService(wtr payd.ProofsWriter) *proofs {
 
 // Create will add a merkle proof to a data store for persistent storage once it has
 // been validated.
-func (p *proofs) Create(ctx context.Context, args p4.ProofCreateArgs, req envelope.JSONEnvelope) error {
-	var proof p4.ProofWrapper
+func (p *proofs) Create(ctx context.Context, args dpp.ProofCreateArgs, req envelope.JSONEnvelope) error {
+	var proof dpp.ProofWrapper
 	if err := json.Unmarshal([]byte(req.Payload), &proof); err != nil {
 		return errors.Wrap(err, "failed to unmarshall JSONEnvelope")
 	}
@@ -72,7 +72,7 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 		}
 
 		txID := mm["callbackTxId"].(string)
-		if err := p.Create(ctx, p4.ProofCreateArgs{
+		if err := p.Create(ctx, dpp.ProofCreateArgs{
 			TxID: txID,
 		}, env); err != nil {
 			return false, errors.Wrap(err, "failed to store proof msg")

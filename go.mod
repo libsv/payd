@@ -92,7 +92,7 @@ require (
 
 require (
 	github.com/InVisionApp/go-health/v2 v2.1.2
-	github.com/libsv/go-p4 v0.0.8
+	github.com/libsv/go-dpp v0.0.8
 	github.com/libsv/go-spvchannels v0.0.1
 )
 

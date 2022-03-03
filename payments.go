@@ -5,7 +5,7 @@ import (
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
@@ -104,7 +104,7 @@ type Ack struct {
 // PaymentsService is used for handling payments.
 type PaymentsService interface {
 	// PaymentCreate will validate a new payment.
-	PaymentCreate(ctx context.Context, args PaymentCreateArgs, req p4.Payment) (*p4.PaymentACK, error)
+	PaymentCreate(ctx context.Context, args PaymentCreateArgs, req dpp.Payment) (*dpp.PaymentACK, error)
 	// Ack will handle a payment acknowledgement and can set a transaction as broadcast or failed.
 	Ack(ctx context.Context, args AckArgs, req Ack) error
 }
@@ -117,7 +117,7 @@ type Payment struct {
 	Memo         string        `json:"memo"`
 }
 
-// PaymentSend is a send request to p4.
+// PaymentSend is a send request to dpp.
 type PaymentSend struct {
 	SPVEnvelope    *spv.Envelope            `json:"spvEnvelope"`
 	ProofCallbacks map[string]ProofCallback `json:"proofCallbacks"`

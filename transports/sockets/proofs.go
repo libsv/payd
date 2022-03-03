@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/libsv/go-bk/envelope"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/pkg/errors"
 	"github.com/theflyingcodr/sockets"
 
@@ -35,7 +35,7 @@ func (p *proofs) create(ctx context.Context, msg *sockets.Message) (*sockets.Mes
 		return nil, errors.WithStack(err)
 	}
 	txID := msg.Headers.Get("x-tx-id")
-	if err := p.svc.Create(ctx, p4.ProofCreateArgs{TxID: txID}, req); err != nil {
+	if err := p.svc.Create(ctx, dpp.ProofCreateArgs{TxID: txID}, req); err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return msg.NoContent()

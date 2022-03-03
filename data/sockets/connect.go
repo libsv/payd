@@ -12,11 +12,11 @@ import (
 
 type connect struct {
 	cli *client.Client
-	cfg *config.P4
+	cfg *config.DPP
 }
 
 // NewConnect will setup a connection service.
-func NewConnect(cfg *config.P4, cli *client.Client) *connect {
+func NewConnect(cfg *config.DPP, cli *client.Client) *connect {
 	return &connect{cli: cli, cfg: cfg}
 }
 

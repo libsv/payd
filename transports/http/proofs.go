@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/libsv/go-bk/envelope"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/pkg/errors"
 
 	"github.com/libsv/payd"
@@ -42,7 +42,7 @@ func (p *proofs) create(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return errors.WithStack(err)
 	}
-	args := p4.ProofCreateArgs{TxID: c.Param("txid")}
+	args := dpp.ProofCreateArgs{TxID: c.Param("txid")}
 	if err := p.svc.Create(c.Request().Context(), args, req); err != nil {
 		return errors.WithStack(err)
 	}

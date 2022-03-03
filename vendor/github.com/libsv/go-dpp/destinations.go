@@ -1,4 +1,4 @@
-package p4
+package dpp
 
 import (
 	"time"
@@ -19,7 +19,7 @@ type Output struct {
 }
 
 // PaymentDestinations contains the supported destinations
-// by this P4 server.
+// by this DPP server.
 type PaymentDestinations struct {
 	Outputs []Output `json:"outputs"`
 }

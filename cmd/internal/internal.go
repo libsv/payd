@@ -60,7 +60,7 @@ func SetupHTTPEndpoints(cfg config.Config, services *RestDeps, g *echo.Group) {
 	thttp.NewBalance(services.BalanceService).RegisterRoutes(g)
 	thttp.NewProofs(services.ProofService).RegisterRoutes(g)
 	thttp.NewPayments(services.PaymentService).RegisterRoutes(g)
-	thttp.NewPaymentRequests(services.PaymentRequestService, cfg.P4).RegisterRoutes(g)
+	thttp.NewPaymentRequests(services.PaymentRequestService, cfg.DPP).RegisterRoutes(g)
 	thttp.NewOwnersHandler(services.OwnerService).RegisterRoutes(g)
 	thttp.NewUsersHandler(services.UserService).RegisterRoutes(g)
 	thttp.NewPayHandler(services.PayService).RegisterRoutes(g)
@@ -82,7 +82,7 @@ func SetupSocketClient(cfg config.Config, deps *SocketDeps, c *client.Client) {
 		WithServerErrorHandler(socMiddleware.ErrorMsgHandler)
 
 	// client handlers
-	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, deps.PaymentRequestService, deps.EnvelopeService, cfg.P4).
+	tsoc.NewPaymentRequest(&paydSQL.Transacter{}, deps.PaymentRequestService, deps.EnvelopeService, cfg.DPP).
 		RegisterListeners(c)
 	tsoc.NewPayments(deps.PaymentService).
 		RegisterListeners(c)
@@ -112,7 +112,7 @@ func SetupSocketServer(cfg config.Socket, e *echo.Echo) *server.SocketServer {
 func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client, deps *SocketDeps) error {
 	h := health.New()
 
-	if err := dpp.NewHealthCheck(h, c, deps.InvoiceService, deps.ConnectService, cfg.P4).Start(); err != nil {
+	if err := dpp.NewHealthCheck(h, c, deps.InvoiceService, deps.ConnectService, cfg.DPP).Start(); err != nil {
 		return errors.Wrap(err, "failed to start dpp health check")
 	}
 
@@ -139,11 +139,11 @@ func ResumeActiveChannels(deps *SocketDeps) error {
 	return nil
 }
 
-// ResumeSocketConnections resume socket connections with the P4 host.
-func ResumeSocketConnections(deps *SocketDeps, cfg *config.P4) error {
+// ResumeSocketConnections resume socket connections with the DPP host.
+func ResumeSocketConnections(deps *SocketDeps, cfg *config.DPP) error {
 	u, err := url.Parse(cfg.ServerHost)
 	if err != nil {
-		return errors.Wrap(err, "failed to parse p4 host")
+		return errors.Wrap(err, "failed to parse dpp host")
 	}
 
 	// No need to re-establish socket conn when running over http

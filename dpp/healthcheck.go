@@ -17,13 +17,13 @@ import (
 type healthCheck struct {
 	h       health.IHealth
 	c       *client.Client
-	cfg     *config.P4
+	cfg     *config.DPP
 	invSvc  payd.InvoiceService
 	connSvc payd.ConnectService
 }
 
 // NewHealthCheck return a new DPP health check.
-func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceService, connSvc payd.ConnectService, cfg *config.P4) payd.HealthCheck {
+func NewHealthCheck(h health.IHealth, c *client.Client, invSvc payd.InvoiceService, connSvc payd.ConnectService, cfg *config.DPP) payd.HealthCheck {
 	return &healthCheck{
 		h:       h,
 		c:       c,
@@ -54,17 +54,17 @@ func (h *healthCheck) Start() error {
 
 func (h *healthCheck) commsCheck() error {
 	if err := h.h.AddCheck(&health.Config{
-		Name: "p4-comms",
+		Name: "dpp-comms",
 		Checker: &commsCheck{
 			c:    h.c,
 			host: h.cfg.ServerHost,
 		},
 		Interval: time.Duration(2) * time.Second,
 	}); err != nil {
-		return errors.Wrap(err, "failed to create p4-comms healthcheck")
+		return errors.Wrap(err, "failed to create dpp-comms healthcheck")
 	}
 	if err := h.h.AddCheck(&health.Config{
-		Name: "p4-channel-conn",
+		Name: "dpp-channel-conn",
 		Checker: &channelCheck{
 			c:       h.c,
 			host:    h.cfg.ServerHost,
@@ -73,7 +73,7 @@ func (h *healthCheck) commsCheck() error {
 		},
 		Interval: time.Duration(10) * time.Second,
 	}); err != nil {
-		return errors.Wrap(err, "failed to create p4-channel-conn healthcheck")
+		return errors.Wrap(err, "failed to create dpp-channel-conn healthcheck")
 	}
 	return nil
 }
@@ -92,14 +92,14 @@ func (ch *commsCheck) Status() (interface{}, error) {
 	if err := ch.c.JoinChannel(ch.host, "health", nil, map[string]string{
 		"internal": "true",
 	}); err != nil {
-		return nil, errors.Wrap(err, "failed to join p4 health channel")
+		return nil, errors.Wrap(err, "failed to join dpp health channel")
 	}
 	if err := ch.c.Publish(sockets.Request{
 		ChannelID:  "health",
-		MessageKey: "my-p4",
+		MessageKey: "my-dpp",
 		Body:       "ping",
 	}); err != nil {
-		return nil, errors.Wrap(err, "failed to ping p4")
+		return nil, errors.Wrap(err, "failed to ping dpp")
 	}
 	ch.c.LeaveChannel("health", nil)
 	return nil, nil

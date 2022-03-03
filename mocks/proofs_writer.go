@@ -5,7 +5,7 @@ package mocks
 
 import (
 	"context"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
 	"sync"
 )
@@ -20,7 +20,7 @@ var _ payd.ProofsWriter = &ProofsWriterMock{}
 //
 // 		// make and configure a mocked payd.ProofsWriter
 // 		mockedProofsWriter := &ProofsWriterMock{
-// 			ProofCreateFunc: func(ctx context.Context, req p4.ProofWrapper) error {
+// 			ProofCreateFunc: func(ctx context.Context, req dpp.ProofWrapper) error {
 // 				panic("mock out the ProofCreate method")
 // 			},
 // 		}
@@ -31,7 +31,7 @@ var _ payd.ProofsWriter = &ProofsWriterMock{}
 // 	}
 type ProofsWriterMock struct {
 	// ProofCreateFunc mocks the ProofCreate method.
-	ProofCreateFunc func(ctx context.Context, req p4.ProofWrapper) error
+	ProofCreateFunc func(ctx context.Context, req dpp.ProofWrapper) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -40,20 +40,20 @@ type ProofsWriterMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Req is the req argument value.
-			Req p4.ProofWrapper
+			Req dpp.ProofWrapper
 		}
 	}
 	lockProofCreate sync.RWMutex
 }
 
 // ProofCreate calls ProofCreateFunc.
-func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req p4.ProofWrapper) error {
+func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req dpp.ProofWrapper) error {
 	if mock.ProofCreateFunc == nil {
 		panic("ProofsWriterMock.ProofCreateFunc: method is nil but ProofsWriter.ProofCreate was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
-		Req p4.ProofWrapper
+		Req dpp.ProofWrapper
 	}{
 		Ctx: ctx,
 		Req: req,
@@ -69,11 +69,11 @@ func (mock *ProofsWriterMock) ProofCreate(ctx context.Context, req p4.ProofWrapp
 //     len(mockedProofsWriter.ProofCreateCalls())
 func (mock *ProofsWriterMock) ProofCreateCalls() []struct {
 	Ctx context.Context
-	Req p4.ProofWrapper
+	Req dpp.ProofWrapper
 } {
 	var calls []struct {
 		Ctx context.Context
-		Req p4.ProofWrapper
+		Req dpp.ProofWrapper
 	}
 	mock.lockProofCreate.RLock()
 	calls = mock.calls.ProofCreate

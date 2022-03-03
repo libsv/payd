@@ -13,15 +13,15 @@ import (
 type connect struct {
 	wtr    payd.ConnectWriter
 	invRdr payd.InvoiceReader
-	p4cfg  *config.P4
+	dppCfg *config.DPP
 }
 
-// NewConnect will setup a new connect service used to connect this wallet to a p4 socket server.
-func NewConnect(wtr payd.ConnectWriter, invRdr payd.InvoiceReader, p4cfg *config.P4) *connect {
+// NewConnect will setup a new connect service used to connect this wallet to a dpp socket server.
+func NewConnect(wtr payd.ConnectWriter, invRdr payd.InvoiceReader, dppCfg *config.DPP) *connect {
 	return &connect{
 		wtr:    wtr,
 		invRdr: invRdr,
-		p4cfg:  p4cfg,
+		dppCfg: dppCfg,
 	}
 }
 
@@ -34,7 +34,7 @@ func (c *connect) Connect(ctx context.Context, args payd.ConnectArgs) error {
 	if _, err := c.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID}); err != nil {
 		return errors.Wrapf(err, "failed to validate invoice %s when attempting to create connection", args.InvoiceID)
 	}
-	u, err := url.Parse(c.p4cfg.ServerHost)
+	u, err := url.Parse(c.dppCfg.ServerHost)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse url")
 	}
