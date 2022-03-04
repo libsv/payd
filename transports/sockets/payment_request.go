@@ -10,7 +10,7 @@ import (
 	"github.com/theflyingcodr/sockets"
 	"github.com/theflyingcodr/sockets/client"
 
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 )
@@ -19,16 +19,16 @@ type paymentRequest struct {
 	transacter payd.Transacter
 	prSvc      payd.PaymentRequestService
 	envSvc     payd.EnvelopeService
-	p4Cfg      *config.P4
+	dppCfg     *config.DPP
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest socket listener.
-func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService, p4Cfg *config.P4) *paymentRequest {
+func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService, dppCfg *config.DPP) *paymentRequest {
 	return &paymentRequest{
 		transacter: transacter,
 		prSvc:      svc,
 		envSvc:     envSvc,
-		p4Cfg:      p4Cfg,
+		dppCfg:     dppCfg,
 	}
 }
 
@@ -69,7 +69,7 @@ func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*soc
 
 		return resp, nil
 	}
-	pr.PaymentURL = fmt.Sprintf("%s/%s", p.p4Cfg.ServerHost, invoiceID)
+	pr.PaymentURL = fmt.Sprintf("%s/%s", p.dppCfg.ServerHost, invoiceID)
 	resp := msg.NewFrom(RoutePaymentRequestResponse)
 	if err := resp.WithBody(pr); err != nil {
 		fmt.Printf("body %+v\n", pr)
@@ -80,11 +80,11 @@ func (p *paymentRequest) create(ctx context.Context, msg *sockets.Message) (*soc
 }
 
 func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*sockets.Message, error) {
-	var req p4.PaymentRequest
+	var req dpp.PaymentRequest
 	if err := msg.Bind(&req); err != nil {
 		return nil, err
 	}
-	payment := p4.Payment{
+	payment := dpp.Payment{
 		MerchantData: *req.MerchantData,
 		RefundTo:     nil, // TODO - read users paymail
 		Memo:         req.Memo,

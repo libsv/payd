@@ -5,40 +5,40 @@ package mocks
 
 import (
 	"context"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/data/http"
 	"sync"
 )
 
-// Ensure, that P4Mock does implement http.P4.
+// Ensure, that DPPMock does implement http.dpp.
 // If this is not the case, regenerate this file with moq.
-var _ http.P4 = &P4Mock{}
+var _ http.DPP = &DPPMock{}
 
-// P4Mock is a mock implementation of http.P4.
+// DPPMock is a mock implementation of http.dpp.
 //
-// 	func TestSomethingThatUsesP4(t *testing.T) {
+// 	func TestSomethingThatUsesDPP(t *testing.T) {
 //
-// 		// make and configure a mocked http.P4
-// 		mockedP4 := &P4Mock{
-// 			PaymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*p4.PaymentRequest, error) {
+// 		// make and configure a mocked http.DPP
+// 		mockedDPP := &DPPMock{
+// 			PaymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
 // 				panic("mock out the PaymentRequest method")
 // 			},
-// 			PaymentSendFunc: func(ctx context.Context, args payd.PayRequest, req p4.Payment) (*p4.PaymentACK, error) {
+// 			PaymentSendFunc: func(ctx context.Context, args payd.PayRequest, req dpp.Payment) (*dpp.PaymentACK, error) {
 // 				panic("mock out the PaymentSend method")
 // 			},
 // 		}
 //
-// 		// use mockedP4 in code that requires http.P4
+// 		// use mockedDPP in code that requires http.DPP
 // 		// and then make assertions.
 //
 // 	}
-type P4Mock struct {
+type DPPMock struct {
 	// PaymentRequestFunc mocks the PaymentRequest method.
-	PaymentRequestFunc func(ctx context.Context, req payd.PayRequest) (*p4.PaymentRequest, error)
+	PaymentRequestFunc func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error)
 
 	// PaymentSendFunc mocks the PaymentSend method.
-	PaymentSendFunc func(ctx context.Context, args payd.PayRequest, req p4.Payment) (*p4.PaymentACK, error)
+	PaymentSendFunc func(ctx context.Context, args payd.PayRequest, req dpp.Payment) (*dpp.PaymentACK, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -56,7 +56,7 @@ type P4Mock struct {
 			// Args is the args argument value.
 			Args payd.PayRequest
 			// Req is the req argument value.
-			Req p4.Payment
+			Req dpp.Payment
 		}
 	}
 	lockPaymentRequest sync.RWMutex
@@ -64,9 +64,9 @@ type P4Mock struct {
 }
 
 // PaymentRequest calls PaymentRequestFunc.
-func (mock *P4Mock) PaymentRequest(ctx context.Context, req payd.PayRequest) (*p4.PaymentRequest, error) {
+func (mock *DPPMock) PaymentRequest(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
 	if mock.PaymentRequestFunc == nil {
-		panic("P4Mock.PaymentRequestFunc: method is nil but P4.PaymentRequest was just called")
+		panic("DPPMock.PaymentRequestFunc: method is nil but dpp.PaymentRequest was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
@@ -83,8 +83,8 @@ func (mock *P4Mock) PaymentRequest(ctx context.Context, req payd.PayRequest) (*p
 
 // PaymentRequestCalls gets all the calls that were made to PaymentRequest.
 // Check the length with:
-//     len(mockedP4.PaymentRequestCalls())
-func (mock *P4Mock) PaymentRequestCalls() []struct {
+//     len(mockeddpp.PaymentRequestCalls())
+func (mock *DPPMock) PaymentRequestCalls() []struct {
 	Ctx context.Context
 	Req payd.PayRequest
 } {
@@ -99,14 +99,14 @@ func (mock *P4Mock) PaymentRequestCalls() []struct {
 }
 
 // PaymentSend calls PaymentSendFunc.
-func (mock *P4Mock) PaymentSend(ctx context.Context, args payd.PayRequest, req p4.Payment) (*p4.PaymentACK, error) {
+func (mock *DPPMock) PaymentSend(ctx context.Context, args payd.PayRequest, req dpp.Payment) (*dpp.PaymentACK, error) {
 	if mock.PaymentSendFunc == nil {
-		panic("P4Mock.PaymentSendFunc: method is nil but P4.PaymentSend was just called")
+		panic("DPPMock.PaymentSendFunc: method is nil but dpp.PaymentSend was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
 		Args payd.PayRequest
-		Req  p4.Payment
+		Req  dpp.Payment
 	}{
 		Ctx:  ctx,
 		Args: args,
@@ -120,16 +120,16 @@ func (mock *P4Mock) PaymentSend(ctx context.Context, args payd.PayRequest, req p
 
 // PaymentSendCalls gets all the calls that were made to PaymentSend.
 // Check the length with:
-//     len(mockedP4.PaymentSendCalls())
-func (mock *P4Mock) PaymentSendCalls() []struct {
+//     len(mockeddpp.PaymentSendCalls())
+func (mock *DPPMock) PaymentSendCalls() []struct {
 	Ctx  context.Context
 	Args payd.PayRequest
-	Req  p4.Payment
+	Req  dpp.Payment
 } {
 	var calls []struct {
 		Ctx  context.Context
 		Args payd.PayRequest
-		Req  p4.Payment
+		Req  dpp.Payment
 	}
 	mock.lockPaymentSend.RLock()
 	calls = mock.calls.PaymentSend

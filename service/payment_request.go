@@ -41,16 +41,16 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 	}
 
 	var dd *payd.Destination
-	var oo []payd.P4Output
+	var oo []payd.DPPOutput
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		destinations, err := p.destSvc.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.InvoiceID})
 		if err != nil {
 			return errors.Wrapf(err, "failed to get destinations when building payment request '%s'", args.InvoiceID)
 		}
-		oo = make([]payd.P4Output, len(destinations.Outputs))
+		oo = make([]payd.DPPOutput, len(destinations.Outputs))
 		for i, out := range destinations.Outputs {
-			oo[i] = payd.P4Output{
+			oo[i] = payd.DPPOutput{
 				Amount:      out.Satoshis,
 				Script:      out.LockingScript.String(),
 				Description: "payment reference " + args.InvoiceID,
@@ -98,7 +98,7 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 	return &payd.PaymentRequestResponse{
 		Network:             string(p.cfg.Network),
 		SPVRequired:         dd.SPVRequired,
-		Destinations:        payd.P4Destination{Outputs: oo},
+		Destinations:        payd.DPPDestination{Outputs: oo},
 		Fee:                 fees,
 		CreationTimestamp:   dd.CreatedAt,
 		ExpirationTimestamp: dd.ExpiresAt,

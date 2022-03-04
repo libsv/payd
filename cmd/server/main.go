@@ -56,7 +56,7 @@ func main() {
 		WithLog().
 		WithHeadersClient().
 		WithWallet().
-		WithP4().
+		WithDPP().
 		WithMapi().
 		WithSocket().
 		WithTransports().
@@ -103,8 +103,8 @@ func main() {
 	if err := internal.ResumeActiveChannels(deps); err != nil {
 		log.Fatal(err, "failed to resume active peer channels")
 	}
-	if err := internal.ResumeSocketConnections(deps, cfg.P4); err != nil {
-		log.Error(err, "failed to reconnect invoices with p4")
+	if err := internal.ResumeSocketConnections(deps, cfg.DPP); err != nil {
+		log.Error(err, "failed to reconnect invoices with dpp")
 	}
 
 	if cfg.Deployment.IsDev() {

@@ -11,13 +11,13 @@ import (
 )
 
 type paymentRequest struct {
-	svc   payd.PaymentRequestService
-	p4Cfg *config.P4
+	svc    payd.PaymentRequestService
+	dppCfg *config.DPP
 }
 
 // NewPaymentRequests returns a new handler for payment request endpoint.
-func NewPaymentRequests(svc payd.PaymentRequestService, p4Cfg *config.P4) *paymentRequest {
-	return &paymentRequest{svc: svc, p4Cfg: p4Cfg}
+func NewPaymentRequests(svc payd.PaymentRequestService, dppCfg *config.DPP) *paymentRequest {
+	return &paymentRequest{svc: svc, dppCfg: dppCfg}
 }
 
 func (p *paymentRequest) RegisterRoutes(g *echo.Group) {
@@ -45,7 +45,7 @@ func (p *paymentRequest) get(c echo.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	req.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", p.p4Cfg.ServerHost, args.InvoiceID)
+	req.PaymentURL = fmt.Sprintf("%s/api/v1/payment/%s", p.dppCfg.ServerHost, args.InvoiceID)
 
 	return c.JSON(http.StatusOK, req)
 }

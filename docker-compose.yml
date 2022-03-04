@@ -8,8 +8,8 @@ services:
       DB_DSN: "file:paydb/wallet.db?cache=shared&_foreign_keys=true"
       DB_SCHEMA_PATH: "migrations"
       LOG_LEVEL: "info"
-      P4_HOST: "ws://p4:8445/ws"
-      MAPI_CALLBACK_HOST: "http://p4:8445"
+      DPP_HOST: "ws://dpp:8445/ws"
+      MAPI_CALLBACK_HOST: "http://dpp:8445"
       PEERCHANNELS_HOST: "peerchannels:25009"
       WALLET_SPVREQUIRED: 'true'
     healthcheck:
@@ -32,8 +32,8 @@ services:
       SERVER_HOST: payd-merchant:28443
       SERVER_PORT: :28443
       LOG_LEVEL: "info"
-      P4_HOST: "ws://p4-merchant:28445/ws"
-      MAPI_CALLBACK_HOST: "http://p4-merchant:28445"
+      DPP_HOST: "ws://dpp-merchant:28445/ws"
+      MAPI_CALLBACK_HOST: "http://dpp-merchant:28445"
       PEERCHANNELS_HOST: "peerchannels:25009"
       WALLET_SPVREQUIRED: 'true'
     healthcheck:

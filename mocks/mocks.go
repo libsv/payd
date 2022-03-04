@@ -22,7 +22,7 @@ package mocks
 //go:generate moq -pkg mocks -out invoice_reader_writer.go ../ InvoiceReaderWriter
 //go:generate moq -pkg mocks -out private_key_reader_writer.go ../ PrivateKeyReaderWriter
 //go:generate moq -pkg mocks -out destination_reader_writer.go ../ DestinationsReaderWriter
-//go:generate moq -pkg mocks -out p4.go ../data/http P4
+//go:generate moq -pkg mocks -out dpp.go ../data/http DPP
 
 // third party
 

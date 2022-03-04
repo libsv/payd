@@ -1,4 +1,4 @@
-package p4
+package dpp
 
 // Merchant to be displayed to the user.
 type Merchant struct {

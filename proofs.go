@@ -9,7 +9,7 @@ import (
 	"github.com/libsv/go-bc"
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-bt/v2"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
 )
@@ -91,17 +91,17 @@ type ProofsService interface {
 	// Create will store a JSONEnvelope that contains a merkleproof. The envelope should
 	// be validated to not be tampered with and the Envelope should be opened to check the payload
 	// is indeed a MerkleProof.
-	Create(ctx context.Context, args p4.ProofCreateArgs, req envelope.JSONEnvelope) error
+	Create(ctx context.Context, args dpp.ProofCreateArgs, req envelope.JSONEnvelope) error
 }
 
 // ProofsWriter is used to persist a proof to a data store.
 type ProofsWriter interface {
 	// ProofCreate can be used to persist a merkle proof in TSC format.
-	ProofCreate(ctx context.Context, req p4.ProofWrapper) error
+	ProofCreate(ctx context.Context, req dpp.ProofWrapper) error
 }
 
 // ProofCallbackWriter can be implemented to support writing proof callbacks.
 type ProofCallbackWriter interface {
 	// ProofCallBacksCreate can be implemented to store merkle proof callback urls for an invoice.
-	ProofCallBacksCreate(ctx context.Context, args ProofCallbackArgs, callbacks map[string]p4.ProofCallback) error
+	ProofCallBacksCreate(ctx context.Context, args ProofCallbackArgs, callbacks map[string]dpp.ProofCallback) error
 }

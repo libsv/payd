@@ -8,7 +8,7 @@ import (
 
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/go-spvchannels"
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/log"
@@ -56,7 +56,7 @@ func NewPayments(l log.Logger, paymentVerify spv.PaymentVerifier, txWtr payd.Tra
 }
 
 // PaymentCreate will validate and store the payment.
-func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArgs, req p4.Payment) (*p4.PaymentACK, error) {
+func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArgs, req dpp.Payment) (*dpp.PaymentACK, error) {
 	if err := validator.New().
 		Validate("invoiceID", validator.StrLength(args.InvoiceID, 1, 30)).Err(); err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 	}
 
-	pc := &p4.PeerChannelData{
+	pc := &dpp.PeerChannelData{
 		Host:      p.pCfg.Host,
 		ChannelID: ch.ID,
 		Token:     tokens[2].Token,
@@ -269,7 +269,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, err
 	}
 
-	return &p4.PaymentACK{
+	return &dpp.PaymentACK{
 		ID:          inv.ID,
 		TxID:        tx.TxID(),
 		PeerChannel: pc,

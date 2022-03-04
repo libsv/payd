@@ -7,23 +7,23 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/libsv/go-p4"
+	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/data"
 	"github.com/theflyingcodr/lathos/errs"
 )
 
-type p4Client struct {
+type dppClient struct {
 	c data.Client
 }
 
-// NewP4 returns a new p4 interface.
-func NewP4(c data.Client) P4 {
-	return &p4Client{c: c}
+// NewDPP returns a new dpp interface.
+func NewDPP(c data.Client) DPP {
+	return &dppClient{c: c}
 }
 
 // PaymentRequest performs a payment request http request to the specified url.
-func (p *p4Client) PaymentRequest(ctx context.Context, args payd.PayRequest) (*p4.PaymentRequest, error) {
+func (p *dppClient) PaymentRequest(ctx context.Context, args payd.PayRequest) (*dpp.PaymentRequest, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, args.PayToURL, nil)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (p *p4Client) PaymentRequest(ctx context.Context, args payd.PayRequest) (*p
 		return nil, p.handleErr(resp)
 	}
 
-	var payRec p4.PaymentRequest
+	var payRec dpp.PaymentRequest
 	if err = json.NewDecoder(resp.Body).Decode(&payRec); err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (p *p4Client) PaymentRequest(ctx context.Context, args payd.PayRequest) (*p
 }
 
 // PaymentSend sends a payment http request to the specified url, with the provided payment packet.
-func (p *p4Client) PaymentSend(ctx context.Context, args payd.PayRequest, req p4.Payment) (*p4.PaymentACK, error) {
+func (p *dppClient) PaymentSend(ctx context.Context, args payd.PayRequest, req dpp.Payment) (*dpp.PaymentACK, error) {
 	bb, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (p *p4Client) PaymentSend(ctx context.Context, args payd.PayRequest, req p4
 		return nil, p.handleErr(resp)
 	}
 
-	var ack p4.PaymentACK
+	var ack dpp.PaymentACK
 	if err := json.NewDecoder(resp.Body).Decode(&ack); err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (p *p4Client) PaymentSend(ctx context.Context, args payd.PayRequest, req p4
 	return &ack, nil
 }
 
-func (p *p4Client) handleErr(resp *http.Response) error {
+func (p *dppClient) handleErr(resp *http.Response) error {
 	errResp := &struct {
 		ID      string `json:"id"`
 		Code    string `json:"code"`

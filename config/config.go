@@ -30,8 +30,8 @@ const (
 	EnvNetwork                 = "wallet.network"
 	EnvWalletSpvRequired       = "wallet.spvrequired"
 	EnvPaymentExpiry           = "wallet.paymentexpiry"
-	EnvP4Timeout               = "p4.timeout"
-	EnvP4Host                  = "p4.host"
+	EnvDPPTimeout              = "dpp.timeout"
+	EnvDPPHost                 = "dpp.host"
 	EnvMAPIMinerName           = "mapi.minername"
 	EnvMAPIURL                 = "mapi.minerurl"
 	EnvMAPIToken               = "mapi.token"
@@ -86,7 +86,7 @@ type Config struct {
 	HeadersClient *HeadersClient
 	Wallet        *Wallet
 	PeerChannels  *PeerChannels
-	P4            *P4
+	DPP           *DPP
 	Mapi          *MApi
 	Socket        *Socket
 	Transports    *Transports
@@ -168,8 +168,8 @@ type PeerChannels struct {
 	TTL time.Duration
 }
 
-// P4 contains information relating to a p4 interactions.
-type P4 struct {
+// DPP contains information relating to a DPP interactions.
+type DPP struct {
 	Timeout    int
 	ServerHost string
 }
@@ -188,7 +188,7 @@ type Socket struct {
 	ClientIdentifier string
 }
 
-// Transports enables or disables p4 transports.
+// Transports enables or disables dpp transports.
 type Transports struct {
 	HTTPEnabled    bool
 	SocketsEnabled bool
@@ -202,7 +202,7 @@ type ConfigurationLoader interface {
 	WithDeployment(app string) ConfigurationLoader
 	WithLog() ConfigurationLoader
 	WithWallet() ConfigurationLoader
-	WithP4() ConfigurationLoader
+	WithDPP() ConfigurationLoader
 	WithHeadersClient() ConfigurationLoader
 	WithSocket() ConfigurationLoader
 	WithTransports() ConfigurationLoader

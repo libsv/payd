@@ -82,11 +82,11 @@ func (v *ViperConfig) WithWallet() ConfigurationLoader {
 	return v
 }
 
-// WithP4 sets up and return p4 interface configuration.
-func (v *ViperConfig) WithP4() ConfigurationLoader {
-	v.P4 = &P4{
-		ServerHost: viper.GetString(EnvP4Host),
-		Timeout:    viper.GetInt(EnvP4Timeout),
+// WithDPP sets up and return dpp interface configuration.
+func (v *ViperConfig) WithDPP() ConfigurationLoader {
+	v.DPP = &DPP{
+		ServerHost: viper.GetString(EnvDPPHost),
+		Timeout:    viper.GetInt(EnvDPPTimeout),
 	}
 	return v
 }
