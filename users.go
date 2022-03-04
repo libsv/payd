@@ -14,7 +14,7 @@ type User struct {
 	Avatar       string                 `json:"avatar" db:"avatar_url"`
 	Address      string                 `json:"address" db:"address"`
 	PhoneNumber  string                 `json:"phoneNumber" db:"phone_number"`
-	ExtendedData map[string]interface{} `json:"extendedData"`
+	ExtendedData map[string]interface{} `json:"extendedData,omitempty"`
 	MasterKey    *bip32.ExtendedKey     `json:"-"`
 }
 
