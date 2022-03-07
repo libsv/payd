@@ -48,7 +48,7 @@ func NewFromASM(str string) (*Script, error) {
 
 	for _, section := range strings.Split(str, " ") {
 		if val, ok := opCodeStrings[section]; ok {
-			s.AppendOpCode(val)
+			_ = s.AppendOpcodes(val)
 		} else {
 			if err := s.AppendPushDataHexString(section); err != nil {
 				return nil, ErrInvalidOpCode
@@ -124,14 +124,12 @@ func NewP2PKHFromAddress(addr string) (*Script, error) {
 		return nil, err
 	}
 
-	s := new(Script).
-		AppendOpCode(OpDUP).
-		AppendOpCode(OpHASH160)
+	s := new(Script)
+	_ = s.AppendOpcodes(OpDUP, OpHASH160)
 	if err = s.AppendPushData(publicKeyHashBytes); err != nil {
 		return nil, err
 	}
-	s.AppendOpCode(OpEQUALVERIFY).
-		AppendOpCode(OpCHECKSIG)
+	_ = s.AppendOpcodes(OpEQUALVERIFY, OpCHECKSIG)
 
 	return s, nil
 }
@@ -210,10 +208,16 @@ func (s *Script) AppendPushDataStrings(pushDataStrings []string) error {
 	return s.AppendPushDataArray(dataBytes)
 }
 
-// AppendOpCode appends an opcode type to the script
-func (s *Script) AppendOpCode(o uint8) *Script {
-	*s = append(*s, o)
-	return s
+// AppendOpcodes appends opcodes type to the script.
+// This does not support appending OP_PUSHDATA opcodes, so use `Script.AppendPushData` instead.
+func (s *Script) AppendOpcodes(oo ...uint8) error {
+	for _, o := range oo {
+		if OpDATA1 <= o && o <= OpPUSHDATA4 {
+			return fmt.Errorf("%w: %s", ErrInvalidOpcodeType, opCodeValues[o])
+		}
+	}
+	*s = append(*s, oo...)
+	return nil
 }
 
 // String implements the stringer interface and returns the hex string of script.
@@ -394,6 +398,46 @@ func (s *Script) EqualsBytes(b []byte) bool {
 // if they match then true is returned otherwise false.
 func (s *Script) EqualsHex(h string) bool {
 	return s.String() == h
+}
+
+// MinPushSize returns the minimum size of a push operation of the given data.
+func MinPushSize(bb []byte) int {
+	l := len(bb)
+
+	// data length is larger than max supported
+	if l > 0xffffffff {
+		return 0
+	}
+
+	if l == 0 {
+		return 1
+	}
+
+	if l == 1 {
+		// data can be represented as Op1 to Op16, or OpNegate
+		if bb[0] <= 16 || bb[0] == 0x81 {
+			// OpX
+			return 1
+		}
+		// OP_DATA_1 + data
+		return 2
+	}
+
+	// OP_DATA_X + data
+	if l <= 75 {
+		return l + 1
+	}
+	// OP_PUSHDATA1 + length byte + data
+	if l <= 0xff {
+		return l + 2
+	}
+	// OP_PUSHDATA2 + two length bytes + data
+	if l <= 0xffff {
+		return l + 3
+	}
+
+	// OP_PUSHDATA4 + four length bytes + data
+	return l + 5
 }
 
 // MarshalJSON convert script into json.

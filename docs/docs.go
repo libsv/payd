@@ -48,41 +48,6 @@ var doc = `{
                 }
             }
         },
-        "/api/v1/destinations/{invoiceID}": {
-            "get": {
-                "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Receive"
-                ],
-                "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "404": {
-                        "description": "returned if the invoiceID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/invoices": {
             "get": {
                 "description": "Returns all invoices currently stored",

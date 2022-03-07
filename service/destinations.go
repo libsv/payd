@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/libsv/go-bk/bip32"
-	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
@@ -24,19 +23,17 @@ type destinations struct {
 	destRdrWtr payd.DestinationsReaderWriter
 	derivRdr   payd.DerivationReader
 	invRdr     payd.InvoiceReader
-	feeRdr     payd.FeeReader
 	seed       payd.SeedService
 }
 
 // NewDestinationsService will setup and return a new Output Service for creating and reading payment destination info.
-func NewDestinationsService(deployCfg *config.Wallet, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, feeRdr payd.FeeReader, seed payd.SeedService) *destinations {
+func NewDestinationsService(deployCfg *config.Wallet, privKeySvc payd.PrivateKeyService, destRdrWtr payd.DestinationsReaderWriter, derivRdr payd.DerivationReader, invRdr payd.InvoiceReader, seed payd.SeedService) *destinations {
 	return &destinations{
 		deployCfg:  deployCfg,
 		privKeySvc: privKeySvc,
 		destRdrWtr: destRdrWtr,
 		derivRdr:   derivRdr,
 		invRdr:     invRdr,
-		feeRdr:     feeRdr,
 		seed:       seed,
 	}
 }
@@ -103,14 +100,8 @@ func (d *destinations) DestinationsCreate(ctx context.Context, req payd.Destinat
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to store destinations")
 	}
-	// GET Fees
-	fees, err := d.feeRdr.Fees(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get fees when creating destinations")
-	}
 	return &payd.Destination{
 		Outputs: oo,
-		Fees:    fees,
 	}, nil
 }
 
@@ -139,16 +130,6 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 		outputs = oo
 		return nil
 	})
-	var fees *bt.FeeQuote
-	// GET Fees
-	g.Go(func() error {
-		f, err := d.feeRdr.Fees(ctx)
-		if err != nil {
-			return errors.Wrap(err, "failed to get fees when getting destinations")
-		}
-		fees = f
-		return nil
-	})
 	if err := g.Wait(); err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -156,7 +137,6 @@ func (d *destinations) Destinations(ctx context.Context, args payd.DestinationsA
 		Network:     string(d.deployCfg.Network),
 		SPVRequired: invoice.SPVRequired,
 		Outputs:     outputs,
-		Fees:        fees,
 		CreatedAt:   invoice.CreatedAt,
 		ExpiresAt:   invoice.ExpiresAt.ValueOrZero(),
 	}, nil

@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
 	validator "github.com/theflyingcodr/govalidator"
 	"gopkg.in/guregu/null.v3"
@@ -35,12 +34,11 @@ type DestinationCreate struct {
 // Destination contains outputs and current fees
 // required to construct a transaction.
 type Destination struct {
-	SPVRequired bool         `json:"spvRequired"`
-	Network     string       `json:"network"`
-	Outputs     []Output     `json:"outputs"`
-	Fees        *bt.FeeQuote `json:"fees"`
-	CreatedAt   time.Time    `json:"createdAt"`
-	ExpiresAt   time.Time    `json:"expiresAt"`
+	SPVRequired bool      `json:"spvRequired"`
+	Network     string    `json:"network"`
+	Outputs     []Output  `json:"outputs"`
+	CreatedAt   time.Time `json:"createdAt"`
+	ExpiresAt   time.Time `json:"expiresAt"`
 }
 
 // Output contains a single locking script
