@@ -2,7 +2,7 @@
 
 ## Basic HTTP/REST Model
 
-This is the basic P4 (P2P Payment Protocol) model, previously known as BIP270, where the payment flow is done peer-to-peer instead of peer-to-blockchain-to-peer.
+This is the basic DPP (Direct Payment Protocol) model, previously known as BIP270, where the payment flow is done peer-to-peer instead of peer-to-blockchain-to-peer.
 
 > Please note that the merchant should use TLS/HTTPS when exposing their Bitcoin URI in order for the customer to be secure against a MITM (man in the middle) attack.
 
@@ -86,113 +86,68 @@ This setup is little more advanced than the basic flow above. Externally (from t
 ```plantuml
 @startuml 
 
-Actor Customer
-Entity Merchant_P4
-Actor Merchant
+Actor Sender
+
+box Receiver Proxy
+Participant PCS
+Participant DP3
+end box
+
+box Receiver
+Participant Wallet
+Participant BHC
+end box
+
 Entity mAPI
 
-note over Customer: customer wants to buy something from merchant
+note over Sender: customer wants to buy something from merchant
 
 autonumber
-Customer-->Merchant: create basket of goods
+Sender-->Wallet: create basket of goods
 
 group Socket setup
-Merchant --> Merchant_P4: connect to socket
-Merchant_P4 --> Merchant: get socket channel id + info
+Wallet --> DP3: connect to socket
+DP3 --> Wallet: get socket channel id + info
 end
 
-Merchant -> Merchant: create purchase order (PO)
-Merchant -> Merchant: display bitcoin URI QR code
+Wallet -> Wallet: create purchase order (PO)
+Wallet -> Wallet: display bitcoin URI QR code
 
-Customer --> Merchant: attempt to purchase goods (scan qr code)
-Customer -> Merchant_P4 ++: fetch PaymentRequest
+Sender --> Wallet: attempt to purchase goods (scan qr code)
+Sender -> DP3 ++: GET Payment Terms
 
 group Socket Communications
-Merchant_P4 --> Merchant: fetch PaymentRequest
-Merchant --> Merchant_P4: PaymentRequest
+DP3 --> Wallet: Payment Terms
+Wallet --> DP3: PaymentRequest
 end
 return PaymentRequest
 
-Customer -> Customer: Build Payment
-Customer -> Merchant_P4 ++: Payment
+Sender -> Sender: Build Payment
+Sender -> DP3 ++: POST Payment
 group Socket Communications
-Merchant_P4 --> Merchant: Payment
+DP3 --> Wallet: Payment
 end
 
-Merchant -> Merchant: validate payment, store tx
-Merchant -> mAPI: broadcast tx
-mAPI -> Merchant: tx response
+Wallet -> Wallet: validate payment, store tx
+
+Wallet -> PCS: Create channel
+PCS -> Wallet: Channel ID
+
+Wallet -> mAPI: broadcast tx
+mAPI -> Wallet: tx response
 
 group Socket Communications
-Merchant --> Merchant_P4: PaymentAck
+Wallet --> DP3: PaymentAck
 end
 return PaymentAck 
+
+Sender -> PCS: Subscribe to channel
+Wallet -> PCS: Subscribe to channel
+mAPI -> PCS: Merkle Proof
+PCS -> Sender: Merkle Proof Notification
+PCS -> Wallet: Merkle Proof Notification
+
+Wallet <-> BHC: SPV Check
+
 @enduml
 ```
-
-## Websocket Model (using a P4 server as a proxy)
-
-This setup just uses websockets all through (on the customer/sender side as well). This is a new setup that most other wallets in the ecosystem are not used to or have not seen before. Basically, the customer and merchant communicate with each other using websockets for the entire P4 flow with the P4 server acting as a proxy between them. The reason why the P4 server is needed is the same reasoning as above: because the merchant will not always be externally accessible over the internet.
-
-```plantuml
-@startuml
-Actor Customer
-Entity Merchant_P4
-Actor Merchant
-Entity mAPI 
-
-skinparam responseMessageBelowArrow true
-
-note over Customer: customer wants to buy something from merchant
-
-autonumber
-Customer-->Merchant: create basket of goods
-
-group Socket setup (merchant)
-Merchant --> Merchant_P4: connect to socket (join channel)
-Merchant_P4 --> Merchant: get socket channel id/info (join channel status)
-end
-
-Merchant -> Merchant: create purchase order (PO)
-Merchant -> Merchant: display bitcoin URI QR code (with ws:// payment URL)
-
-Customer --> Merchant: attempt to purchase goods (scan qr code)
-
-group Socket setup (customer)
-Customer --> Merchant_P4: join channel 
-Merchant_P4 --> Customer: join channel status 
-end
-
-group Socket Communication (payment)
-Customer -> Merchant_P4: paymentrequest.create
-Merchant_P4 -> Merchant: paymentrequest.create
-Merchant -> Merchant: build payment request
-Merchant --> Merchant_P4: paymentrequest.response
-Merchant_P4 --> Customer: paymentrequest.response
-Customer -> Customer: build and fund transaction
-Customer -> Merchant_P4: payment
-Merchant_P4 -> Merchant: payment
-Merchant -> Merchant: validate payment, store tx
-Merchant -> mAPI: broadcast transaction
-mAPI -> Merchant: tx response
-Merchant --> Merchant_P4: payment.ack
-Merchant_P4 --> Customer: payment.ack
-end
-
-mAPI --> Merchant_P4: http proof call back
-
-group Socket Communications (merkle proof)
-Merchant_P4 --> Customer: merkle proof
-Merchant_P4 --> Merchant: merkle proof
-Merchant_P4 -> Customer: channel.expired
-note right: after a specific time period has elapsed
-Merchant_P4 -> Merchant: channel.expired
-end
-@enduml
-```
-
-### Channel setup
-
-Each invoice payment flow would be achieved with a unique web socket 'channel', i.e. communication will occur on a common channel, setup by the merchant and communicated to the payer. This channel could be secured with a token or other mechanism but to start with it will be open.
-
-All comms will happen in real time until the point the channel is killed by the merchant (usually once merkle proofs have been sent).

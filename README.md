@@ -10,7 +10,7 @@
 
 Payd is a basic dummy wallet (do not use this) for demonstrating the BIP 270 / Payment Protocol flow.
 
-It has a random master key, created at startup and a single user support for now and no authentication. Seriously, don't use this wallet at the moment expect for demonstration purposes.
+It has a random master key, created at startup and a single user support for now and no authentication. Seriously, don't use this wallet at the moment except for demonstration purposes.
 
 This wallet has an Invoice interface with CRUD operations for creating payment invoices and also implements the Wallet Payment Protocol Interface, used to integration with payment protocol servers.
 
@@ -18,8 +18,23 @@ This is written in go and integrates with servers running the Payment Protocol I
 
 ## Exploring Endpoints
 
-To explore the endpoints and functionality, run the server using `go run cmd/rest-server/main.go` and navigate to [Swagger](http://localhost:8443/swagger/index.html)
-where the endpoints and their models are described in detail.
+To explore the endpoints and functionality, navigate to the [Swagger page](https://libsv.github.io/payd/) where the endpoints and their models are described in detail. You can also access the Swagger endpoint on the server, just run the server using `go run cmd/rest-server/main.go` and hit the [Swagger endpoint](http://localhost:8443/swagger/index.html).
+
+  | Endpoint                           | Method | Function | Description                                                                                                                    |
+  | ---------------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+  | `/api/v1/balance`                  | GET    | User     | Return balance                                                                                                                 |
+  | `/api/v1/owner`                    | GET    | User     | Return owner information                                                                                                       |
+  |                                    |
+  | `/api/v1/destinations/{invoiceID}` | GET    | Receive  | Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.                                |
+  | `/api/v1/payments/{paymentID}`     | GET    | Receive  | Request to pay an invoice and receive back outputs to use when constructing the payment transaction                            |
+  | `/api/v1/payments/{invoiceID}`     | POST   | Receive  | Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice. |
+  | `/v1/proofs/{txid}`                | POST   | Receive  | Insert Merkle Proof for specific transaction                                                                                   |
+  | `/api/v1/invoices`                 | GET    | Receive  | Get all invoices                                                                                                               |
+  | `/api/v1/invoices`                 | POST   | Receive  | Create invoice                                                                                                                 |
+  | `/api/v1/invoices/{invoiceID}`     | GET    | Receive  | Get specific invoice                                                                                                           |
+  | `/api/v1/invoices/{invoiceID}`     | DELETE | Receive  | Delete invoice                                                                                                                 |
+  |                                    |
+  | `/api/v1/pay`                      | POST   | Send     | Make a payment                                                                                                                 |
 
 ## Configuring PayD
 
@@ -28,55 +43,55 @@ Values can also be passed at build time to provide information such as build inf
 
 ### Server
 
-| Key                    | Description                                                        | Default       |
-|------------------------|--------------------------------------------------------------------|---------------|
-| SERVER_PORT            | Port which this server should use                                  | :8443         |
-| SERVER_HOST            | Host name under which this server is found                         | payd:8443     |
-| SERVER_SWAGGER_ENABLED | If set to true we will expose an endpoint hosting the Swagger docs | true          |
-| SERVER_SWAGGER_HOST    | The host that swagger will point its api requests to               | localhost:8443|
+| Key                    | Description                                                        | Default        |
+| ---------------------- | ------------------------------------------------------------------ | -------------- |
+| SERVER_PORT            | Port which this server should use                                  | :8443          |
+| SERVER_HOST            | Host name under which this server is found                         | payd:8443      |
+| SERVER_SWAGGER_ENABLED | If set to true we will expose an endpoint hosting the Swagger docs | true           |
+| SERVER_SWAGGER_HOST    | The host that swagger will point its api requests to               | localhost:8443 |
 
 ### Environment / Deployment Info
 
-| Key                 | Description                                                                | Default          |
-|---------------------|----------------------------------------------------------------------------|------------------|
-| ENV_ENVIRONMENT     | What enviornment we are running in, for example 'production'               | dev              |
-| ENV_REGION          | Region we are running in, for example 'eu-west-1'                          | local            |
-| ENV_COMMIT          | Commit hash for the current build                                          | test             |
-| ENV_VERSION         | Semver tag for the current build, for example v1.0.0                       | v0.0.0           |
-| ENV_BUILDDATE       | Date the code was build                                                    | Current UTC time |
+| Key             | Description                                                  | Default          |
+| --------------- | ------------------------------------------------------------ | ---------------- |
+| ENV_ENVIRONMENT | What enviornment we are running in, for example 'production' | dev              |
+| ENV_REGION      | Region we are running in, for example 'eu-west-1'            | local            |
+| ENV_COMMIT      | Commit hash for the current build                            | test             |
+| ENV_VERSION     | Semver tag for the current build, for example v1.0.0         | v0.0.0           |
+| ENV_BUILDDATE   | Date the code was build                                      | Current UTC time |
 
 ### Logging
 
 | Key       | Description                                                           | Default |
-|-----------|-----------------------------------------------------------------------|---------|
+| --------- | --------------------------------------------------------------------- | ------- |
 | LOG_LEVEL | Level of logging we want within the server (debug, error, warn, info) | info    |
 
 ### DB
 
-| Key         | Description                                              | Default |
-|-------------|----------------------------------------------------------|---------|
-| DB_TYPE   | Type of db you're connecting to (sqlite, postgres,mysql) sqlite only supported currently | sqlite    |
-| DB_DSN   | Connection string for the db                     | file:data/wallet.db?_foreign_keys=true&pooled=true   |
-| DB_SCHEMA_PATH | Location of the data base migration scripts | data/sqlite/migrations   |
-| DB_MIGRATE   | If true we will check the db version and apply missing migrations  | true    |
+| Key            | Description                                                                              | Default                                            |
+| -------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| DB_TYPE        | Type of db you're connecting to (sqlite, postgres,mysql) sqlite only supported currently | sqlite                                             |
+| DB_DSN         | Connection string for the db                                                             | file:data/wallet.db?_foreign_keys=true&pooled=true |
+| DB_SCHEMA_PATH | Location of the data base migration scripts                                              | data/sqlite/migrations                             |
+| DB_MIGRATE     | If true we will check the db version and apply missing migrations                        | true                                               |
 
 ### Headers Client
 
 If validating using SPV you will need to run a Headers Client, this will sync headers as they are mined and provide 
 block and merkle proof information.
 
-| Key         | Description                                              | Default |
-|-------------|----------------------------------------------------------|---------|
-| HEADERSCLIENT_ADDRESS   | Uri for the headers client you are using | http://headersv:8080    |
-| HEADERSCLIENT_TIMEOUT   | Timeout in seconds for headers client queries                     | 30   |
+| Key                   | Description                                   | Default              |
+| --------------------- | --------------------------------------------- | -------------------- |
+| HEADERSCLIENT_ADDRESS | Uri for the headers client you are using      | http://headersv:8080 |
+| HEADERSCLIENT_TIMEOUT | Timeout in seconds for headers client queries | 30                   |
 
 ### Wallet
 
-| Key         | Description                                              | Default |
-|-------------|----------------------------------------------------------|---------|
-| WALLET_NETWORK   | Bitcoin network we're connected to (regtest, stn, testnet,regtest) | regtest    |
-| WALLET_SPVREQUIRED   | If true we will require full SPV envelopes to be sent as part of payments | true   |
-| WALLET_PAYMENTEXPIRY | Duration in hours that invoices will be valid for | 24   |
+| Key                  | Description                                                               | Default |
+| -------------------- | ------------------------------------------------------------------------- | ------- |
+| WALLET_NETWORK       | Bitcoin network we're connected to (regtest, stn, testnet,regtest)        | regtest |
+| WALLET_SPVREQUIRED   | If true we will require full SPV envelopes to be sent as part of payments | true    |
+| WALLET_PAYMENTEXPIRY | Duration in hours that invoices will be valid for                         | 24      |
 
 ## Working with PayD
 
