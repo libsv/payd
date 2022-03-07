@@ -56,17 +56,19 @@ func (s *sqliteStore) CreateUser(ctx context.Context, req payd.CreateUserArgs, p
 		return nil, errors.Wrapf(err, "failed to create new user: %s", req.Name)
 	}
 
-	meta := make([]userMeta, 0)
-	for k, v := range req.ExtendedData {
-		meta = append(meta, userMeta{
-			UserID: resp.ID,
-			Key:    k,
-			Value:  v,
-		})
-	}
-	_, err = tx.NamedExec(sqlCreateUserMeta, meta)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create new user meta data: %s", req.Name)
+	if len(req.ExtendedData) > 0 {
+		meta := make([]userMeta, 0)
+		for k, v := range req.ExtendedData {
+			meta = append(meta, userMeta{
+				UserID: resp.ID,
+				Key:    k,
+				Value:  v,
+			})
+		}
+		_, err = tx.NamedExec(sqlCreateUserMeta, meta)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create new user meta data: %s", req.Name)
+		}
 	}
 
 	if err := commit(ctx, tx); err != nil {
