@@ -86,6 +86,7 @@ func (i InvoiceCreate) Validate() error {
 		Validate("satoshis", validator.MinUInt64(i.Satoshis, bt.DustLimit)).
 		Validate("description", validator.StrLength(i.Description.ValueOrZero(), 0, 1024)).
 		Validate("paymentReference", validator.StrLength(i.Reference.ValueOrZero(), 0, 32)).
+		Validate("expiresAt", validator.DateAfter(i.ExpiresAt.Time, time.Now())).
 		Err()
 }
 
