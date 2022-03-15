@@ -16,6 +16,7 @@ import (
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/mocks"
 	"github.com/libsv/payd/service"
+	lerrs "github.com/theflyingcodr/lathos/errs"
 )
 
 func TestPayService_Pay(t *testing.T) {
@@ -151,6 +152,16 @@ func TestPayService_Pay(t *testing.T) {
 				PayToURL: ":dpp-merchant/api/v1/payment/abc123",
 			},
 			expErr: errors.New(`[payToURL: parse ":dpp-merchant/api/v1/payment/abc123": missing protocol scheme]`),
+		},
+		"error for expired payment": {
+			req: payd.PayRequest{
+				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
+			},
+			paymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
+				return nil, lerrs.NewErrUnprocessable("E001", "no payment request for you")
+			},
+			expKeyName: "masterkey",
+			expErr:     errors.New("Unprocessable: failed to request payment for url http://dpp-merchant/api/v1/payment/abc123 : Unprocessable: no payment request for you"),
 		},
 		"error fetching payment request is reported": {
 			req: payd.PayRequest{
