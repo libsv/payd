@@ -82,6 +82,13 @@ func (i *invoice) InvoicesPending(ctx context.Context) ([]payd.Invoice, error) {
 
 // Create will add a new invoice to the system.
 func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Invoice, error) {
+	timestamp := i.timeSvc.NowUTC()
+	req.CreatedAt = timestamp
+	if req.ExpiresAt.IsZero() {
+		// set to default expiry hours
+		req.ExpiresAt = null.TimeFrom(timestamp.Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
+	}
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -107,12 +114,6 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 	// NOTE - this is just an example
 	if req.Satoshis <= 1000 {
 		req.SPVRequired = false
-	}
-	timestamp := i.timeSvc.NowUTC()
-	req.CreatedAt = timestamp
-	if req.ExpiresAt.IsZero() {
-		// set to default expiry hours
-		req.ExpiresAt = null.TimeFrom(timestamp.Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
 	}
 	inv, err := i.store.InvoiceCreate(ctx, req)
 	if err != nil {
