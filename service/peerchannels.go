@@ -29,6 +29,7 @@ func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels
 		spvchannels.WithPassword("password"),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(p.cfg.Host),
+		spvchannels.WithPath(p.cfg.Path),
 		spvchannels.WithNoTLS(),
 	)
 	ch, err := c.ChannelCreate(ctx, req)
@@ -40,6 +41,7 @@ func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels
 	if err := p.str.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
 		PeerChannelAccountID: req.AccountID,
 		ChannelHost:          p.cfg.Host,
+		ChannelPath:          p.cfg.Path,
 		ChannelID:            ch.ID,
 		ChannelType:          payd.PeerChannelHandlerTypeProof,
 		CreatedAt:            createdAt,
@@ -61,6 +63,7 @@ func (p peerChannelsSvc) PeerChannelAPITokensCreate(ctx context.Context, reqs ..
 		spvchannels.WithPassword("password"),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(p.cfg.Host),
+		spvchannels.WithPath(p.cfg.Path),
 		spvchannels.WithNoTLS(),
 	)
 
@@ -94,6 +97,7 @@ func (p *peerChannelsSvc) PeerChannelsMessage(ctx context.Context, args *payd.Pe
 		spvchannels.WithChannelID(args.ChannelID),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(p.cfg.Host),
+		spvchannels.WithPath(p.cfg.Path),
 		spvchannels.WithNoTLS(),
 	)
 	msgs, err := c.Messages(ctx, spvchannels.MessagesRequest{

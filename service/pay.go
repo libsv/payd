@@ -124,6 +124,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		PeerChannelAccountID: 0,
 		ChannelID:            ack.PeerChannel.ChannelID,
 		ChannelHost:          ack.PeerChannel.Host,
+		ChannelPath:          ack.PeerChannel.Path,
 		ChannelType:          payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to store channel %s/%s in db", ack.PeerChannel.Host, ack.PeerChannel.ChannelID)
@@ -142,6 +143,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		ID:    ack.PeerChannel.ChannelID,
 		Token: ack.PeerChannel.Token,
 		Host:  ack.PeerChannel.Host,
+		Path:  ack.PeerChannel.Path,
 		Type:  payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
 		log.Err(err)

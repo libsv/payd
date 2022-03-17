@@ -71,6 +71,7 @@ type spvConfig struct {
 	insecure   bool // equivalent curl -k
 	tls        bool
 	baseURL    string
+	path       string
 	version    string
 	user       string
 	passwd     string
@@ -115,6 +116,13 @@ func WithNoTLS() SPVConfigFunc {
 func WithBaseURL(url string) SPVConfigFunc {
 	return func(c *spvConfig) {
 		c.baseURL = url
+	}
+}
+
+// WithPath provide a path on the hosting service (/peerchannels)
+func WithPath(path string) SPVConfigFunc {
+	return func(c *spvConfig) {
+		c.path = path
 	}
 }
 
@@ -399,7 +407,7 @@ func NewWSClient(opts ...SPVConfigFunc) (*WSClient, error) {
 
 // urlPath return the path part of the connection URL
 func (c *WSClient) urlPath() string {
-	return path.Join("/api", c.cfg.version, "/channel", c.cfg.channelID, "/notify")
+	return path.Join(c.cfg.path, "/api", c.cfg.version, "/channel", c.cfg.channelID, "/notify")
 }
 
 // connectServer establish the connection to the server
@@ -454,7 +462,6 @@ func (c *WSClient) Close() {
 // Run establishes the connection and start listening the notification stream
 // process the notification if a callback is provided
 func (c *WSClient) Run() {
-
 	go func() {
 		defer func() {
 			_ = recover()

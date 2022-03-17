@@ -49,8 +49,8 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 
 	u := url.URL{
 		Scheme: "ws",
-		Host:   p.cfg.Host,
-		Path:   path.Join("/api/v1/channel", channel.ID, "/notify"),
+		Host:   channel.Host,
+		Path:   path.Join(channel.Path, "/api/v1/channel", channel.ID, "/notify"),
 	}
 	q := u.Query()
 	q.Set("token", channel.Token)
