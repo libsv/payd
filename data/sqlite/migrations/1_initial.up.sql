@@ -45,6 +45,7 @@ CREATE TABLE peerchannels(
     ,peerchannels_account_id    INTEGER NOT NULL
     ,channel_id                 VARCHAR NOT NULL
     ,channel_host               VARCHAR NOT NULL
+    ,channel_path               VARCHAR NOT NULL
     ,channel_type               VARCHAR NOT NULL
 	,created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ,closed                     BOOLEAN NOT NULL DEFAULT 0

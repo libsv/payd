@@ -241,6 +241,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	if err := p.pcNotif.Subscribe(ctx, &payd.PeerChannel{
 		ID:        ch.ID,
 		Token:     tokens[1].Token,
+		Host:      p.pCfg.Host,
 		CreatedAt: ch.CreatedAt,
 		Type:      payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
@@ -301,6 +302,7 @@ func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) err
 	if err := p.pcStr.PeerChannelCreate(ctx, &payd.PeerChannelCreateArgs{
 		PeerChannelAccountID: 0,
 		ChannelHost:          args.PeerChannel.Host,
+		ChannelPath:          args.PeerChannel.Path,
 		ChannelID:            args.PeerChannel.ID,
 		ChannelType:          args.PeerChannel.Type,
 	}); err != nil {

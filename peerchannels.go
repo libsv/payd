@@ -31,6 +31,7 @@ type PeerChannel struct {
 	ID        string                 `db:"channel_id"`
 	Token     string                 `db:"tok"`
 	Host      string                 `db:"channel_host"`
+	Path      string                 `db:"channel_path"`
 	CreatedAt time.Time              `db:"created_at"`
 	Type      PeerChannelHandlerType `db:"channel_type"`
 }
@@ -52,6 +53,7 @@ type PeerChannelCreateArgs struct {
 	PeerChannelAccountID int64                  `db:"peerchannels_account_id"`
 	ChannelType          PeerChannelHandlerType `db:"channel_type"`
 	ChannelHost          string                 `db:"channel_host"`
+	ChannelPath          string                 `db:"channel_path"`
 	ChannelID            string                 `db:"channel_id"`
 	CreatedAt            time.Time              `db:"created_at"`
 }

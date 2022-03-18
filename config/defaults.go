@@ -58,4 +58,5 @@ func SetupDefaults() {
 
 	// Peer channels
 	viper.SetDefault(EnvPeerChannelsTTL, 120)
+	viper.SetDefault(EnvPeerChannelsPath, "")
 }

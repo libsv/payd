@@ -14,8 +14,8 @@ const sqlPeerChannelAccountSelect = `
 `
 
 const sqlPeerChannelInsert = `
-	INSERT INTO peerchannels (peerchannels_account_id, channel_id, channel_host, channel_type, created_at)
-	VALUES (:peerchannels_account_id, :channel_id, :channel_host, :channel_type, :created_at)
+	INSERT INTO peerchannels (peerchannels_account_id, channel_id, channel_host, channel_path, channel_type, created_at)
+	VALUES (:peerchannels_account_id, :channel_id, :channel_host, :channel_path, :channel_type, :created_at)
 `
 
 const sqlPeerChannelsAPITokInsert = `
@@ -30,7 +30,7 @@ const sqlPeerChannelsCloseUpdate = `
 `
 
 const sqlPeerChannelsOpenSelect = `
-	SELECT pc.channel_host, pc.channel_id, pc.channel_type, pc.created_at, pt.tok
+	SELECT pc.channel_host, pc.channel_path, pc.channel_id, pc.channel_type, pc.created_at, pt.tok
 	FROM peerchannels pc
 	JOIN peerchannels_toks pt ON pc.channel_id = pt.peerchannels_channel_id
 	WHERE pc.closed = 0 AND pc.channel_type = :channel_type
