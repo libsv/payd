@@ -2,10 +2,12 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/libsv/go-bk/bip32"
 	"github.com/libsv/payd"
 	"github.com/pkg/errors"
+	lerrs "github.com/theflyingcodr/lathos/errs"
 )
 
 const (
@@ -94,7 +96,10 @@ func (s *sqliteStore) ReadUser(ctx context.Context, userID uint64) (*payd.User, 
 	}
 
 	if err := s.db.GetContext(ctx, &data, sqlGetUserByID, userID); err != nil {
-		return nil, errors.Wrap(err, "failed to get wallet owner")
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, lerrs.NewErrNotFound("N004", "failed to get wallet owner: "+err.Error())
+		}
+		return nil, errors.Wrap(err, "failed to get <resource>")
 	}
 
 	xPriv, err := bip32.NewKeyFromString(data.Xprv)
@@ -141,6 +146,9 @@ func (s *sqliteStore) DeleteUser(ctx context.Context, userID uint64) error {
 	}
 	_, err := s.db.NamedExec(sqlDeleteUserByID, data)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return lerrs.NewErrNotFound("N004", "failed to delete wallet owner: "+err.Error())
+		}
 		return errors.Wrap(err, "failed to get wallet owner")
 	}
 	return nil

@@ -14,6 +14,7 @@ import (
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 	"github.com/libsv/payd/data/http"
+	lerrs "github.com/theflyingcodr/lathos/errs"
 )
 
 type pay struct {
@@ -75,6 +76,10 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	// Retrieve the payment request information from the receiver.
 	payReq, err := p.dpp.PaymentRequest(ctx, req)
 	if err != nil {
+		if errors.As(err, &lerrs.ErrUnprocessable{}) {
+			return nil, lerrs.NewErrUnprocessable("U002", "failed to request payment for url "+req.PayToURL+" : "+err.Error())
+		}
+
 		return nil, errors.Wrapf(err, "failed to request payment for url %s", req.PayToURL)
 	}
 	// begin a transaction that can be picked up by other services etc for rollbacks on failure.
