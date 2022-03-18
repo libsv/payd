@@ -13,7 +13,7 @@ func (c *Client) getMessageBaseEndpoint() string {
 	u := url.URL{
 		Scheme: c.cfg.httpScheme(),
 		Host:   c.cfg.baseURL,
-		Path:   path.Join("/api", c.cfg.version),
+		Path:   path.Join(c.cfg.path, "/api", c.cfg.version),
 	}
 	return u.String()
 }
