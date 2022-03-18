@@ -93,7 +93,7 @@ require (
 require (
 	github.com/InVisionApp/go-health/v2 v2.1.2
 	github.com/libsv/go-dpp v0.0.9
-	github.com/libsv/go-spvchannels v0.0.1
+	github.com/libsv/go-spvchannels v0.0.2
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e

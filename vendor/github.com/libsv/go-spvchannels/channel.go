@@ -10,17 +10,17 @@ import (
 	"path"
 )
 
-func (c *Client) getChanelBaseEndpoint() string {
+func (c *Client) getChannelBaseEndpoint() string {
 	u := url.URL{
 		Scheme: c.cfg.httpScheme(),
 		Host:   c.cfg.baseURL,
-		Path:   path.Join("/api", c.cfg.version, "/account"),
+		Path:   path.Join(c.cfg.path, "/api", c.cfg.version, "/account"),
 	}
 	return u.String()
 }
 
 func (c *Client) getTokenBaseEndpoint(accountid int64, channelid string) string {
-	return fmt.Sprintf("%s/%d/channel/%s/api-token", c.getChanelBaseEndpoint(), accountid, channelid)
+	return fmt.Sprintf("%s/%d/channel/%s/api-token", c.getChannelBaseEndpoint(), accountid, channelid)
 }
 
 // ChannelsRequest hold data for get channels request for a particular account
@@ -213,7 +213,7 @@ func (c *Client) Channels(ctx context.Context, r ChannelsRequest) (*ChannelsRepl
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		fmt.Sprintf("%s/%d/channel/list", c.getChanelBaseEndpoint(), r.AccountID),
+		fmt.Sprintf("%s/%d/channel/list", c.getChannelBaseEndpoint(), r.AccountID),
 		nil,
 	)
 	if err != nil {
@@ -233,7 +233,7 @@ func (c *Client) Channel(ctx context.Context, r ChannelRequest) (*ChannelReply, 
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		fmt.Sprintf("%s/%d/channel/%s", c.getChanelBaseEndpoint(), r.AccountID, r.ChannelID),
+		fmt.Sprintf("%s/%d/channel/%s", c.getChannelBaseEndpoint(), r.AccountID, r.ChannelID),
 		nil,
 	)
 
@@ -259,7 +259,7 @@ func (c *Client) ChannelUpdate(ctx context.Context, r ChannelUpdateRequest) (*Ch
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		fmt.Sprintf("%s/%d/channel/%s", c.getChanelBaseEndpoint(), r.AccountID, r.ChannelID),
+		fmt.Sprintf("%s/%d/channel/%s", c.getChannelBaseEndpoint(), r.AccountID, r.ChannelID),
 		bytes.NewBuffer(payload),
 	)
 
@@ -280,7 +280,7 @@ func (c *Client) ChannelDelete(ctx context.Context, r ChannelDeleteRequest) erro
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodDelete,
-		fmt.Sprintf("%s/%d/channel/%s", c.getChanelBaseEndpoint(), r.AccountID, r.ChannelID),
+		fmt.Sprintf("%s/%d/channel/%s", c.getChannelBaseEndpoint(), r.AccountID, r.ChannelID),
 		nil,
 	)
 
@@ -301,7 +301,7 @@ func (c *Client) ChannelCreate(ctx context.Context, r ChannelCreateRequest) (*Ch
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		fmt.Sprintf("%s/%d/channel", c.getChanelBaseEndpoint(), r.AccountID),
+		fmt.Sprintf("%s/%d/channel", c.getChannelBaseEndpoint(), r.AccountID),
 		bytes.NewBuffer(payload),
 	)
 
