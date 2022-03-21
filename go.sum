@@ -525,6 +525,8 @@ github.com/libsv/go-bt/v2 v2.1.0-beta.2 h1:oq6BQQtNeZiG/esfoY/7RyYF+dDj996xqNfvo
 github.com/libsv/go-bt/v2 v2.1.0-beta.2/go.mod h1:u5g3GmVLffBV8sWvMqHR3JekC51OR9XYvmQp1h/XoiQ=
 github.com/libsv/go-dpp v0.0.9 h1:Sm9udJ4n9x7/3WSGjdB0+R7SZKJBIltI6Qnji/VgISY=
 github.com/libsv/go-dpp v0.0.9/go.mod h1:VZ4BSG12xv5KHeqdz4tPDYcwVkAFmfDXO4zJ2t9bsyI=
+github.com/libsv/go-dpp v0.0.10 h1:rQcWKkVlWl8ud4s0uqOJ/hEyDG+oPxP/jbJZmISYdKw=
+github.com/libsv/go-dpp v0.0.10/go.mod h1:nc9Lh987LXHc8+pE3k3ThMWvQQft9JSboFQF1elfRFs=
 github.com/libsv/go-spvchannels v0.0.2 h1:WkhJZmVQftNVSYFJjkXTf+78IC0jX6jBYKnWrVm57+E=
 github.com/libsv/go-spvchannels v0.0.2/go.mod h1:J2uSn4X/Eq3BIEfmGtuhAHZUxyUIQydpxSZFyEIb8D0=
 github.com/lyft/protoc-gen-star v0.5.3/go.mod h1:V0xaHgaf5oCCqmcxYcWiDfTiKsZsRc87/1qhoTACD8w=

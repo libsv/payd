@@ -30,7 +30,7 @@ type PaymentRequestResponse struct {
 	Memo                string         `json:"memo"`
 	MerchantData        User           `json:"merchantData"`
 	Fee                 *bt.FeeQuote   `json:"fees"`
-	SPVRequired         bool           `json:"spvRequired" example:"true"`
+	AncestryRequired    bool           `json:"ancestryRequired" example:"true"`
 }
 
 // PaymentRequestService will create and return a paymentRequest using the args provided.

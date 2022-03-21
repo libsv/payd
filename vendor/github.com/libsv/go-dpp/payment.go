@@ -23,10 +23,10 @@ type Payment struct {
 	RefundTo *string `json:"refundTo"  swaggertype:"primitive,string" example:"me@paymail.com"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo" example:"for invoice 123456"`
-	// Ancestors which contains the details of previous transaction and Merkle proof of each input UTXO.
+	// Ancestry which contains the details of previous transaction and Merkle proof of each input UTXO.
 	// Should be available if AncestryRequired is set to true in the paymentRequest.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
-	Ancestors *spv.Envelope `json:"ancestors"`
+	Ancestry *spv.Envelope `json:"ancestry"`
 	// RawTX should be sent if AncestryRequired is set to false in the payment request.
 	RawTX *string `json:"rawTx"`
 	// ProofCallbacks are optional and can be supplied when the sender wants to receive
@@ -40,9 +40,9 @@ type Payment struct {
 // Validate will ensure the users request is correct.
 func (p Payment) Validate() error {
 	v := validator.New().
-		Validate("ancestors/rawTx", func() error {
-			if p.RawTX == nil && p.Ancestors == nil {
-				return errors.New("either an SPVEnvelope or a rawTX are required")
+		Validate("ancestry/rawTx", func() error {
+			if p.RawTX == nil && p.Ancestry == nil {
+				return errors.New("either ancestry or a rawTX are required")
 			}
 			return nil
 		}).
@@ -53,14 +53,14 @@ func (p Payment) Validate() error {
 
 	// perform a light validation of the envelope, make sure we have a valid root txID
 	// the root rawTx is actually a tx and that the supplied root txhex and txid match
-	if p.Ancestors != nil {
-		v = v.Validate("ancestors.txId", validator.StrLengthExact(p.Ancestors.TxID, 64)).
-			Validate("ancestors.rawTx", func() error {
-				tx, err := bt.NewTxFromString(p.Ancestors.RawTx)
+	if p.Ancestry != nil {
+		v = v.Validate("ancestry.txId", validator.StrLengthExact(p.Ancestry.TxID, 64)).
+			Validate("ancestry.rawTx", func() error {
+				tx, err := bt.NewTxFromString(p.Ancestry.RawTx)
 				if err != nil {
 					return errors.Wrap(err, "invalid rawTx hex supplied")
 				}
-				if tx.TxID() != p.Ancestors.TxID {
+				if tx.TxID() != p.Ancestry.TxID {
 					return errors.New("transaction mismatch, root txId does not match rawTx supplied")
 				}
 
@@ -82,7 +82,7 @@ func (p Payment) Validate() error {
 }
 
 // ProofCallback is used by a payee to request a merkle proof is sent to them
-// as proof of acceptance of the tx they have provided in the ancestors.
+// as proof of acceptance of the tx they have provided in the ancestry.
 type ProofCallback struct {
 	Token string `json:"token"`
 }

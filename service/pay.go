@@ -93,7 +93,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	}
 	// Send the payment to the dpp proxy server.
 	ack, err := p.dpp.PaymentSend(ctx, req, dpp.Payment{
-		Ancestors: env,
+		Ancestry: env,
 		ProofCallbacks: map[string]dpp.ProofCallback{
 			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
 		},

@@ -11,11 +11,11 @@ import (
 	"sync"
 )
 
-// Ensure, that DPPMock does implement http.dpp.
+// Ensure, that DPPMock does implement http.DPP.
 // If this is not the case, regenerate this file with moq.
 var _ http.DPP = &DPPMock{}
 
-// DPPMock is a mock implementation of http.dpp.
+// DPPMock is a mock implementation of http.DPP.
 //
 // 	func TestSomethingThatUsesDPP(t *testing.T) {
 //
@@ -66,7 +66,7 @@ type DPPMock struct {
 // PaymentRequest calls PaymentRequestFunc.
 func (mock *DPPMock) PaymentRequest(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
 	if mock.PaymentRequestFunc == nil {
-		panic("DPPMock.PaymentRequestFunc: method is nil but dpp.PaymentRequest was just called")
+		panic("DPPMock.PaymentRequestFunc: method is nil but DPP.PaymentRequest was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
@@ -83,7 +83,7 @@ func (mock *DPPMock) PaymentRequest(ctx context.Context, req payd.PayRequest) (*
 
 // PaymentRequestCalls gets all the calls that were made to PaymentRequest.
 // Check the length with:
-//     len(mockeddpp.PaymentRequestCalls())
+//     len(mockedDPP.PaymentRequestCalls())
 func (mock *DPPMock) PaymentRequestCalls() []struct {
 	Ctx context.Context
 	Req payd.PayRequest
@@ -101,7 +101,7 @@ func (mock *DPPMock) PaymentRequestCalls() []struct {
 // PaymentSend calls PaymentSendFunc.
 func (mock *DPPMock) PaymentSend(ctx context.Context, args payd.PayRequest, req dpp.Payment) (*dpp.PaymentACK, error) {
 	if mock.PaymentSendFunc == nil {
-		panic("DPPMock.PaymentSendFunc: method is nil but dpp.PaymentSend was just called")
+		panic("DPPMock.PaymentSendFunc: method is nil but DPP.PaymentSend was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
@@ -120,7 +120,7 @@ func (mock *DPPMock) PaymentSend(ctx context.Context, args payd.PayRequest, req 
 
 // PaymentSendCalls gets all the calls that were made to PaymentSend.
 // Check the length with:
-//     len(mockeddpp.PaymentSendCalls())
+//     len(mockedDPP.PaymentSendCalls())
 func (mock *DPPMock) PaymentSendCalls() []struct {
 	Ctx  context.Context
 	Args payd.PayRequest

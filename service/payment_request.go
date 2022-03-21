@@ -97,7 +97,7 @@ func (p *paymentRequest) PaymentRequest(ctx context.Context, args payd.PaymentRe
 	}
 	return &payd.PaymentRequestResponse{
 		Network:             string(p.cfg.Network),
-		SPVRequired:         dd.SPVRequired,
+		AncestryRequired:    dd.SPVRequired,
 		Destinations:        payd.DPPDestination{Outputs: oo},
 		Fee:                 fees,
 		CreationTimestamp:   dd.CreatedAt,

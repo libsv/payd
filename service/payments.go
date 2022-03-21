@@ -80,7 +80,24 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errs.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
-	tx, err := p.paymentVerify.VerifyPayment(ctx, req.Ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
+	var rawTx string
+	if req.RawTX != nil && *req.RawTX != "" {
+		rawTx = *req.RawTX
+	} else if req.Ancestry != nil && req.Ancestry.RawTx != "" {
+		rawTx = req.Ancestry.RawTx
+	}
+
+	tx, err := bt.NewTxFromString(rawTx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse tx")
+	}
+
+	ancestry, err := req.Ancestry.Bytes()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert ancestry to bytes")
+	}
+
+	tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestry, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
 	if err != nil {
 		if errors.Is(err, spv.ErrFeePaidNotEnough) {
 			return nil, validator.ErrValidation{
@@ -91,7 +108,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 		// map error to a validation error
 		return nil, validator.ErrValidation{
-			"spvEnvelope": {
+			"ancestry": {
 				err.Error(),
 			},
 		}
@@ -156,7 +173,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
 		RefundTo:  null.StringFromPtr(req.RefundTo),
-		TxHex:     req.Ancestors.RawTx,
+		TxHex:     req.Ancestry.RawTx,
 		Outputs:   txos,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", args.InvoiceID)

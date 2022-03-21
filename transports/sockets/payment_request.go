@@ -98,7 +98,7 @@ func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*s
 	if err != nil {
 		return nil, err
 	}
-	payment.Ancestors = env
+	payment.Ancestry = env
 	resp := msg.NewFrom(RoutePayment)
 	if err := resp.WithBody(&payment); err != nil {
 		return nil, err
