@@ -139,7 +139,7 @@ github.com/libsv/go-bt/sighash
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
 github.com/libsv/go-bt/v2/sighash
-# github.com/libsv/go-dpp v0.0.9
+# github.com/libsv/go-dpp v0.0.9 => /Users/t.carroll/go/src/github.com/libsv/go-dpp
 ## explicit; go 1.17
 github.com/libsv/go-dpp
 # github.com/libsv/go-spvchannels v0.0.2
@@ -355,3 +355,4 @@ gopkg.in/yaml.v2
 ## explicit
 gopkg.in/yaml.v3
 # github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
+# github.com/libsv/go-dpp => /Users/t.carroll/go/src/github.com/libsv/go-dpp

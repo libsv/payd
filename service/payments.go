@@ -80,7 +80,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errs.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
-	tx, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
+	tx, err := p.paymentVerify.VerifyPayment(ctx, req.Ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
 	if err != nil {
 		if errors.Is(err, spv.ErrFeePaidNotEnough) {
 			return nil, validator.ErrValidation{
@@ -156,7 +156,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
 		RefundTo:  null.StringFromPtr(req.RefundTo),
-		TxHex:     req.SPVEnvelope.RawTx,
+		TxHex:     req.Ancestors.RawTx,
 		Outputs:   txos,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", args.InvoiceID)

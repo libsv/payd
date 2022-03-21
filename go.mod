@@ -97,3 +97,5 @@ require (
 )
 
 replace github.com/golang-migrate/migrate/v4 => github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e
+
+replace github.com/libsv/go-dpp => /Users/t.carroll/go/src/github.com/libsv/go-dpp

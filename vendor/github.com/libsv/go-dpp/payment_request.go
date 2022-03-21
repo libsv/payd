@@ -15,9 +15,9 @@ type PaymentRequest struct {
 	// {enum: bitcoin, bitcoin-sv, test}
 	// Required.
 	Network string `json:"network" example:"mainnet" enums:"mainnet,testnet,stn,regtest"`
-	// SPVRequired if true will expect the sender to submit an SPVEnvelope in the payment request, otherwise
+	// AncestryRequired if true will expect the sender to submit Ancestors in the payment request, otherwise
 	// a rawTx will be required.
-	SPVRequired bool `json:"spvRequired" example:"true"`
+	AncestryRequired bool `json:"ancestryRequired" example:"true"`
 	// Destinations contains supported payment destinations by the merchant and dpp server, initial P2PKH outputs but can be extended.
 	// Required.
 	Destinations PaymentDestinations `json:"destinations"`

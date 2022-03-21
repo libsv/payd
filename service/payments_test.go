@@ -79,7 +79,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -123,7 +123,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{
+				Ancestors: &spv.Envelope{
 					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 				},
 			},
@@ -167,7 +167,9 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
-				return bt.NewFeeQuote(), nil
+				fqq := bt.NewFeeQuote()
+				fqq.UpdateExpiry(time.Now().Add(-2 * time.Minute))
+				return fqq, nil
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req:           dpp.Payment{},
@@ -356,7 +358,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -394,7 +396,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 				ProofCallbacks: map[string]dpp.ProofCallback{
 					"wow": {},
 				},
@@ -441,7 +443,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxFailed,
@@ -486,7 +488,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxBroadcast,
@@ -532,7 +534,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				Ancestors: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",

@@ -120,7 +120,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 		TxID:  tx.TxID(),
 	}
 
-	if req.SPVRequired {
+	if req.AncestryRequired {
 		// Create the spv envelope for the tx.
 		s, err := e.spvc.CreateEnvelope(ctx, tx)
 		if err != nil {
