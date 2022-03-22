@@ -17,10 +17,6 @@ type verifyOptions struct {
 	feeQuote *bt.FeeQuote
 }
 
-func (v *verifyOptions) requiresEnvelope() bool {
-	return v.proofs || v.script
-}
-
 // clone will copy the verifyOptions to a new struct and return it.
 func (v *verifyOptions) clone() *verifyOptions {
 	return &verifyOptions{
@@ -115,7 +111,7 @@ func VerifySPV() VerifyOpt {
 // The implementation of bc.BlockHeaderChain which is supplied will depend on the client
 // you are using, some may return a HeaderJSON response others may return the blockhash.
 type PaymentVerifier interface {
-	VerifyPayment(context.Context, *Envelope, ...VerifyOpt) (*bt.Tx, error)
+	VerifyPayment(ctx context.Context, pTx *bt.Tx, ancestors []byte, opts ...VerifyOpt) (*bt.Tx, error)
 	MerkleProofVerifier
 }
 

@@ -7,22 +7,20 @@ import (
 	"github.com/libsv/go-bt/v2"
 )
 
-// AncestryJSON is a spec at https://tsc.bitcoinassociation.net/standards/spv-envelope/ eventually.
-type AncestryJSON struct {
-	PaymentTx string         `json:"paymentTx,omitempty"`
-	Depth     uint64         `json:"depth,omitempty"`
-	Ancestors []AncestorJSON `json:"ancestors,omitempty"`
+// AncestorsJSON spec at https://tsc.bitcoinassociation.net/standards/spv-envelope/ eventually.
+type AncestorsJSON struct {
+	Ancestors []AncestorJSON `json:"ancestors"`
 }
 
 // AncestorJSON is one of the serial objects within the overall list of ancestors.
 type AncestorJSON struct {
-	RawTx         string             `json:"hex,omitempty"`
+	RawTx         string             `json:"rawtx,omitempty"`
 	Proof         *bc.MerkleProof    `json:"proof,omitempty"`
 	MapiResponses []*bc.MapiCallback `json:"mapiResponses,omitempty"`
 }
 
 // NewAncestoryJSONFromBytes is a way to create the JSON format for Ancestry from the binary format.
-func NewAncestoryJSONFromBytes(b []byte) (*AncestryJSON, error) {
+func NewAncestoryJSONFromBytes(b []byte) (*AncestorsJSON, error) {
 	ancestry, err := NewAncestryFromBytes(b)
 	if err != nil {
 		return nil, err
@@ -49,29 +47,17 @@ func NewAncestoryJSONFromBytes(b []byte) (*AncestryJSON, error) {
 		}
 		ancestors = append(ancestors, a)
 	}
-	j := &AncestryJSON{
-		PaymentTx: ancestry.PaymentTx.String(),
-		Depth:     0,
+	return &AncestorsJSON{
 		Ancestors: ancestors,
-	}
-	return j, nil
+	}, nil
 }
 
-// Bytes takes an AncestryJSON and returns the serialised bytes.
-func (j *AncestryJSON) Bytes() ([]byte, error) {
+// Bytes takes an AncestorsJSON and returns the serialised bytes.
+func (j AncestorsJSON) Bytes() ([]byte, error) {
 	binaryTxContext := make([]byte, 0)
 
 	// Binary format version 1.
 	binaryTxContext = append(binaryTxContext, 1)
-
-	// first tx is the payment.
-	paymentTx, err := hex.DecodeString(j.PaymentTx)
-	if err != nil {
-		return nil, err
-	}
-	length := bt.VarInt(uint64(len(paymentTx)))
-	binaryTxContext = append(binaryTxContext, length.Bytes()...)
-	binaryTxContext = append(binaryTxContext, paymentTx...)
 
 	// follow with the list of ancestors, including their proof or mapi responses if present.
 	for _, ancestor := range j.Ancestors {
