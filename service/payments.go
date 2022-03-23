@@ -219,16 +219,10 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 	}
 
-	pc := &dpp.PeerChannelData{
-		Host:      p.pCfg.Host,
-		ChannelID: ch.ID,
-		Token:     tokens[2].Token,
-	}
-
 	// Broadcast the transaction
 	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{
 		InvoiceID:   inv.ID,
-		CallbackURL: fmt.Sprintf("http://%s%s", p.pCfg.Host, path.Join("/api/v1/channel/", ch.ID)),
+		CallbackURL: fmt.Sprintf("http://%s%s", p.pCfg.Host, path.Join(p.pCfg.Path, "/api/v1/channel/", ch.ID)),
 		Token:       "Bearer " + tokens[0].Token,
 	}, tx); err != nil {
 		// set as failed
@@ -242,6 +236,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		ID:        ch.ID,
 		Token:     tokens[1].Token,
 		Host:      p.pCfg.Host,
+		Path:      p.pCfg.Path,
 		CreatedAt: ch.CreatedAt,
 		Type:      payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
@@ -271,9 +266,14 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	return &dpp.PaymentACK{
-		ID:          inv.ID,
-		TxID:        tx.TxID(),
-		PeerChannel: pc,
+		ID:   inv.ID,
+		TxID: tx.TxID(),
+		PeerChannel: &dpp.PeerChannelData{
+			Host:      p.pCfg.Host,
+			Path:      p.pCfg.Path,
+			ChannelID: ch.ID,
+			Token:     tokens[2].Token,
+		},
 	}, nil
 }
 
