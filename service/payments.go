@@ -92,9 +92,12 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errors.Wrap(err, "failed to parse tx")
 	}
 
-	ancestry, err := req.Ancestry.Bytes()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert ancestry to bytes")
+	var ancestry []byte
+	if inv.SPVRequired {
+		ancestry, err = req.Ancestry.Bytes()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert ancestry to bytes")
+		}
 	}
 
 	tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestry, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
