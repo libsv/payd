@@ -67,7 +67,7 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 		}
 
 		if mm["callbackReason"].(string) != "merkleProof" {
-			log.Info().Msg("skipping msg")
+			log.Debug().Msgf("skipping msg %#v", msg)
 			continue
 		}
 

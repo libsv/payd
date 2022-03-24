@@ -151,7 +151,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		Path:  ack.PeerChannel.Path,
 		Type:  payd.PeerChannelHandlerTypeProof,
 	}); err != nil {
-		log.Err(err)
+		log.Error().Err(err)
 	}
 	if err := p.storeTx.Commit(ctx); err != nil {
 		return nil, errors.Wrap(err, "failed to commit tx")
