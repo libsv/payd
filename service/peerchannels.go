@@ -96,8 +96,8 @@ func (p *peerChannelsSvc) PeerChannelsMessage(ctx context.Context, args *payd.Pe
 		spvchannels.WithToken(args.Token),
 		spvchannels.WithChannelID(args.ChannelID),
 		spvchannels.WithVersion("v1"),
-		spvchannels.WithBaseURL(p.cfg.Host),
-		spvchannels.WithPath(p.cfg.Path),
+		spvchannels.WithBaseURL(args.Host),
+		spvchannels.WithPath(args.Path),
 		spvchannels.WithNoTLS(),
 	)
 	msgs, err := c.Messages(ctx, spvchannels.MessagesRequest{

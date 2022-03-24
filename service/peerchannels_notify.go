@@ -47,6 +47,8 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 		channel.CreatedAt = time.Now()
 	}
 
+	log.Debug().Msgf("subscribing to channel %s with token %s at %s%s", channel.ID, channel.Token, channel.Host, channel.Path)
+
 	u := url.URL{
 		Scheme: "ws",
 		Host:   channel.Host,
@@ -76,6 +78,8 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 	}()
 
 	sub := payd.PeerChannelSubscription{
+		Host:        channel.Host,
+		Path:        channel.Path,
 		ChannelID:   channel.ID,
 		ChannelType: channel.Type,
 		Token:       channel.Token,
@@ -107,6 +111,7 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 			log.Error().Err(errors.WithStack(err))
 		}
 
+		log.Debug().Msgf("message received on channel %s", sub.ChannelID)
 		in <- true
 	}()
 
@@ -124,12 +129,16 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 func (p *peerChannelsNotifySvc) handleNotification(ctx context.Context, sub *payd.PeerChannelSubscription, cancel context.CancelFunc) error {
 	msgs, err := p.pcSvc.PeerChannelsMessage(ctx, &payd.PeerChannelMessageArgs{
 		ChannelID: sub.ChannelID,
+		Host:      sub.Host,
+		Path:      sub.Path,
 		Token:     sub.Token,
 	})
 	if err != nil {
 		log.Error().Err(errors.WithStack(err))
 		return err
 	}
+
+	log.Debug().Msgf("channel %s fetched messages: %#v", sub.ChannelID, msgs)
 
 	hdlr := p.handlers[sub.ChannelType]
 	finished, err := hdlr.HandlePeerChannelsMessage(ctx, msgs)
