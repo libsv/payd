@@ -28,6 +28,8 @@ type PeerChannelsMessageHandler interface {
 
 // PeerChannelSubscription for subscribing to channel notifications.
 type PeerChannelSubscription struct {
+	Host        string
+	Path        string
 	ChannelID   string
 	Token       string
 	ChannelType PeerChannelHandlerType

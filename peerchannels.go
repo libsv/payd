@@ -77,5 +77,7 @@ type PeerChannelAPITokenStoreArgs struct {
 // PeerChannelMessageArgs for quering a peer channel message.
 type PeerChannelMessageArgs struct {
 	ChannelID string
+	Host      string
+	Path      string
 	Token     string
 }
