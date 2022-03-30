@@ -33,6 +33,7 @@ Swag converts Go annotations to Swagger Documentation 2.0. We've created a varie
 	- [Add a headers in response](#add-a-headers-in-response) 
 	- [Use multiple path params](#use-multiple-path-params)
 	- [Example value of struct](#example-value-of-struct)
+	- [SchemaExample of body](#schemaexample-of-body)
 	- [Description of struct](#description-of-struct)
 	- [Use swaggertype tag to supported custom type](#use-swaggertype-tag-to-supported-custom-type)
 	- [Use global overrides to support a custom type](#use-global-overrides-to-support-a-custom-type)
@@ -382,7 +383,7 @@ When a short string in your documentation is insufficient, or you need images, c
 | annotation  | description                                                                                                                |
 |-------------|----------------------------------------------------------------------------------------------------------------------------|
 | description | A verbose explanation of the operation behavior.                                                                           |
-| description.markdown     |  A short description of the application. The description will be read from a file named like endpointname.md| // @description.file endpoint.description.markdown  |
+| description.markdown     |  A short description of the application. The description will be read from a file.  E.g. `@description.markdown details` will load `details.md`| // @description.file endpoint.description.markdown  |
 | id          | A unique string used to identify the operation. Must be unique among all API operations.                                   |
 | tags        | A list of tags to each API operation that separated by commas.                                                             |
 | summary     | A short summary of what the operation does.                                                                                |
@@ -613,6 +614,12 @@ type Account struct {
 }
 ```
 
+### SchemaExample of body
+
+```go
+// @Param email body string true "message/rfc822" SchemaExample(Subject: Testmail\r\n\r\nBody Message\r\n)
+```
+
 ### Description of struct
 
 ```go
@@ -812,6 +819,14 @@ Make it AND condition
 // @Security ApiKeyAuth
 // @Security OAuth2Application[write, admin]
 ```
+
+Make it OR condition
+
+```go
+// @Security ApiKeyAuth || firebase
+// @Security OAuth2Application[write, admin] || APIKeyAuth
+```
+
 
 ### Add a description for enum items
 
