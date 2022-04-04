@@ -139,7 +139,7 @@ github.com/libsv/go-bt/sighash
 github.com/libsv/go-bt/v2
 github.com/libsv/go-bt/v2/bscript
 github.com/libsv/go-bt/v2/sighash
-# github.com/libsv/go-dpp v0.0.10
+# github.com/libsv/go-dpp v0.0.10-0.20220404121630-0c117ccbe02a
 ## explicit; go 1.17
 github.com/libsv/go-dpp
 # github.com/libsv/go-spvchannels v0.0.2

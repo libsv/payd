@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/libsv/go-bk/bip32"
@@ -91,9 +92,15 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	if err != nil {
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}
+	bb, err := env.Bytes()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to convert ancestry into bytes", string(bb))
+	}
+	ancestry := hex.EncodeToString(bb)
 	// Send the payment to the dpp proxy server.
 	ack, err := p.dpp.PaymentSend(ctx, req, dpp.Payment{
-		Ancestry: env,
+		Ancestry: &ancestry,
+		RawTx:    &env.RawTx,
 		ProofCallbacks: map[string]dpp.ProofCallback{
 			"https://" + p.svrCfg.Hostname + "/api/v1/proofs/" + env.TxID: {},
 		},
