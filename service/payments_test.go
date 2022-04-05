@@ -27,7 +27,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 	tests := map[string]struct {
 		invoiceFunc             func(context.Context, payd.InvoiceArgs) (*payd.Invoice, error)
 		feeQuoteFunc            func(context.Context, string) (*bt.FeeQuote, error)
-		verifyPaymentFunc       func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error)
+		verifyPaymentFunc       func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error)
 		destinationsFunc        func(context.Context, payd.DestinationsArgs) ([]payd.Output, error)
 		txCreateFunc            func(context.Context, payd.TransactionCreate) error
 		proofCallbackCreateFunc func(context.Context, payd.ProofCallbackArgs, map[string]dpp.ProofCallback) error
@@ -48,7 +48,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -79,7 +79,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -92,7 +95,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -123,9 +126,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.VerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -167,7 +171,9 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
 			},
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
-				return bt.NewFeeQuote(), nil
+				fqq := bt.NewFeeQuote()
+				fqq.UpdateExpiry(time.Now().Add(-2 * time.Minute))
+				return fqq, nil
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req:           dpp.Payment{},
@@ -181,11 +187,16 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return nil, spv.ErrFeePaidNotEnough
 			},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[fees: not enough fees paid]"),
 		},
@@ -196,13 +207,18 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return nil, spv.ErrInvalidProof
 			},
-			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
-			expErr:        errors.New("[spvEnvelope: invalid merkle proof, payment invalid]"),
+			expErr:        errors.New("[ancestry: invalid merkle proof, payment invalid]"),
 		},
 		"error reading destinations is reported": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
@@ -211,14 +227,19 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
 				return nil, errors.New("destinations unknown")
 			},
-			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("failed to get destinations with ID 'abc123': destinations unknown"),
 		},
@@ -229,7 +250,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e9030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -243,8 +264,13 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 					State:          "pending",
 				}}, nil
 			},
-			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e9030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: output satoshis do not match requested amount]"),
 		},
@@ -277,7 +303,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -291,8 +317,13 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 					State:          "pending",
 				}}, nil
 			},
-			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[transaction: tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again]"),
 		},
@@ -303,7 +334,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -325,8 +356,13 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 					State:          "pending",
 				}}, nil
 			},
-			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
-			req:           dpp.Payment{},
+			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
+			req: dpp.Payment{
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
+			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: expected '2' outputs, received '1', ensure all destinations are supplied]"),
 		},
@@ -337,7 +373,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -356,7 +392,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -372,7 +411,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -394,7 +433,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 				ProofCallbacks: map[string]dpp.ProofCallback{
 					"wow": {},
 				},
@@ -410,7 +452,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -441,7 +483,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxFailed,
@@ -455,7 +500,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -486,7 +531,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxBroadcast,
@@ -501,7 +549,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
 			},
-			verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+			verifyPaymentFunc: func(context.Context, *bt.Tx, []byte, ...spv.VerifyOpt) (*bt.Tx, error) {
 				return bt.NewTxFromString("010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 			},
 			destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
@@ -532,7 +580,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				SPVEnvelope: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -546,9 +597,9 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			svc := service.NewPayments(
 				log.Noop{},
 				&mocks.PaymentVerifierMock{
-					VerifyPaymentFunc: func(ctx context.Context, envelope *spv.Envelope, opts ...spv.VerifyOpt) (*bt.Tx, error) {
+					VerifyPaymentFunc: func(ctx context.Context, pTx *bt.Tx, ancestry []byte, opts ...spv.VerifyOpt) (*bt.Tx, error) {
 						assert.Equal(t, len(test.expVerifyOpts), len(opts))
-						return test.verifyPaymentFunc(ctx, envelope, opts...)
+						return test.verifyPaymentFunc(ctx, pTx, ancestry, opts...)
 					},
 				},
 				&mocks.TransactionWriterMock{

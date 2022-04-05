@@ -3,7 +3,6 @@ package dpp
 import (
 	"context"
 
-	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
 	"github.com/pkg/errors"
 	validator "github.com/theflyingcodr/govalidator"
@@ -23,12 +22,12 @@ type Payment struct {
 	RefundTo *string `json:"refundTo"  swaggertype:"primitive,string" example:"me@paymail.com"`
 	// Memo is a plain-text note from the customer to the payment host.
 	Memo string `json:"memo" example:"for invoice 123456"`
-	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
-	// Should be available if SPVRequired is set to true in the paymentRequest.
+	// Ancestry which contains the details of previous transaction and Merkle proof of each input UTXO.
+	// Should be available if AncestryRequired is set to true in the paymentRequest.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
-	SPVEnvelope *spv.Envelope `json:"spvEnvelope"`
-	// RawTX should be sent if SPVRequired is set to false in the payment request.
-	RawTX *string `json:"rawTx"`
+	Ancestry *string `json:"ancestry"`
+	// RawTX should be sent if AncestryRequired is set to false in the payment request.
+	RawTx *string `json:"rawTx"`
 	// ProofCallbacks are optional and can be supplied when the sender wants to receive
 	// a merkleproof for the transaction they are submitting as part of the SPV Envelope.
 	//
@@ -40,9 +39,9 @@ type Payment struct {
 // Validate will ensure the users request is correct.
 func (p Payment) Validate() error {
 	v := validator.New().
-		Validate("spvEnvelope/rawTx", func() error {
-			if p.RawTX == nil && p.SPVEnvelope == nil {
-				return errors.New("either an SPVEnvelope or a rawTX are required")
+		Validate("ancestry/rawTx", func() error {
+			if p.RawTx == nil {
+				return errors.New("either ancestry or a rawTX are required")
 			}
 			return nil
 		}).
@@ -51,25 +50,9 @@ func (p Payment) Validate() error {
 		v = v.Validate("merchantData.paymentReference", validator.NotEmpty(p.MerchantData.ExtendedData["paymentReference"]))
 	}
 
-	// perform a light validation of the envelope, make sure we have a valid root txID
-	// the root rawTx is actually a tx and that the supplied root txhex and txid match
-	if p.SPVEnvelope != nil {
-		v = v.Validate("spvEnvelope.txId", validator.StrLengthExact(p.SPVEnvelope.TxID, 64)).
-			Validate("spvEnvelope.rawTx", func() error {
-				tx, err := bt.NewTxFromString(p.SPVEnvelope.RawTx)
-				if err != nil {
-					return errors.Wrap(err, "invalid rawTx hex supplied")
-				}
-				if tx.TxID() != p.SPVEnvelope.TxID {
-					return errors.New("transaction mismatch, root txId does not match rawTx supplied")
-				}
-
-				return nil
-			})
-	}
-	if p.RawTX != nil {
+	if p.RawTx != nil {
 		v = v.Validate("rawTx", func() error {
-			if _, err := bt.NewTxFromString(*p.RawTX); err != nil {
+			if _, err := bt.NewTxFromString(*p.RawTx); err != nil {
 				return errors.Wrap(err, "invalid rawTx supplied")
 			}
 			return nil
@@ -82,7 +65,7 @@ func (p Payment) Validate() error {
 }
 
 // ProofCallback is used by a payee to request a merkle proof is sent to them
-// as proof of acceptance of the tx they have provided in the spvEnvelope.
+// as proof of acceptance of the tx they have provided in the ancestry.
 type ProofCallback struct {
 	Token string `json:"token"`
 }

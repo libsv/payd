@@ -2,6 +2,7 @@ package sockets
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -98,7 +99,13 @@ func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*s
 	if err != nil {
 		return nil, err
 	}
-	payment.SPVEnvelope = env
+	bb, err := env.Bytes()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert ancestry to bytes")
+	}
+	ancestry := hex.EncodeToString(bb)
+	payment.Ancestry = &ancestry
+	payment.RawTx = &env.RawTx
 	resp := msg.NewFrom(RoutePayment)
 	if err := resp.WithBody(&payment); err != nil {
 		return nil, err

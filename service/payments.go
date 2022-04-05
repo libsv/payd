@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"path"
 	"time"
@@ -80,7 +81,19 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errs.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
-	tx, err := p.paymentVerify.VerifyPayment(ctx, req.SPVEnvelope, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
+	tx, err := bt.NewTxFromString(*req.RawTx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse tx")
+	}
+
+	ancestors := []byte{1}
+	if req.Ancestry != nil {
+		ancestors, err = hex.DecodeString(*req.Ancestry)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to decode ancestry")
+		}
+	}
+	tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
 	if err != nil {
 		if errors.Is(err, spv.ErrFeePaidNotEnough) {
 			return nil, validator.ErrValidation{
@@ -91,12 +104,11 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 		// map error to a validation error
 		return nil, validator.ErrValidation{
-			"spvEnvelope": {
+			"ancestry": {
 				err.Error(),
 			},
 		}
 	}
-
 	// get destinations
 	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.InvoiceID})
 	if err != nil {
@@ -156,7 +168,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
 		RefundTo:  null.StringFromPtr(req.RefundTo),
-		TxHex:     req.SPVEnvelope.RawTx,
+		TxHex:     *req.RawTx,
 		Outputs:   txos,
 	}); err != nil {
 		return nil, errors.Wrapf(err, "failed to store transaction for invoiceID '%s'", args.InvoiceID)

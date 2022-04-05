@@ -6,6 +6,7 @@ import (
 	"github.com/libsv/go-bk/crypto"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/pkg/errors"
 
 	"github.com/libsv/go-bc"
 )
@@ -42,20 +43,14 @@ type extendedInput struct {
 
 // NewAncestryFromBytes creates a new struct from the bytes of a txContext.
 func NewAncestryFromBytes(b []byte) (*Ancestry, error) {
+	if b[0] != 1 { // the first byte is the version number.
+		return nil, ErrUnsupporredVersion
+	}
 	offset := uint64(1)
 	total := uint64(len(b))
-
-	l, size := bt.NewVarIntFromBytes(b[offset:])
-	offset += uint64(size)
-	paymentTx, err := bt.NewTxFromBytes(b[offset : offset+uint64(l)])
-	if err != nil {
-		return nil, err
-	}
 	ancestry := &Ancestry{
-		PaymentTx: paymentTx,
 		Ancestors: make(map[[32]byte]*Ancestor),
 	}
-	offset += uint64(l)
 
 	var TxID [32]byte
 
@@ -63,7 +58,7 @@ func NewAncestryFromBytes(b []byte) (*Ancestry, error) {
 		return nil, ErrCannotCalculateFeePaid
 	}
 
-	// You're not allowed to just have payment tx with a proof.
+	// first Data must be a Tx
 	if b[offset] != 1 {
 		return nil, ErrTipTxConfirmed
 	}
@@ -146,38 +141,41 @@ func parseMapiCallbacks(b []byte) ([]*bc.MapiCallback, error) {
 	return mapiResponses, nil
 }
 
-// VerifyAncestryBinary will verify a slice of bytes which is a binary spv envelope.
-func VerifyAncestryBinary(binaryData []byte, mpv MerkleProofVerifier, opts ...VerifyOpt) (bool, error) {
-	o := &verifyOptions{
-		proofs: true,
-		script: true,
-		fees:   false,
-	}
-	for _, opt := range opts {
-		opt(o)
-	}
-	if binaryData[0] != 1 { // the first byte is the version number.
-		return false, ErrUnsupporredVersion
-	}
-	ancestry, err := NewAncestryFromBytes(binaryData)
-	if err != nil {
-		return false, err
-	}
-	err = VerifyAncestors(ancestry, mpv, o)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 // VerifyAncestors will run through the map of Ancestors and check each input of each transaction to verify it.
 // Only if there is no Proof attached.
-func VerifyAncestors(ancestry *Ancestry, mpv MerkleProofVerifier, opts *verifyOptions) error {
+func VerifyAncestors(ctx context.Context, ancestry *Ancestry, mpv MerkleProofVerifier, opts *verifyOptions) error {
 	ancestors := ancestry.Ancestors
 	var paymentTxID [32]byte
 	copy(paymentTxID[:], ancestry.PaymentTx.TxIDBytes())
 	ancestors[paymentTxID] = &Ancestor{
 		Tx: ancestry.PaymentTx,
+	}
+	if opts.fees {
+		if opts.feeQuote == nil {
+			return ErrNoFeeQuoteSupplied
+		}
+		for i, input := range ancestry.PaymentTx.Inputs {
+			var inputID [32]byte
+			copy(inputID[:], input.PreviousTxID())
+			parent, ok := ancestry.Ancestors[inputID]
+			if !ok {
+				return errors.Wrapf(ErrNoFeeQuoteSupplied, "missing tx for input %d", i)
+			}
+
+			out := parent.Tx.OutputIdx(int(input.PreviousTxOutIndex))
+			if out == nil {
+				return ErrMissingOutput
+			}
+
+			input.PreviousTxSatoshis = out.Satoshis
+		}
+		ok, err := ancestry.PaymentTx.IsFeePaidEnough(opts.feeQuote)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return ErrFeePaidNotEnough
+		}
 	}
 	for _, ancestor := range ancestors {
 		inputsToCheck := make(map[[32]byte]*extendedInput)
@@ -203,7 +201,7 @@ func VerifyAncestors(ancestry *Ancestry, mpv MerkleProofVerifier, opts *verifyOp
 				}
 			} else {
 				// check proof.
-				response, err := mpv.VerifyMerkleProof(context.Background(), ancestor.Proof)
+				response, err := mpv.VerifyMerkleProof(ctx, ancestor.Proof)
 				if response == nil {
 					return ErrInvalidProof
 				}
@@ -233,27 +231,6 @@ func VerifyAncestors(ancestry *Ancestry, mpv MerkleProofVerifier, opts *verifyOp
 				unlockingScript := input.UnlockingScript
 				if !verifyInputOutputPair(ancestor.Tx, lockingScript, unlockingScript) {
 					return ErrPaymentNotVerified
-				}
-			}
-		}
-		if opts.fees {
-			if opts.feeQuote == nil {
-				return ErrNoFeeQuoteSupplied
-			}
-			// no need to check fees for transactions we have proofs for
-			if ancestor.Proof == nil {
-				// add satoshi amounts to all inputs which correspond to outputs we have
-				for inputID, extendedInput := range inputsToCheck {
-					if ancestry.Ancestors[inputID] == nil {
-						return ErrCannotCalculateFeePaid
-					}
-					sats := ancestry.Ancestors[inputID].Tx.Outputs[extendedInput.input.PreviousTxOutIndex].Satoshis
-					ancestor.Tx.Inputs[extendedInput.vin].PreviousTxSatoshis = sats
-				}
-				// check the fees
-				ok, err := ancestor.Tx.IsFeePaidEnough(opts.feeQuote)
-				if err != nil || !ok {
-					return ErrFeePaidNotEnough
 				}
 			}
 		}

@@ -27,7 +27,7 @@ var _ spv.PaymentVerifier = &PaymentVerifierMock{}
 // 			VerifyMerkleProofJSONFunc: func(contextMoqParam context.Context, merkleProof *bc.MerkleProof) (bool, bool, error) {
 // 				panic("mock out the VerifyMerkleProofJSON method")
 // 			},
-// 			VerifyPaymentFunc: func(contextMoqParam context.Context, envelope *spv.Envelope, verifyOpts ...spv.VerifyOpt) (*bt.Tx, error) {
+// 			VerifyPaymentFunc: func(ctx context.Context, pTx *bt.Tx, ancestors []byte, opts ...spv.VerifyOpt) (*bt.Tx, error) {
 // 				panic("mock out the VerifyPayment method")
 // 			},
 // 		}
@@ -44,7 +44,7 @@ type PaymentVerifierMock struct {
 	VerifyMerkleProofJSONFunc func(contextMoqParam context.Context, merkleProof *bc.MerkleProof) (bool, bool, error)
 
 	// VerifyPaymentFunc mocks the VerifyPayment method.
-	VerifyPaymentFunc func(contextMoqParam context.Context, envelope *spv.Envelope, verifyOpts ...spv.VerifyOpt) (*bt.Tx, error)
+	VerifyPaymentFunc func(ctx context.Context, pTx *bt.Tx, ancestors []byte, opts ...spv.VerifyOpt) (*bt.Tx, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -64,12 +64,14 @@ type PaymentVerifierMock struct {
 		}
 		// VerifyPayment holds details about calls to the VerifyPayment method.
 		VerifyPayment []struct {
-			// ContextMoqParam is the contextMoqParam argument value.
-			ContextMoqParam context.Context
-			// Envelope is the envelope argument value.
-			Envelope *spv.Envelope
-			// VerifyOpts is the verifyOpts argument value.
-			VerifyOpts []spv.VerifyOpt
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// PTx is the pTx argument value.
+			PTx *bt.Tx
+			// Ancestors is the ancestors argument value.
+			Ancestors []byte
+			// Opts is the opts argument value.
+			Opts []spv.VerifyOpt
 		}
 	}
 	lockVerifyMerkleProof     sync.RWMutex
@@ -148,37 +150,41 @@ func (mock *PaymentVerifierMock) VerifyMerkleProofJSONCalls() []struct {
 }
 
 // VerifyPayment calls VerifyPaymentFunc.
-func (mock *PaymentVerifierMock) VerifyPayment(contextMoqParam context.Context, envelope *spv.Envelope, verifyOpts ...spv.VerifyOpt) (*bt.Tx, error) {
+func (mock *PaymentVerifierMock) VerifyPayment(ctx context.Context, pTx *bt.Tx, ancestors []byte, opts ...spv.VerifyOpt) (*bt.Tx, error) {
 	if mock.VerifyPaymentFunc == nil {
 		panic("PaymentVerifierMock.VerifyPaymentFunc: method is nil but PaymentVerifier.VerifyPayment was just called")
 	}
 	callInfo := struct {
-		ContextMoqParam context.Context
-		Envelope        *spv.Envelope
-		VerifyOpts      []spv.VerifyOpt
+		Ctx       context.Context
+		PTx       *bt.Tx
+		Ancestors []byte
+		Opts      []spv.VerifyOpt
 	}{
-		ContextMoqParam: contextMoqParam,
-		Envelope:        envelope,
-		VerifyOpts:      verifyOpts,
+		Ctx:       ctx,
+		PTx:       pTx,
+		Ancestors: ancestors,
+		Opts:      opts,
 	}
 	mock.lockVerifyPayment.Lock()
 	mock.calls.VerifyPayment = append(mock.calls.VerifyPayment, callInfo)
 	mock.lockVerifyPayment.Unlock()
-	return mock.VerifyPaymentFunc(contextMoqParam, envelope, verifyOpts...)
+	return mock.VerifyPaymentFunc(ctx, pTx, ancestors, opts...)
 }
 
 // VerifyPaymentCalls gets all the calls that were made to VerifyPayment.
 // Check the length with:
 //     len(mockedPaymentVerifier.VerifyPaymentCalls())
 func (mock *PaymentVerifierMock) VerifyPaymentCalls() []struct {
-	ContextMoqParam context.Context
-	Envelope        *spv.Envelope
-	VerifyOpts      []spv.VerifyOpt
+	Ctx       context.Context
+	PTx       *bt.Tx
+	Ancestors []byte
+	Opts      []spv.VerifyOpt
 } {
 	var calls []struct {
-		ContextMoqParam context.Context
-		Envelope        *spv.Envelope
-		VerifyOpts      []spv.VerifyOpt
+		Ctx       context.Context
+		PTx       *bt.Tx
+		Ancestors []byte
+		Opts      []spv.VerifyOpt
 	}
 	mock.lockVerifyPayment.RLock()
 	calls = mock.calls.VerifyPayment

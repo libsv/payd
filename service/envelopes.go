@@ -115,18 +115,10 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 		return nil, errors.Wrapf(err, "failed to sign tx %s", tx.String())
 	}
 
-	spvEnvelope := &spv.Envelope{
-		RawTx: tx.String(),
-		TxID:  tx.TxID(),
-	}
-
-	if req.SPVRequired {
-		// Create the spv envelope for the tx.
-		s, err := e.spvc.CreateEnvelope(ctx, tx)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
-		}
-		spvEnvelope = s
+	// Create the spv envelope for the tx.
+	spvEnvelope, err := e.spvc.CreateEnvelope(ctx, tx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
 	}
 
 	txCreate := payd.TransactionCreate{
