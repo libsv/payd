@@ -79,7 +79,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -123,9 +126,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.VerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
@@ -187,9 +191,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 				return nil, spv.ErrFeePaidNotEnough
 			},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			args:          payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -207,9 +212,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[ancestry: invalid merkle proof, payment invalid]"),
@@ -229,9 +235,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("failed to get destinations with ID 'abc123': destinations unknown"),
@@ -259,9 +266,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e9030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e9030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: output satoshis do not match requested amount]"),
@@ -311,9 +319,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[transaction: tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again]"),
@@ -349,9 +358,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{
-					RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
-				},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expErr:        errors.New("[tx.outputs: expected '2' outputs, received '1', ensure all destinations are supplied]"),
@@ -382,7 +392,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
@@ -420,7 +433,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 				ProofCallbacks: map[string]dpp.ProofCallback{
 					"wow": {},
 				},
@@ -467,7 +483,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxFailed,
@@ -512,7 +531,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",
 			expTxState:    payd.StateTxBroadcast,
@@ -558,7 +580,10 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 			},
 			args: payd.PaymentCreateArgs{InvoiceID: "abc123"},
 			req: dpp.Payment{
-				Ancestry: &spv.Envelope{RawTx: "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"},
+				RawTx: func() *string {
+					s := "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000"
+					return &s
+				}(),
 			},
 			expVerifyOpts: []spv.VerifyOpt{spv.VerifyFees(fq), spv.NoVerifySPV()},
 			expRawTx:      "010000000001e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000",

@@ -86,29 +86,27 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, errors.Wrap(err, "failed to parse tx")
 	}
 
-	fmt.Printf("%#v\n", req)
-
-	if inv.SPVRequired {
-		ancestors, err := hex.DecodeString(*req.Ancestry)
+	ancestors := []byte{1}
+	if req.Ancestry != nil {
+		ancestors, err = hex.DecodeString(*req.Ancestry)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to decode ancestry")
 		}
-
-		tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
-		if err != nil {
-			if errors.Is(err, spv.ErrFeePaidNotEnough) {
-				return nil, validator.ErrValidation{
-					"fees": {
-						err.Error(),
-					},
-				}
-			}
-			// map error to a validation error
+	}
+	tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
+	if err != nil {
+		if errors.Is(err, spv.ErrFeePaidNotEnough) {
 			return nil, validator.ErrValidation{
-				"ancestry": {
+				"fees": {
 					err.Error(),
 				},
 			}
+		}
+		// map error to a validation error
+		return nil, validator.ErrValidation{
+			"ancestry": {
+				err.Error(),
+			},
 		}
 	}
 	// get destinations

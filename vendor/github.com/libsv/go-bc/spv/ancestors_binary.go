@@ -6,6 +6,7 @@ import (
 	"github.com/libsv/go-bk/crypto"
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/go-bt/v2/bscript"
+	"github.com/pkg/errors"
 
 	"github.com/libsv/go-bc"
 )
@@ -149,6 +150,33 @@ func VerifyAncestors(ctx context.Context, ancestry *Ancestry, mpv MerkleProofVer
 	ancestors[paymentTxID] = &Ancestor{
 		Tx: ancestry.PaymentTx,
 	}
+	if opts.fees {
+		if opts.feeQuote == nil {
+			return ErrNoFeeQuoteSupplied
+		}
+		for i, input := range ancestry.PaymentTx.Inputs {
+			var inputID [32]byte
+			copy(inputID[:], input.PreviousTxID())
+			parent, ok := ancestry.Ancestors[inputID]
+			if !ok {
+				return errors.Wrapf(ErrNoFeeQuoteSupplied, "missing tx for input %d", i)
+			}
+
+			out := parent.Tx.OutputIdx(int(input.PreviousTxOutIndex))
+			if out == nil {
+				return ErrMissingOutput
+			}
+
+			input.PreviousTxSatoshis = out.Satoshis
+		}
+		ok, err := ancestry.PaymentTx.IsFeePaidEnough(opts.feeQuote)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return ErrFeePaidNotEnough
+		}
+	}
 	for _, ancestor := range ancestors {
 		inputsToCheck := make(map[[32]byte]*extendedInput)
 		if len(ancestor.Tx.Inputs) == 0 {
@@ -203,27 +231,6 @@ func VerifyAncestors(ctx context.Context, ancestry *Ancestry, mpv MerkleProofVer
 				unlockingScript := input.UnlockingScript
 				if !verifyInputOutputPair(ancestor.Tx, lockingScript, unlockingScript) {
 					return ErrPaymentNotVerified
-				}
-			}
-		}
-		if opts.fees {
-			if opts.feeQuote == nil {
-				return ErrNoFeeQuoteSupplied
-			}
-			// no need to check fees for transactions we have proofs for
-			if ancestor.Proof == nil {
-				// add satoshi amounts to all inputs which correspond to outputs we have
-				for inputID, extendedInput := range inputsToCheck {
-					if ancestry.Ancestors[inputID] == nil {
-						return ErrCannotCalculateFeePaid
-					}
-					sats := ancestry.Ancestors[inputID].Tx.Outputs[extendedInput.input.PreviousTxOutIndex].Satoshis
-					ancestor.Tx.Inputs[extendedInput.vin].PreviousTxSatoshis = sats
-				}
-				// check the fees
-				ok, err := ancestor.Tx.IsFeePaidEnough(opts.feeQuote)
-				if err != nil || !ok {
-					return ErrFeePaidNotEnough
 				}
 			}
 		}

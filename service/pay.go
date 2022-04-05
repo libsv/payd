@@ -94,7 +94,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	}
 	bb, err := env.Bytes()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to convert ancestry into bytes", string(bb))
+		return nil, errors.Wrapf(err, "failed to convert ancestry into bytes for payment '%s'", payReq.PaymentURL)
 	}
 	ancestry := hex.EncodeToString(bb)
 	// Send the payment to the dpp proxy server.
