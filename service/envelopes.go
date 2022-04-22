@@ -116,9 +116,18 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 	}
 
 	// Create the spv envelope for the tx.
-	spvEnvelope, err := e.spvc.CreateEnvelope(ctx, tx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
+	var spvEnvelope *spv.Envelope
+	if req.AncestryRequired {
+		spvEnvelope, err = e.spvc.CreateEnvelope(ctx, tx)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
+		}
+	} else {
+		spvEnvelope = &spv.Envelope{
+			TxID:    tx.TxID(),
+			RawTx:   tx.String(),
+			Parents: make(map[string]*spv.Envelope),
+		}
 	}
 
 	txCreate := payd.TransactionCreate{
