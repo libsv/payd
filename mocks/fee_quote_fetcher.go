@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bt/v2"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that FeeQuoteFetcherMock does implement payd.FeeQuoteFetcher.

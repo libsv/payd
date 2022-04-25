@@ -5,10 +5,11 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that EnvelopeServiceMock does implement payd.EnvelopeService.
