@@ -100,7 +100,7 @@ func TestInvoiceService_Invoices(t *testing.T) {
 }
 
 func TestInvoiceService_Create(t *testing.T) {
-	now := time.Now().UTC()
+	now := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	tests := map[string]struct {
 		nanosecondFunc         func() int
 		nowUTCFunc             func() time.Time
@@ -137,7 +137,7 @@ func TestInvoiceService_Create(t *testing.T) {
 				Hostname: "ohwow",
 			},
 			expReq: payd.InvoiceCreate{
-				InvoiceID:   "pJ",
+				InvoiceID:   "eB",
 				SPVRequired: true,
 				Satoshis:    2000,
 				Description: null.StringFrom("my cool invoice"),
@@ -171,7 +171,7 @@ func TestInvoiceService_Create(t *testing.T) {
 				Hostname: "ohwow",
 			},
 			expReq: payd.InvoiceCreate{
-				InvoiceID:   "Kr",
+				InvoiceID:   "wO",
 				SPVRequired: false,
 				Satoshis:    999,
 				Description: null.StringFrom("my cool invoice"),
@@ -240,7 +240,7 @@ func TestInvoiceService_Create(t *testing.T) {
 				Hostname: "ohwow",
 			},
 			expReq: payd.InvoiceCreate{
-				InvoiceID:   "pJ",
+				InvoiceID:   "eB",
 				SPVRequired: true,
 				Satoshis:    2000,
 				Description: null.StringFrom("my cool invoice"),
@@ -275,7 +275,7 @@ func TestInvoiceService_Create(t *testing.T) {
 				Hostname: "ohwow",
 			},
 			expReq: payd.InvoiceCreate{
-				InvoiceID:   "pJ",
+				InvoiceID:   "eB",
 				SPVRequired: true,
 				Satoshis:    2000,
 				Description: null.StringFrom("my cool invoice"),
@@ -310,7 +310,7 @@ func TestInvoiceService_Create(t *testing.T) {
 				Hostname: "ohwow",
 			},
 			expReq: payd.InvoiceCreate{
-				InvoiceID:   "pJ",
+				InvoiceID:   "eB",
 				SPVRequired: true,
 				Satoshis:    2000,
 				Description: null.StringFrom("my cool invoice"),

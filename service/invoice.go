@@ -89,7 +89,7 @@ func (i *invoice) Create(ctx context.Context, req payd.InvoiceCreate) (*payd.Inv
 		req.ExpiresAt = null.TimeFrom(timestamp.Add(time.Hour * time.Duration(i.wallCfg.PaymentExpiryHours)))
 	}
 
-	if err := req.Validate(); err != nil {
+	if err := req.Validate(i.timeSvc); err != nil {
 		return nil, err
 	}
 	user := session.MustUserFromContext(ctx)

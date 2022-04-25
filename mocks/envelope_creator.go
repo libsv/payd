@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-bc/spv"
 	"github.com/libsv/go-bt/v2"
-	"sync"
 )
 
 // Ensure, that EnvelopeCreatorMock does implement spv.EnvelopeCreator.

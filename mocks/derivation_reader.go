@@ -5,8 +5,9 @@ package mocks
 
 import (
 	"context"
-	"github.com/libsv/payd"
 	"sync"
+
+	"github.com/libsv/payd"
 )
 
 // Ensure, that DerivationReaderMock does implement payd.DerivationReader.
