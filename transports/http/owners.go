@@ -31,7 +31,7 @@ func (o *owners) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} payd.User "Current wallet owner"
-// @Router /v1/owner [GET].
+// @Router /owner [GET].
 func (o *owners) owner(c echo.Context) error {
 	owner, err := o.svc.Owner(c.Request().Context())
 	if err != nil {

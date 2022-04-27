@@ -33,7 +33,7 @@ func (i *invoices) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /v1/invoices [GET].
+// @Router /invoices [GET].
 func (i *invoices) invoices(e echo.Context) error {
 	ii, err := i.svc.Invoices(e.Request().Context())
 	if err != nil {
@@ -50,7 +50,7 @@ func (i *invoices) invoices(e echo.Context) error {
 // @Produce json
 // @Param invoiceID path string true "Invoice ID"
 // @Success 200
-// @Router /v1/invoices/{invoiceID} [GET].
+// @Router /invoices/{invoiceID} [GET].
 func (i *invoices) invoice(e echo.Context) error {
 	var args payd.InvoiceArgs
 	if err := e.Bind(&args); err != nil {
@@ -71,7 +71,7 @@ func (i *invoices) invoice(e echo.Context) error {
 // @Produce json
 // @Param body body payd.InvoiceCreate true "Reference and Satoshis"
 // @Success 201
-// @Router /v1/invoices [POST].
+// @Router /invoices [POST].
 func (i *invoices) create(e echo.Context) error {
 	var req payd.InvoiceCreate
 	if err := e.Bind(&req); err != nil {

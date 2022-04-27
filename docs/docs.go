@@ -28,7 +28,158 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/payment/{paymentID}": {
+        "/balance": {
+            "get": {
+                "description": "Returns current balance, which is a sum of unspent txos",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Balance"
+                ],
+                "summary": "Balance",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/invoices": {
+            "get": {
+                "description": "Returns all invoices currently stored",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Invoices",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates an invoices with invoiceID and satoshis",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "InvoiceCreate invoices",
+                "parameters": [
+                    {
+                        "description": "Reference and Satoshis",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payd.InvoiceCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/invoices/{invoiceID}": {
+            "get": {
+                "description": "Returns invoices by invoices id if exists",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Invoices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invoice ID",
+                        "name": "invoiceID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/owner": {
+            "get": {
+                "description": "Returns information about the wallet owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Wallet owner information.",
+                "responses": {
+                    "200": {
+                        "description": "Current wallet owner",
+                        "schema": {
+                            "$ref": "#/definitions/payd.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/pay": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pay"
+                ],
+                "summary": "Make a payment",
+                "parameters": [
+                    {
+                        "description": "Pay to url",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payd.PayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/payment/{paymentID}": {
             "get": {
                 "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
                 "consumes": [
@@ -78,227 +229,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/balance": {
-            "get": {
-                "description": "Returns current balance, which is a sum of unspent txos",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Balance"
-                ],
-                "summary": "Balance",
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/v1/destinations/{invoiceID}": {
-            "get": {
-                "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Destinations",
-                    "Receive"
-                ],
-                "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "404": {
-                        "description": "returned if the invoiceID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/invoices": {
-            "get": {
-                "description": "Returns all invoices currently stored",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "Invoices",
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            },
-            "post": {
-                "description": "Creates an invoices with invoiceID and satoshis",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "InvoiceCreate invoices",
-                "parameters": [
-                    {
-                        "description": "Reference and Satoshis",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/payd.InvoiceCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/v1/invoices/{invoiceID}": {
-            "get": {
-                "description": "Returns invoices by invoices id if exists",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "Invoices",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            },
-            "delete": {
-                "description": "InvoiceDelete",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "InvoiceDelete invoices",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "invoiceID we want to remove",
-                        "name": "invoiceID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": ""
-                    },
-                    "404": {
-                        "description": "returned if the paymentID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/owner": {
-            "get": {
-                "description": "Returns information about the wallet owner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Wallet owner information.",
-                "responses": {
-                    "200": {
-                        "description": "Current wallet owner",
-                        "schema": {
-                            "$ref": "#/definitions/payd.User"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/pay": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pay"
-                ],
-                "summary": "Make a payment",
-                "parameters": [
-                    {
-                        "description": "Pay to url",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/payd.PayRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/v1/payments/{invoiceID}": {
+        "/payments/{invoiceID}": {
             "post": {
                 "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
                 "consumes": [
@@ -339,7 +270,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/proofs/{txid}": {
+        "/proofs/{txid}": {
             "post": {
                 "description": "Creates a json envelope proof",
                 "consumes": [
@@ -373,6 +304,44 @@ var doc = `{
                 "responses": {
                     "201": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/user/:id": {
+            "get": {}
+        },
+        "/v1/invoices/{invoiceID}": {
+            "delete": {
+                "description": "InvoiceDelete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "InvoiceDelete invoices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "invoiceID we want to remove",
+                        "name": "invoiceID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
                     }
                 }
             }
@@ -423,27 +392,6 @@ var doc = `{
                 }
             }
         },
-        "payd.InvoiceCreate": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
-                    "type": "string"
-                },
-                "expiresAt": {
-                    "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
-                    "type": "string"
-                },
-                "reference": {
-                    "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
-                    "type": "string"
-                },
-                "satoshis": {
-                    "description": "Satoshis is the total amount this invoice is to pay.",
-                    "type": "integer"
-                }
-            }
-        },
         "payd.DPPDestination": {
             "type": "object",
             "properties": {
@@ -469,6 +417,27 @@ var doc = `{
                 }
             }
         },
+        "payd.InvoiceCreate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
+                    "type": "string"
+                },
+                "reference": {
+                    "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
+                    "type": "string"
+                },
+                "satoshis": {
+                    "description": "Satoshis is the total amount this invoice is to pay.",
+                    "type": "integer"
+                }
+            }
+        },
         "payd.PayRequest": {
             "type": "object",
             "properties": {
@@ -480,6 +449,10 @@ var doc = `{
         "payd.PaymentRequestResponse": {
             "type": "object",
             "properties": {
+                "ancestryRequired": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "creationTimestamp": {
                     "type": "string"
                 },
@@ -503,10 +476,6 @@ var doc = `{
                 },
                 "paymentURL": {
                     "type": "string"
-                },
-                "spvRequired": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },
@@ -553,7 +522,7 @@ type swaggerInfo struct {
 var SwaggerInfo = swaggerInfo{
 	Version:     "0.0.1",
 	Host:        "localhost:8443",
-	BasePath:    "/api",
+	BasePath:    "/api/v1",
 	Schemes:     []string{},
 	Title:       "Payd",
 	Description: "Payd is a txo and key manager, with a common interface that can be implemented by wallets.",

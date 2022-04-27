@@ -27,7 +27,7 @@ func (u *users) RegisterRoutes(g *echo.Group) {
 }
 
 // user will return information on the user associated with the id.
-// @Router /v1/user/:id [GET].
+// @Router /user/:id [GET].
 func (u *users) user(c echo.Context) error {
 	userID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -42,7 +42,7 @@ func (u *users) user(c echo.Context) error {
 }
 
 // user will return information on the user associated with the id.
-// @Router /v1/user/:id [GET].
+// @Router /user/:id [GET].
 func (u *users) create(e echo.Context) error {
 	var req payd.CreateUserArgs
 	if err := e.Bind(&req); err != nil {

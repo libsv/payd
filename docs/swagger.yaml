@@ -1,4 +1,4 @@
-basePath: /api
+basePath: /api/v1
 definitions:
   bt.FeeQuote:
     type: object
@@ -30,6 +30,22 @@ definitions:
         example: not found
         type: string
     type: object
+  payd.DPPDestination:
+    properties:
+      outputs:
+        items:
+          $ref: '#/definitions/payd.DPPOutput'
+        type: array
+    type: object
+  payd.DPPOutput:
+    properties:
+      amount:
+        type: integer
+      description:
+        type: string
+      script:
+        type: string
+    type: object
   payd.InvoiceCreate:
     properties:
       description:
@@ -53,22 +69,6 @@ definitions:
         description: Satoshis is the total amount this invoice is to pay.
         type: integer
     type: object
-  payd.P4Destination:
-    properties:
-      outputs:
-        items:
-          $ref: '#/definitions/payd.P4Output'
-        type: array
-    type: object
-  payd.P4Output:
-    properties:
-      amount:
-        type: integer
-      description:
-        type: string
-      script:
-        type: string
-    type: object
   payd.PayRequest:
     properties:
       payToURL:
@@ -76,10 +76,13 @@ definitions:
     type: object
   payd.PaymentRequestResponse:
     properties:
+      ancestryRequired:
+        example: true
+        type: boolean
       creationTimestamp:
         type: string
       destinations:
-        $ref: '#/definitions/payd.P4Destination'
+        $ref: '#/definitions/payd.DPPDestination'
       expirationTimestamp:
         type: string
       fees:
@@ -92,9 +95,6 @@ definitions:
         type: string
       paymentURL:
         type: string
-      spvRequired:
-        example: true
-        type: boolean
     type: object
   payd.User:
     properties:
@@ -126,7 +126,105 @@ info:
   title: Payd
   version: 0.0.1
 paths:
-  /api/v1/payment/{paymentID}:
+  /balance:
+    get:
+      consumes:
+      - application/json
+      description: Returns current balance, which is a sum of unspent txos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Balance
+      tags:
+      - Balance
+  /invoices:
+    get:
+      consumes:
+      - application/json
+      description: Returns all invoices currently stored
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Invoices
+      tags:
+      - Invoices
+    post:
+      consumes:
+      - application/json
+      description: Creates an invoices with invoiceID and satoshis
+      parameters:
+      - description: Reference and Satoshis
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/payd.InvoiceCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+      summary: InvoiceCreate invoices
+      tags:
+      - Invoices
+  /invoices/{invoiceID}:
+    get:
+      consumes:
+      - application/json
+      description: Returns invoices by invoices id if exists
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: invoiceID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Invoices
+      tags:
+      - Invoices
+  /owner:
+    get:
+      consumes:
+      - application/json
+      description: Returns information about the wallet owner
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current wallet owner
+          schema:
+            $ref: '#/definitions/payd.User'
+      summary: Wallet owner information.
+      tags:
+      - Users
+  /pay:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pay to url
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/payd.PayRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+      summary: Make a payment
+      tags:
+      - Pay
+  /payment/{paymentID}:
     get:
       consumes:
       - application/json
@@ -163,153 +261,7 @@ paths:
         the payment transaction
       tags:
       - Payment
-  /v1/balance:
-    get:
-      consumes:
-      - application/json
-      description: Returns current balance, which is a sum of unspent txos
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-      summary: Balance
-      tags:
-      - Balance
-  /v1/destinations/{invoiceID}:
-    get:
-      consumes:
-      - application/json
-      description: Given an invoiceID, a set of outputs and fees will be returned,
-        if not found a 404 is returned.
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: invoiceID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-        "404":
-          description: returned if the invoiceID has not been found
-          schema:
-            $ref: '#/definitions/payd.ClientError'
-      summary: Given an invoiceID, a set of outputs and fees will be returned, if
-        not found a 404 is returned.
-      tags:
-      - Destinations
-      - Receive
-  /v1/invoices:
-    get:
-      consumes:
-      - application/json
-      description: Returns all invoices currently stored
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-      summary: Invoices
-      tags:
-      - Invoices
-    post:
-      consumes:
-      - application/json
-      description: Creates an invoices with invoiceID and satoshis
-      parameters:
-      - description: Reference and Satoshis
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/payd.InvoiceCreate'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: ""
-      summary: InvoiceCreate invoices
-      tags:
-      - Invoices
-  /v1/invoices/{invoiceID}:
-    delete:
-      consumes:
-      - application/json
-      description: InvoiceDelete
-      parameters:
-      - description: invoiceID we want to remove
-        in: path
-        name: invoiceID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: ""
-        "404":
-          description: returned if the paymentID has not been found
-          schema:
-            $ref: '#/definitions/payd.ClientError'
-      summary: InvoiceDelete invoices
-      tags:
-      - Invoices
-    get:
-      consumes:
-      - application/json
-      description: Returns invoices by invoices id if exists
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: invoiceID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-      summary: Invoices
-      tags:
-      - Invoices
-  /v1/owner:
-    get:
-      consumes:
-      - application/json
-      description: Returns information about the wallet owner
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Current wallet owner
-          schema:
-            $ref: '#/definitions/payd.User'
-      summary: Wallet owner information.
-      tags:
-      - Users
-  /v1/pay:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Pay to url
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/payd.PayRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: ""
-      summary: Make a payment
-      tags:
-      - Pay
-  /v1/payments/{invoiceID}:
+  /payments/{invoiceID}:
     post:
       consumes:
       - application/json
@@ -337,7 +289,7 @@ paths:
       summary: Validate and store a payment.
       tags:
       - Payments
-  /v1/proofs/{txid}:
+  /proofs/{txid}:
     post:
       consumes:
       - application/json
@@ -362,4 +314,29 @@ paths:
       summary: InvoiceCreate proof
       tags:
       - Proofs
+  /user/:id:
+    get: {}
+  /v1/invoices/{invoiceID}:
+    delete:
+      consumes:
+      - application/json
+      description: InvoiceDelete
+      parameters:
+      - description: invoiceID we want to remove
+        in: path
+        name: invoiceID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "404":
+          description: returned if the paymentID has not been found
+          schema:
+            $ref: '#/definitions/payd.ClientError'
+      summary: InvoiceDelete invoices
+      tags:
+      - Invoices
 swagger: "2.0"
