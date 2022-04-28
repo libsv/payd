@@ -75,9 +75,11 @@ func (v *ViperConfig) WithHeadersClient() ConfigurationLoader {
 // WithWallet sets up and returns merchant wallet configuration.
 func (v *ViperConfig) WithWallet() ConfigurationLoader {
 	v.Wallet = &Wallet{
-		Network:            NetworkType(viper.GetString(EnvNetwork)),
-		SPVRequired:        viper.GetBool(EnvWalletSpvRequired),
-		PaymentExpiryHours: viper.GetInt64(EnvPaymentExpiry),
+		Network:             NetworkType(viper.GetString(EnvNetwork)),
+		SPVRequired:         viper.GetBool(EnvWalletSpvRequired),
+		PaymentExpiryHours:  viper.GetInt64(EnvPaymentExpiry),
+		PayoutLimitEnabled:  viper.GetBool(EnvWalletPayoutLimitEnabled),
+		PayoutLimitSatoshis: viper.GetUint64(EnvWalletPayoutLimitSats),
 	}
 	return v
 }

@@ -43,6 +43,8 @@ func SetupDefaults() {
 	viper.SetDefault(EnvNetwork, string(NetworkRegtest))
 	viper.SetDefault(EnvWalletSpvRequired, false)
 	viper.SetDefault(EnvPaymentExpiry, 24)
+	viper.SetDefault(EnvWalletPayoutLimitEnabled, false)
+	viper.SetDefault(EnvWalletPayoutLimitSats, 0)
 
 	// mapi
 	viper.SetDefault(EnvMAPIMinerName, "local-mapi")

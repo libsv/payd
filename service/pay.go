@@ -26,10 +26,11 @@ type pay struct {
 	pcStr      payd.PeerChannelsStore
 	pcNotifSvc payd.PeerChannelsNotifyService
 	svrCfg     *config.Server
+	walletCfg  *config.Wallet
 }
 
 // NewPayService returns a pay service.
-func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
+func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter, walletCfg *config.Wallet) payd.PayService {
 	return &pay{
 		storeTx:    storeTx,
 		txWtr:      txWtr,
@@ -38,6 +39,7 @@ func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeServ
 		svrCfg:     svrCfg,
 		pcStr:      pcStr,
 		pcNotifSvc: pcNotifSvc,
+		walletCfg:  walletCfg,
 	}
 }
 
@@ -82,6 +84,16 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		}
 
 		return nil, errors.Wrapf(err, "failed to request payment for url %s", req.PayToURL)
+	}
+	if p.walletCfg.PayoutLimitEnabled {
+		s := uint64(0)
+		for _, o := range payReq.Destinations.Outputs {
+			s += o.Amount
+		}
+		if s > p.walletCfg.PayoutLimitSatoshis {
+			return nil, lerrs.NewErrUnprocessable("U003",
+				fmt.Sprintf("amount requested %d satoshis is larger than our max payout of %d satoshis", s, p.walletCfg.PayoutLimitSatoshis))
+		}
 	}
 	// begin a transaction that can be picked up by other services etc for rollbacks on failure.
 	ctx = p.storeTx.WithTx(ctx)
