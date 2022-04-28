@@ -28,56 +28,6 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/payment/{paymentID}": {
-            "get": {
-                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Payment ID",
-                        "name": "paymentID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
-                        "schema": {
-                            "$ref": "#/definitions/payd.PaymentRequestResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    },
-                    "404": {
-                        "description": "returned if the paymentID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
-                    },
-                    "500": {
-                        "description": "returned if there is an unexpected internal error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/balance": {
             "get": {
                 "description": "Returns current balance, which is a sum of unspent txos",
@@ -94,42 +44,6 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": ""
-                    }
-                }
-            }
-        },
-        "/v1/destinations/{invoiceID}": {
-            "get": {
-                "description": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Destinations",
-                    "Receive"
-                ],
-                "summary": "Given an invoiceID, a set of outputs and fees will be returned, if not found a 404 is returned.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Invoice ID",
-                        "name": "invoiceID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "404": {
-                        "description": "returned if the invoiceID has not been found",
-                        "schema": {
-                            "$ref": "#/definitions/payd.ClientError"
-                        }
                     }
                 }
             }
@@ -298,6 +212,56 @@ var doc = `{
                 }
             }
         },
+        "/v1/payment/{paymentID}": {
+            "get": {
+                "description": "Creates a payment request based on a payment id (the identifier for an invoice).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Request to pay an invoice and receive back outputs to use when constructing the payment transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "paymentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "contains outputs, merchant data and expiry information, used by the payee to construct a transaction",
+                        "schema": {
+                            "$ref": "#/definitions/payd.PaymentRequestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "returned if the user input is invalid, usually an issue with the paymentID",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "404": {
+                        "description": "returned if the paymentID has not been found",
+                        "schema": {
+                            "$ref": "#/definitions/payd.ClientError"
+                        }
+                    },
+                    "500": {
+                        "description": "returned if there is an unexpected internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/payments/{invoiceID}": {
             "post": {
                 "description": "Given an invoiceID, and an spvEnvelope, we will validate the payment and inputs used are valid and that it covers the invoice.",
@@ -376,6 +340,9 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/v1/user/:id": {
+            "get": {}
         }
     },
     "definitions": {
@@ -423,27 +390,6 @@ var doc = `{
                 }
             }
         },
-        "payd.InvoiceCreate": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
-                    "type": "string"
-                },
-                "expiresAt": {
-                    "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
-                    "type": "string"
-                },
-                "reference": {
-                    "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
-                    "type": "string"
-                },
-                "satoshis": {
-                    "description": "Satoshis is the total amount this invoice is to pay.",
-                    "type": "integer"
-                }
-            }
-        },
         "payd.DPPDestination": {
             "type": "object",
             "properties": {
@@ -469,6 +415,27 @@ var doc = `{
                 }
             }
         },
+        "payd.InvoiceCreate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description is an optional text field that can have some further info\nlike 'invoice for oranges'.\nMaxLength is 1024 characters.",
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "description": "ExpiresAt is an optional param that can be passed to set an expiration\ndate on an invoice, after which, payments will not be accepted.",
+                    "type": "string"
+                },
+                "reference": {
+                    "description": "Reference is an identifier that can be used to link the\npayd invoice with an external system.\nMaxLength is 32 characters.",
+                    "type": "string"
+                },
+                "satoshis": {
+                    "description": "Satoshis is the total amount this invoice is to pay.",
+                    "type": "integer"
+                }
+            }
+        },
         "payd.PayRequest": {
             "type": "object",
             "properties": {
@@ -480,6 +447,10 @@ var doc = `{
         "payd.PaymentRequestResponse": {
             "type": "object",
             "properties": {
+                "ancestryRequired": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "creationTimestamp": {
                     "type": "string"
                 },
@@ -503,10 +474,6 @@ var doc = `{
                 },
                 "paymentURL": {
                     "type": "string"
-                },
-                "spvRequired": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },

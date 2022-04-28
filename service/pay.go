@@ -92,11 +92,15 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	if err != nil {
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}
-	bb, err := env.Bytes()
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to convert ancestry into bytes for payment '%s'", payReq.PaymentURL)
+	var bb []byte
+	var ancestry string
+	if payReq.AncestryRequired {
+		bb, err = env.Bytes()
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert ancestry into bytes for payment '%s'", payReq.PaymentURL)
+		}
+		ancestry = hex.EncodeToString(bb)
 	}
-	ancestry := hex.EncodeToString(bb)
 	// Send the payment to the dpp proxy server.
 	ack, err := p.dpp.PaymentSend(ctx, req, dpp.Payment{
 		Ancestry: &ancestry,
@@ -113,8 +117,8 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		},
 	})
 	if err != nil {
-		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
-			log.Error().Err(errors.Wrap(err, "failed to update tx after failed broadcast"))
+		if e := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
+			log.Error().Err(errors.Wrap(e, "failed to update tx after failed broadcast"))
 		}
 		return nil, errors.Wrapf(err, "failed to send payment %s", req.PayToURL)
 	}

@@ -68,7 +68,7 @@ func (p *dppClient) PaymentSend(ctx context.Context, args payd.PayRequest, req d
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		return nil, p.handleErr(resp)
 	}
 

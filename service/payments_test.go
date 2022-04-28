@@ -182,7 +182,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		},
 		"tx with insufficient fees is rejected": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
-				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
+				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending, SPVRequired: true}, nil
 			},
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
@@ -202,7 +202,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		},
 		"invalid spv envelope is rejected": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
-				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending}, nil
+				return &payd.Invoice{ID: args.InvoiceID, State: payd.StateInvoicePending, SPVRequired: true}, nil
 			},
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
@@ -298,7 +298,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		//},
 		"tx with insufficient outputs is rejected": {
 			invoiceFunc: func(ctx context.Context, args payd.InvoiceArgs) (*payd.Invoice, error) {
-				return &payd.Invoice{ID: args.InvoiceID, Satoshis: 1001, State: payd.StateInvoicePending}, nil
+				return &payd.Invoice{ID: args.InvoiceID, Satoshis: 1001, State: payd.StateInvoicePending, SPVRequired: true}, nil
 			},
 			feeQuoteFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 				return fq, nil
