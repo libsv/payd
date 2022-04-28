@@ -72,7 +72,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore, cfg.Wallet),
 		"http", "https",
 	).Register(
 		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
@@ -158,7 +158,7 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	paymentSvc := service.NewPayments(l, spvv, sqlLiteStore, sqlLiteStore, sqlLiteStore, &paydSQL.Transacter{}, mapiStore, sqlLiteStore, sqlLiteStore, pcSvc, pcNotifSvc, cfg.PeerChannels)
 	envSvc := service.NewEnvelopes(privKeySvc, sqlLiteStore, sqlLiteStore, sqlLiteStore, seedSvc, spvc)
 	paySvc := service.NewPayStrategy().Register(
-		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore),
+		service.NewPayService(&paydSQL.Transacter{}, dataHttp.NewDPP(&http.Client{Timeout: time.Duration(cfg.DPP.Timeout) * time.Second}), envSvc, cfg.Server, pcNotifSvc, sqlLiteStore, sqlLiteStore, cfg.Wallet),
 		"http", "https",
 	).Register(service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss")
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
