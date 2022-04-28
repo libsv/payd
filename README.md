@@ -18,7 +18,7 @@ This is written in go and integrates with servers running the Payment Protocol I
 
 ## Exploring Endpoints
 
-To explore the endpoints and functionality, run the server using `go run cmd/rest-server/main.go` and navigate to [Swagger](http://localhost:8443/swagger/index.html)
+To explore the endpoints and functionality, run the server using `go run cmd/rest-server/main.go` and navigate to [Swagger](http://localhost:8443/swagger/index.html) or go to the GitHub Pages hosting the spec [here](https://libsv.github.io/payd/) 
 where the endpoints and their models are described in detail.
 
 ## Configuring PayD

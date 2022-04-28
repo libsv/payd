@@ -27,20 +27,21 @@ func TestPayService_Pay(t *testing.T) {
 		envelopeFunc       func(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error)
 		paymentRequestFunc func(context.Context, payd.PayRequest) (*dpp.PaymentRequest, error)
 		paymentSendFunc    func(context.Context, payd.PayRequest, dpp.Payment) (*dpp.PaymentACK, error)
-
-		expKeyName       string
-		expDeficits      []uint64
-		expUTXOUnreserve bool
-		expCallbackURL   string
-		expTx            string
-		expChangeCreate  bool
-		expChange        payd.DestinationCreate
-		expErr           error
+		walletConfig       *config.Wallet
+		expKeyName         string
+		expDeficits        []uint64
+		expUTXOUnreserve   bool
+		expCallbackURL     string
+		expTx              string
+		expChangeCreate    bool
+		expChange          payd.DestinationCreate
+		expErr             error
 	}{
 		"successful payment": {
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
+			walletConfig: &config.Wallet{},
 			paymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
 				return &dpp.PaymentRequest{
 					Network: "testnet",
@@ -102,6 +103,8 @@ func TestPayService_Pay(t *testing.T) {
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
+
+			walletConfig: &config.Wallet{},
 			paymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
 				return &dpp.PaymentRequest{
 					Network: "testnet",
@@ -148,6 +151,8 @@ func TestPayService_Pay(t *testing.T) {
 			expKeyName:     "masterkey",
 		},
 		"invalid url in request is rejected": {
+
+			walletConfig: &config.Wallet{},
 			req: payd.PayRequest{
 				PayToURL: ":dpp-merchant/api/v1/payment/abc123",
 			},
@@ -164,6 +169,8 @@ func TestPayService_Pay(t *testing.T) {
 			expErr:     errors.New("Unprocessable: failed to request payment for url http://dpp-merchant/api/v1/payment/abc123 : Unprocessable: no payment request for you"),
 		},
 		"error fetching payment request is reported": {
+
+			walletConfig: &config.Wallet{},
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
@@ -174,6 +181,8 @@ func TestPayService_Pay(t *testing.T) {
 			expErr:     errors.New("failed to request payment for url http://dpp-merchant/api/v1/payment/abc123: no payment request for you"),
 		},
 		"insufficient utxos errors, reserved funds are freed": {
+
+			walletConfig: &config.Wallet{},
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
@@ -219,6 +228,8 @@ func TestPayService_Pay(t *testing.T) {
 			expErr:           errors.New("envelope creation failed for 'http://dpp-merchant/api/v1/payment/abc123': Unprocessable: insufficient funds provided"),
 		},
 		"error on envelope create is reported": {
+
+			walletConfig: &config.Wallet{},
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
@@ -265,6 +276,7 @@ func TestPayService_Pay(t *testing.T) {
 			expErr:           errors.New("envelope creation failed for 'http://dpp-merchant/api/v1/payment/abc123': no envelope for you"),
 		},
 		"error on payment send is reported": {
+			walletConfig: &config.Wallet{},
 			req: payd.PayRequest{
 				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
 			},
@@ -313,6 +325,48 @@ func TestPayService_Pay(t *testing.T) {
 			expCallbackURL:   "https://myserver/api/v1/proofs/",
 			expKeyName:       "masterkey",
 			expErr:           errors.New("failed to send payment http://dpp-merchant/api/v1/payment/abc123: no send for you"),
+		}, "payment limit enabled with destinations exceeding limit": {
+			req: payd.PayRequest{
+				PayToURL: "http://dpp-merchant/api/v1/payment/abc123",
+			},
+			walletConfig: &config.Wallet{
+				PayoutLimitSatoshis: 1000,
+				PayoutLimitEnabled:  true,
+			},
+			paymentRequestFunc: func(ctx context.Context, req payd.PayRequest) (*dpp.PaymentRequest, error) {
+				return &dpp.PaymentRequest{
+					Network: "testnet",
+					Destinations: dpp.PaymentDestinations{
+						Outputs: []dpp.Output{{
+							Amount: 1000,
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a9146e912a2a1c28448522c1eba7d73ce0719b0636b388ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
+						}, {
+							Amount: 2000,
+							LockingScript: func() *bscript.Script {
+								ls, err := bscript.NewFromHexString("76a914e6e4fa093b7146a4a36fca4b1305182fafa7a9a288ac")
+								assert.NoError(t, err)
+								return ls
+							}(),
+						}},
+					},
+					CreationTimestamp:   ts,
+					ExpirationTimestamp: ts.Add(24 * time.Hour),
+					FeeRate:             fq,
+					Memo:                "payment abc123",
+					MerchantData: &dpp.Merchant{
+						ExtendedData: map[string]interface{}{
+							"paymentReference": "abc123",
+						},
+						Name: "Merchant Person",
+					},
+					PaymentURL: "http://dpp-merchant/api/v1/payment/abc123",
+				}, nil
+			},
+			expErr: errors.New("Unprocessable: amount requested 3000 satoshis is larger than our max payout of 1000 satoshis"),
 		},
 	}
 
@@ -358,6 +412,7 @@ func TestPayService_Pay(t *testing.T) {
 						return nil
 					},
 				},
+				test.walletConfig,
 			)
 
 			_, err := svc.Pay(context.TODO(), test.req)

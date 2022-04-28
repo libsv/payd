@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-spvchannels"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that PeerChannelsServiceMock does implement payd.PeerChannelsService.

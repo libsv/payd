@@ -26,10 +26,11 @@ type pay struct {
 	pcStr      payd.PeerChannelsStore
 	pcNotifSvc payd.PeerChannelsNotifyService
 	svrCfg     *config.Server
+	walletCfg  *config.Wallet
 }
 
 // NewPayService returns a pay service.
-func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
+func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter, walletCfg *config.Wallet) payd.PayService {
 	return &pay{
 		storeTx:    storeTx,
 		txWtr:      txWtr,
@@ -38,6 +39,7 @@ func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeServ
 		svrCfg:     svrCfg,
 		pcStr:      pcStr,
 		pcNotifSvc: pcNotifSvc,
+		walletCfg:  walletCfg,
 	}
 }
 
@@ -83,6 +85,16 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 
 		return nil, errors.Wrapf(err, "failed to request payment for url %s", req.PayToURL)
 	}
+	if p.walletCfg.PayoutLimitEnabled {
+		s := uint64(0)
+		for _, o := range payReq.Destinations.Outputs {
+			s += o.Amount
+		}
+		if s > p.walletCfg.PayoutLimitSatoshis {
+			return nil, lerrs.NewErrUnprocessable("U003",
+				fmt.Sprintf("amount requested %d satoshis is larger than our max payout of %d satoshis", s, p.walletCfg.PayoutLimitSatoshis))
+		}
+	}
 	// begin a transaction that can be picked up by other services etc for rollbacks on failure.
 	ctx = p.storeTx.WithTx(ctx)
 	defer func() {
@@ -92,11 +104,15 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 	if err != nil {
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}
-	bb, err := env.Bytes()
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to convert ancestry into bytes for payment '%s'", payReq.PaymentURL)
+	var bb []byte
+	var ancestry string
+	if payReq.AncestryRequired {
+		bb, err = env.Bytes()
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert ancestry into bytes for payment '%s'", payReq.PaymentURL)
+		}
+		ancestry = hex.EncodeToString(bb)
 	}
-	ancestry := hex.EncodeToString(bb)
 	// Send the payment to the dpp proxy server.
 	ack, err := p.dpp.PaymentSend(ctx, req, dpp.Payment{
 		Ancestry: &ancestry,
@@ -113,8 +129,8 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		},
 	})
 	if err != nil {
-		if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
-			log.Error().Err(errors.Wrap(err, "failed to update tx after failed broadcast"))
+		if e := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
+			log.Error().Err(errors.Wrap(e, "failed to update tx after failed broadcast"))
 		}
 		return nil, errors.Wrapf(err, "failed to send payment %s", req.PayToURL)
 	}

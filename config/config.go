@@ -10,38 +10,40 @@ import (
 
 // Environment variable constants.
 const (
-	EnvServerPort              = "server.port"
-	EnvServerHost              = "server.host"
-	EnvServerSwaggerEnabled    = "server.swagger.enabled"
-	EnvServerSwaggerHost       = "server.swagger.host"
-	EnvEnvironment             = "env.environment"
-	EnvRegion                  = "env.region"
-	EnvVersion                 = "env.version"
-	EnvCommit                  = "env.commit"
-	EnvBuildDate               = "env.builddate"
-	EnvBitcoinNetwork          = "env.bitcoin.network"
-	EnvLogLevel                = "log.level"
-	EnvDb                      = "db.type"
-	EnvDbSchema                = "db.schema.path"
-	EnvDbDsn                   = "db.dsn"
-	EnvDbMigrate               = "db.migrate"
-	EnvHeadersClientAddress    = "headersclient.address"
-	EnvHeadersClientTimeout    = "headersclient.timeout"
-	EnvNetwork                 = "wallet.network"
-	EnvWalletSpvRequired       = "wallet.spvrequired"
-	EnvPaymentExpiry           = "wallet.paymentexpiry"
-	EnvDPPTimeout              = "dpp.timeout"
-	EnvDPPHost                 = "dpp.host"
-	EnvMAPIMinerName           = "mapi.minername"
-	EnvMAPIURL                 = "mapi.minerurl"
-	EnvMAPIToken               = "mapi.token"
-	EnvMAPICallbackHost        = "mapi.callback.host"
-	EnvSocketMaxMessageBytes   = "socket.maxmessage.bytes"
-	EnvTransportHTTPEnabled    = "transport.http.enabled"
-	EnvTransportSocketsEnabled = "transport.sockets.enabled"
-	EnvPeerChannelsHost        = "peerchannels.host"
-	EnvPeerChannelsPath        = "peerchannels.path"
-	EnvPeerChannelsTTL         = "peerchannels.ttl.minutes"
+	EnvServerPort               = "server.port"
+	EnvServerHost               = "server.host"
+	EnvServerSwaggerEnabled     = "server.swagger.enabled"
+	EnvServerSwaggerHost        = "server.swagger.host"
+	EnvEnvironment              = "env.environment"
+	EnvRegion                   = "env.region"
+	EnvVersion                  = "env.version"
+	EnvCommit                   = "env.commit"
+	EnvBuildDate                = "env.builddate"
+	EnvBitcoinNetwork           = "env.bitcoin.network"
+	EnvLogLevel                 = "log.level"
+	EnvDb                       = "db.type"
+	EnvDbSchema                 = "db.schema.path"
+	EnvDbDsn                    = "db.dsn"
+	EnvDbMigrate                = "db.migrate"
+	EnvHeadersClientAddress     = "headersclient.address"
+	EnvHeadersClientTimeout     = "headersclient.timeout"
+	EnvNetwork                  = "wallet.network"
+	EnvWalletSpvRequired        = "wallet.spvrequired"
+	EnvPaymentExpiry            = "wallet.paymentexpiry"
+	EnvWalletPayoutLimitSats    = "wallet.payoutlimit.sats" // max allowed to be paid
+	EnvWalletPayoutLimitEnabled = "wallet.payoutlimit.enabled"
+	EnvDPPTimeout               = "dpp.timeout"
+	EnvDPPHost                  = "dpp.host"
+	EnvMAPIMinerName            = "mapi.minername"
+	EnvMAPIURL                  = "mapi.minerurl"
+	EnvMAPIToken                = "mapi.token"
+	EnvMAPICallbackHost         = "mapi.callback.host"
+	EnvSocketMaxMessageBytes    = "socket.maxmessage.bytes"
+	EnvTransportHTTPEnabled     = "transport.http.enabled"
+	EnvTransportSocketsEnabled  = "transport.sockets.enabled"
+	EnvPeerChannelsHost         = "peerchannels.host"
+	EnvPeerChannelsPath         = "peerchannels.path"
+	EnvPeerChannelsTTL          = "peerchannels.ttl.minutes"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -156,9 +158,11 @@ type HeadersClient struct {
 
 // Wallet contains information relating to a payd installation.
 type Wallet struct {
-	Network            NetworkType
-	SPVRequired        bool
-	PaymentExpiryHours int64
+	Network             NetworkType
+	SPVRequired         bool
+	PaymentExpiryHours  int64
+	PayoutLimitEnabled  bool
+	PayoutLimitSatoshis uint64
 }
 
 // PeerChannels information relating to peer channel interactions.

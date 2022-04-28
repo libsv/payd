@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
+	"sync"
+
 	"github.com/libsv/go-dpp"
 	"github.com/libsv/payd"
-	"sync"
 )
 
 // Ensure, that ProofCallbackWriterMock does implement payd.ProofCallbackWriter.
