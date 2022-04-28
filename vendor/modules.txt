@@ -244,7 +244,7 @@ github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 ## explicit
 github.com/subosito/gotenv
-# github.com/swaggo/echo-swagger v1.3.1
+# github.com/swaggo/echo-swagger v1.3.2
 ## explicit; go 1.15
 github.com/swaggo/echo-swagger
 # github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
