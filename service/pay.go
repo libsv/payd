@@ -22,14 +22,14 @@ type pay struct {
 	storeTx    payd.Transacter
 	txWtr      payd.TransactionWriter
 	dpp        http.DPP
-	spvc       payd.EnvelopeService
+	spvc       payd.AncestryService
 	pcStr      payd.PeerChannelsStore
 	pcNotifSvc payd.PeerChannelsNotifyService
 	svrCfg     *config.Server
 }
 
 // NewPayService returns a pay service.
-func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.EnvelopeService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
+func NewPayService(storeTx payd.Transacter, dpp http.DPP, spvc payd.AncestryService, svrCfg *config.Server, pcNotifSvc payd.PeerChannelsNotifyService, pcStr payd.PeerChannelsStore, txWtr payd.TransactionWriter) payd.PayService {
 	return &pay{
 		storeTx:    storeTx,
 		txWtr:      txWtr,
@@ -83,12 +83,15 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 
 		return nil, errors.Wrapf(err, "failed to request payment for url %s", req.PayToURL)
 	}
+
+	payReq.AncestryRequired // dont do envelope
+
 	// begin a transaction that can be picked up by other services etc for rollbacks on failure.
 	ctx = p.storeTx.WithTx(ctx)
 	defer func() {
 		_ = p.storeTx.Rollback(ctx)
 	}()
-	env, err := p.spvc.Envelope(ctx, payd.EnvelopeArgs{PayToURL: req.PayToURL}, *payReq)
+	env, err := p.spvc.AncestryCreate(ctx, payd.EnvelopeArgs{PayToURL: req.PayToURL}, *payReq)
 	if err != nil {
 		return nil, errors.Wrapf(err, "envelope creation failed for '%s'", req.PayToURL)
 	}

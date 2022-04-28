@@ -9,28 +9,32 @@ import (
 	"github.com/libsv/go-bc"
 )
 
-// Envelope is a struct which contains all information needed for a transaction to be verified.
+// AncestryJSON is a struct which contains all information needed for a transaction to be verified.
+// this contains all ancestors for the transaction allowing proofs etc to be verified.
 //
-type Envelope struct {
-	TxID          string               `json:"txid,omitempty"`
-	RawTx         string               `json:"rawTx,omitempty"`
-	Proof         *bc.MerkleProof      `json:"proof,omitempty"`
-	MapiResponses []bc.MapiCallback    `json:"mapiResponses,omitempty"`
-	Parents       map[string]*Envelope `json:"parents,omitempty"`
+// NOTE: this is the JSON format of the Ancestry but in a nested format (in comparison) with
+// the flat structure that the TSC uses. This allows verification to become a lot easier and
+// use a recursive function.
+type AncestryJSON struct {
+	TxID          string                   `json:"txid,omitempty"`
+	RawTx         string                   `json:"rawTx,omitempty"`
+	Proof         *bc.MerkleProof          `json:"proof,omitempty"`
+	MapiResponses []bc.MapiCallback        `json:"mapiResponses,omitempty"`
+	Parents       map[string]*AncestryJSON `json:"parents,omitempty"`
 }
 
-// IsAnchored returns true if the envelope is the anchor tx.
-func (e *Envelope) IsAnchored() bool {
+// IsAnchored returns true if the ancestry has a merkle proof.
+func (e *AncestryJSON) IsAnchored() bool {
 	return e.Proof != nil
 }
 
-// HasParents returns true if this envelope has immediate parents.
-func (e *Envelope) HasParents() bool {
+// HasParents returns true if this ancestry has immediate parents.
+func (e *AncestryJSON) HasParents() bool {
 	return e.Parents != nil && len(e.Parents) > 0
 }
 
 // ParentTx will return a parent if found and convert the rawTx to a bt.TX, otherwise a ErrNotAllInputsSupplied error is returned.
-func (e *Envelope) ParentTx(txID string) (*bt.Tx, error) {
+func (e *AncestryJSON) ParentTx(txID string) (*bt.Tx, error) {
 	env, ok := e.Parents[txID]
 	if !ok {
 		return nil, errors.Wrapf(ErrNotAllInputsSupplied, "expected parent tx %s is missing", txID)
@@ -38,8 +42,8 @@ func (e *Envelope) ParentTx(txID string) (*bt.Tx, error) {
 	return bt.NewTxFromString(env.RawTx)
 }
 
-// Bytes takes an spvEnvelope struct and returns the serialised binary format.
-func (e *Envelope) Bytes() ([]byte, error) {
+// Bytes takes a TxAncestry struct and returns the serialised binary format.
+func (e *AncestryJSON) Bytes() ([]byte, error) {
 	ancestryBinary := make([]byte, 0)
 	ancestryBinary = append(ancestryBinary, 1) // Binary format version 1
 	binary, err := serialiseInputs(e.Parents)
@@ -50,7 +54,7 @@ func (e *Envelope) Bytes() ([]byte, error) {
 	return ancestryBinary, nil
 }
 
-func serialiseInputs(parents map[string]*Envelope) ([]byte, error) {
+func serialiseInputs(parents map[string]*AncestryJSON) ([]byte, error) {
 	binary := make([]byte, 0)
 	for _, input := range parents {
 		currentTx, err := hex.DecodeString(input.RawTx)

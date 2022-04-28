@@ -19,7 +19,8 @@ func (e EnvelopeArgs) Validate() error {
 		Validate("payToURL", validator.NotEmpty(e.PayToURL))
 }
 
-// EnvelopeService will create an spv envelope from a paymentRequest.
-type EnvelopeService interface {
-	Envelope(ctx context.Context, args EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error)
+// AncestryService will create an spv envelope from a paymentRequest.
+// TODO - rename to AncestryCreate
+type AncestryService interface {
+	AncestryCreate(ctx context.Context, args EnvelopeArgs, req dpp.PaymentRequest) (*spv.AncestryJSON, error)
 }

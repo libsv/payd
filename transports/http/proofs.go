@@ -34,7 +34,7 @@ func (p *proofs) RegisterRoutes(g *echo.Group) {
 // @Accept json
 // @Produce json
 // @Param txid path string true "Transaction ID"
-// @Param body body envelope.JSONEnvelope true "JSON Envelope"
+// @Param body body envelope.JSONEnvelope true "JSON AncestryCreate"
 // @Success 201
 // @Router /v1/proofs/{txid} [POST].
 func (p *proofs) create(c echo.Context) error {

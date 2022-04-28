@@ -22,11 +22,11 @@ type envelopes struct {
 	txoWtr  payd.TxoWriter
 	txWtr   payd.TransactionWriter
 	seedSvc payd.SeedService
-	spvc    spv.EnvelopeCreator
+	spvc    spv.TxAncestryCreator
 }
 
-// NewEnvelopes will setup and return an Envelope service, used to create spv envelopes.
-func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter, txWtr payd.TransactionWriter, txoWtr payd.TxoWriter, seedSvc payd.SeedService, spvc spv.EnvelopeCreator) *envelopes {
+// NewEnvelopes will setup and return an AncestryCreate service, used to create spv envelopes.
+func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter, txWtr payd.TransactionWriter, txoWtr payd.TxoWriter, seedSvc payd.SeedService, spvc spv.TxAncestryCreator) *envelopes {
 	return &envelopes{
 		pkSvc:   pkSvc,
 		destWtr: destWtr,
@@ -37,8 +37,8 @@ func NewEnvelopes(pkSvc payd.PrivateKeyService, destWtr payd.DestinationsWriter,
 	}
 }
 
-// Envelope will create and return a new Envelope.
-func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error) {
+// AncestryCreate will create and return a new ancestry.
+func (e *envelopes) AncestryCreate(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.AncestryJSON, error) {
 	// Retrieve private key and build change utxo in advance of making any calls, so that
 	// if something internal goes wrong we don't make a premature request to the receiver's
 	// dpp server, creating unneeded traffic.
@@ -115,8 +115,8 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 		return nil, errors.Wrapf(err, "failed to sign tx %s", tx.String())
 	}
 
-	// Create the spv envelope for the tx.
-	spvEnvelope, err := e.spvc.CreateEnvelope(ctx, tx)
+	// Create the spv ancestry for the tx.
+	ancestry, err := e.spvc.CreateTxAncestry(ctx, tx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create spv envelope for tx %s", tx.String())
 	}
@@ -158,7 +158,7 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 		return nil, errors.Wrap(err, "failed to mark utxos as spent")
 	}
 
-	return spvEnvelope, nil
+	return ancestry, nil
 }
 
 // changeScript will create and return a change locking script.

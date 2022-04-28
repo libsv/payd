@@ -27,7 +27,7 @@ type RestDeps struct {
 	PaymentService        payd.PaymentsService
 	PaymentRequestService payd.PaymentRequestService
 	PayService            payd.PayService
-	EnvelopeService       payd.EnvelopeService
+	EnvelopeService       payd.AncestryService
 	InvoiceService        payd.InvoiceService
 	BalanceService        payd.BalanceService
 	ProofService          payd.ProofsService
@@ -112,7 +112,7 @@ type SocketDeps struct {
 	DestinationService        payd.DestinationsService
 	PaymentService            payd.PaymentsService
 	PayService                payd.PayService
-	EnvelopeService           payd.EnvelopeService
+	EnvelopeService           payd.AncestryService
 	InvoiceService            payd.InvoiceService
 	BalanceService            payd.BalanceService
 	ProofService              payd.ProofsService

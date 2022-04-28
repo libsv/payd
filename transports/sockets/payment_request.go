@@ -19,12 +19,12 @@ import (
 type paymentRequest struct {
 	transacter payd.Transacter
 	prSvc      payd.PaymentRequestService
-	envSvc     payd.EnvelopeService
+	envSvc     payd.AncestryService
 	dppCfg     *config.DPP
 }
 
 // NewPaymentRequest will setup and return a new PaymentRequest socket listener.
-func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.EnvelopeService, dppCfg *config.DPP) *paymentRequest {
+func NewPaymentRequest(transacter payd.Transacter, svc payd.PaymentRequestService, envSvc payd.AncestryService, dppCfg *config.DPP) *paymentRequest {
 	return &paymentRequest{
 		transacter: transacter,
 		prSvc:      svc,
@@ -95,7 +95,7 @@ func (p *paymentRequest) response(ctx context.Context, msg *sockets.Message) (*s
 	defer func() {
 		_ = p.transacter.Rollback(ctx)
 	}()
-	env, err := p.envSvc.Envelope(ctx, payd.EnvelopeArgs{PayToURL: msg.ChannelID()}, req)
+	env, err := p.envSvc.AncestryCreate(ctx, payd.EnvelopeArgs{PayToURL: msg.ChannelID()}, req)
 	if err != nil {
 		return nil, err
 	}

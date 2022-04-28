@@ -89,7 +89,7 @@ type ProofCallbackArgs struct {
 // ProofsService enforces business rules and validation when handling merkle proofs.
 type ProofsService interface {
 	// Create will store a JSONEnvelope that contains a merkleproof. The envelope should
-	// be validated to not be tampered with and the Envelope should be opened to check the payload
+	// be validated to not be tampered with and the AncestryCreate should be opened to check the payload
 	// is indeed a MerkleProof.
 	Create(ctx context.Context, args dpp.ProofCreateArgs, req envelope.JSONEnvelope) error
 }

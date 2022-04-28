@@ -12,32 +12,32 @@ import (
 	"github.com/libsv/payd"
 )
 
-// Ensure, that EnvelopeServiceMock does implement payd.EnvelopeService.
+// Ensure, that EnvelopeServiceMock does implement payd.AncestryService.
 // If this is not the case, regenerate this file with moq.
-var _ payd.EnvelopeService = &EnvelopeServiceMock{}
+var _ payd.AncestryService = &EnvelopeServiceMock{}
 
-// EnvelopeServiceMock is a mock implementation of payd.EnvelopeService.
+// EnvelopeServiceMock is a mock implementation of payd.AncestryService.
 //
 // 	func TestSomethingThatUsesEnvelopeService(t *testing.T) {
 //
-// 		// make and configure a mocked payd.EnvelopeService
+// 		// make and configure a mocked payd.AncestryService
 // 		mockedEnvelopeService := &EnvelopeServiceMock{
 // 			EnvelopeFunc: func(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error) {
-// 				panic("mock out the Envelope method")
+// 				panic("mock out the AncestryCreate method")
 // 			},
 // 		}
 //
-// 		// use mockedEnvelopeService in code that requires payd.EnvelopeService
+// 		// use mockedEnvelopeService in code that requires payd.AncestryService
 // 		// and then make assertions.
 //
 // 	}
 type EnvelopeServiceMock struct {
-	// EnvelopeFunc mocks the Envelope method.
+	// EnvelopeFunc mocks the AncestryCreate method.
 	EnvelopeFunc func(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// Envelope holds details about calls to the Envelope method.
+		// AncestryCreate holds details about calls to the AncestryCreate method.
 		Envelope []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
@@ -50,10 +50,10 @@ type EnvelopeServiceMock struct {
 	lockEnvelope sync.RWMutex
 }
 
-// Envelope calls EnvelopeFunc.
-func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error) {
+// AncestryCreate calls EnvelopeFunc.
+func (mock *EnvelopeServiceMock) AncestryCreate(ctx context.Context, args payd.EnvelopeArgs, req dpp.PaymentRequest) (*spv.Envelope, error) {
 	if mock.EnvelopeFunc == nil {
-		panic("EnvelopeServiceMock.EnvelopeFunc: method is nil but EnvelopeService.Envelope was just called")
+		panic("EnvelopeServiceMock.EnvelopeFunc: method is nil but AncestryService.AncestryCreate was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
@@ -70,7 +70,7 @@ func (mock *EnvelopeServiceMock) Envelope(ctx context.Context, args payd.Envelop
 	return mock.EnvelopeFunc(ctx, args, req)
 }
 
-// EnvelopeCalls gets all the calls that were made to Envelope.
+// EnvelopeCalls gets all the calls that were made to AncestryCreate.
 // Check the length with:
 //     len(mockedEnvelopeService.EnvelopeCalls())
 func (mock *EnvelopeServiceMock) EnvelopeCalls() []struct {

@@ -9,13 +9,13 @@ import (
 	"github.com/libsv/go-bc"
 )
 
-// An EnvelopeCreator is an interface used to build the spv.Envelope data type for
+// An TxAncestryCreator is an interface used to build the spv.TxAncestry data type for
 // Simple Payment Verification (SPV).
 //
 // The implementation of an spv.TxStore and spv.MerkleProofStore which is supplied will depend
 // on the client you are using.
-type EnvelopeCreator interface {
-	CreateEnvelope(context.Context, *bt.Tx) (*Envelope, error)
+type TxAncestryCreator interface {
+	CreateTxAncestry(context.Context, *bt.Tx) (*AncestryJSON, error)
 }
 
 // TxStore interfaces the a tx store.
@@ -35,7 +35,7 @@ type creator struct {
 
 // NewEnvelopeCreator creates a new spv.Creator with the provided spv.TxStore and tx.MerkleProofStore.
 // If either implementation is not provided, the setup will return an error.
-func NewEnvelopeCreator(txc TxStore, mpc MerkleProofStore) (EnvelopeCreator, error) {
+func NewEnvelopeCreator(txc TxStore, mpc MerkleProofStore) (TxAncestryCreator, error) {
 	if txc == nil {
 		return nil, errors.New("an spv.TxStore implementation is required")
 	}

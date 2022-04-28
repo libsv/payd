@@ -31,14 +31,14 @@ func (v *verifyOptions) clone() *verifyOptions {
 // the payment verifier.
 type VerifyOpt func(opts *verifyOptions)
 
-// VerifyProofs will make the verifier validate the envelope merkle proofs for each parent transaction.
+// VerifyProofs will make the verifier validate the ancestry merkle proofs for each parent transaction.
 func VerifyProofs() VerifyOpt {
 	return func(opts *verifyOptions) {
 		opts.proofs = true
 	}
 }
 
-// NoVerifyProofs will switch off envelope proof verification
+// NoVerifyProofs will switch off ancestry proof verification
 // and rely on mAPI/node verification when the tx is broadcast.
 func NoVerifyProofs() VerifyOpt {
 	return func(opts *verifyOptions) {
@@ -111,7 +111,7 @@ func VerifySPV() VerifyOpt {
 // The implementation of bc.BlockHeaderChain which is supplied will depend on the client
 // you are using, some may return a HeaderJSON response others may return the blockhash.
 type PaymentVerifier interface {
-	VerifyPayment(ctx context.Context, pTx *bt.Tx, ancestors []byte, opts ...VerifyOpt) (*bt.Tx, error)
+	VerifyPayment(ctx context.Context, p *Payment, opts ...VerifyOpt) error
 	MerkleProofVerifier
 }
 
@@ -131,7 +131,7 @@ type verifier struct {
 // If no BlockHeaderChain implementation is provided, the setup will return an error.
 //
 // opts control the global behaviour of the verifier and all options are enabled by default, they are:
-// - envelope verification (proofs checked etc)
+// - ancestry verification (proofs checked etc)
 // - fees checked, ensuring the root tx covers enough fees
 // - script verification which checks the script is correct (not currently implemented).
 func NewPaymentVerifier(bhc bc.BlockHeaderChain, opts ...VerifyOpt) (PaymentVerifier, error) {

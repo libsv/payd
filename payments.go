@@ -27,9 +27,9 @@ type PaymentCreate struct {
 	// SPVEnvelope which contains the details of previous transaction and Merkle proof of each input UTXO.
 	// Should be available if SPVRequired is set to true in the paymentRequest.
 	// See https://tsc.bitcoinassociation.net/standards/spv-envelope/
-	SPVEnvelope *spv.Envelope `json:"spvEnvelope"`
+	SPVEnvelope *spv.AncestryJSON `json:"spvEnvelope"`
 	// ProofCallbacks are optional and can be supplied when the sender wants to receive
-	// a merkleproof for the transaction they are submitting as part of the SPV Envelope.
+	// a merkleproof for the transaction they are submitting as part of the SPV AncestryCreate.
 	//
 	// This is especially useful if they are receiving change and means when they use it
 	// as an input, they can provide the merkle proof.

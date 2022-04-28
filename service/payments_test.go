@@ -282,7 +282,7 @@ func TestPaymentsService_PaymentCreate(t *testing.T) {
 		//	feesFunc: func(ctx context.Context, invoiceID string) (*bt.FeeQuote, error) {
 		//		return fq, nil
 		//	},
-		//	verifyPaymentFunc: func(context.Context, *spv.Envelope, ...spv.VerifyOpt) (*bt.Tx, error) {
+		//	verifyPaymentFunc: func(context.Context, *spv.AncestryCreate, ...spv.VerifyOpt) (*bt.Tx, error) {
 		//		return bt.NewTxFromString("010000000002e8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ace8030000000000001976a91474b0424726ca510399c1eb5c8374f974c68b2fa388ac00000000")
 		//	},
 		//	destinationsFunc: func(context.Context, payd.DestinationsArgs) ([]payd.Output, error) {
