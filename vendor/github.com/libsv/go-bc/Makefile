@@ -19,7 +19,7 @@ run-linter:
 	@golangci-lint run --deadline=480s --skip-dirs=vendor --tests
 
 install-linter:
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.35.2
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)bin v1.45.2
 
 go-doc-mac:
 	@open http://localhost:6060 && \

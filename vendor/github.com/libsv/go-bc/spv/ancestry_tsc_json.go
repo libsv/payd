@@ -7,28 +7,29 @@ import (
 	"github.com/libsv/go-bt/v2"
 )
 
-// AncestorsJSON spec at https://tsc.bitcoinassociation.net/standards/spv-envelope/ eventually.
-type AncestorsJSON struct {
-	Ancestors []AncestorJSON `json:"ancestors"`
-}
+// TSCAncestriesJSON spec at https://tsc.bitcoinassociation.net/standards/transaction-ancestors/ eventually.
+type TSCAncestriesJSON []TSCAncestryJSON
 
-// AncestorJSON is one of the serial objects within the overall list of ancestors.
-type AncestorJSON struct {
+// TSCAncestryJSON is one of the serial objects within the overall list of ancestors.
+//
+// NOTE: This JSON structure follows the TSC definition even though the other JSON
+// structure used in ancestry_json.go is more useful for verification.
+type TSCAncestryJSON struct {
 	RawTx         string             `json:"rawtx,omitempty"`
 	Proof         *bc.MerkleProof    `json:"proof,omitempty"`
 	MapiResponses []*bc.MapiCallback `json:"mapiResponses,omitempty"`
 }
 
-// NewAncestoryJSONFromBytes is a way to create the JSON format for Ancestry from the binary format.
-func NewAncestoryJSONFromBytes(b []byte) (*AncestorsJSON, error) {
-	ancestry, err := NewAncestryFromBytes(b)
+// NewAncestryJSONFromBytes is a way to create the JSON format for Ancestry from the binary format.
+func NewAncestryJSONFromBytes(b []byte) (TSCAncestriesJSON, error) {
+	ancestry, err := parseAncestry(b)
 	if err != nil {
 		return nil, err
 	}
-	ancestors := make([]AncestorJSON, 0)
-	for _, ancestor := range ancestry.Ancestors {
+	ancestors := make([]TSCAncestryJSON, 0)
+	for _, ancestor := range ancestry {
 		rawTx := ancestor.Tx.String()
-		a := AncestorJSON{
+		a := TSCAncestryJSON{
 			RawTx:         rawTx,
 			MapiResponses: ancestor.MapiResponses,
 		}
@@ -47,20 +48,18 @@ func NewAncestoryJSONFromBytes(b []byte) (*AncestorsJSON, error) {
 		}
 		ancestors = append(ancestors, a)
 	}
-	return &AncestorsJSON{
-		Ancestors: ancestors,
-	}, nil
+	return ancestors, nil
 }
 
-// Bytes takes an AncestorsJSON and returns the serialised bytes.
-func (j AncestorsJSON) Bytes() ([]byte, error) {
+// Bytes takes an AncestryJSON and returns the serialised bytes.
+func (j TSCAncestriesJSON) Bytes() ([]byte, error) {
 	binaryTxContext := make([]byte, 0)
 
 	// Binary format version 1.
 	binaryTxContext = append(binaryTxContext, 1)
 
 	// follow with the list of ancestors, including their proof or mapi responses if present.
-	for _, ancestor := range j.Ancestors {
+	for _, ancestor := range j {
 		rawTx, err := hex.DecodeString(ancestor.RawTx)
 		if err != nil {
 			return nil, err

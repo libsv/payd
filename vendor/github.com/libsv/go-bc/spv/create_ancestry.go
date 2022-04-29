@@ -8,24 +8,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateEnvelope builds and returns an spv.Envelope for the provided tx.
-func (c *creator) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, error) {
+// CreateTxAncestry builds and returns an spv.TxAncestry for the provided tx.
+func (c *creator) CreateTxAncestry(ctx context.Context, tx *bt.Tx) (*AncestryJSON, error) {
 	if len(tx.Inputs) == 0 {
 		return nil, ErrNoTxInputs
 	}
 
-	envelope := &Envelope{
+	ancestry := &AncestryJSON{
 		TxID:    tx.TxID(),
 		RawTx:   tx.String(),
-		Parents: make(map[string]*Envelope),
+		Parents: make(map[string]*AncestryJSON),
 	}
 
 	for _, input := range tx.Inputs {
 		pTxID := input.PreviousTxIDStr()
 
-		// If we already have added the tx to the parent envelope, there's no point in
+		// If we already have added the tx to the parent ancestry, there's no point in
 		// redoing the same work
-		if _, ok := envelope.Parents[pTxID]; ok {
+		if _, ok := ancestry.Parents[pTxID]; ok {
 			continue
 		}
 
@@ -44,9 +44,9 @@ func (c *creator) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, err
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get merkle proof for tx %s", pTxID)
 		}
-		// If a Merkle Proof is found, create the envelope and skip any further recursion
+		// If a Merkle Proof is found, create the ancestry and skip any further recursion
 		if mp != nil {
-			envelope.Parents[pTxID] = &Envelope{
+			ancestry.Parents[pTxID] = &AncestryJSON{
 				RawTx: pTx.String(),
 				TxID:  pTxID,
 				Proof: mp,
@@ -54,13 +54,13 @@ func (c *creator) CreateEnvelope(ctx context.Context, tx *bt.Tx) (*Envelope, err
 			continue
 		}
 
-		pEnvelope, err := c.CreateEnvelope(ctx, pTx)
+		pEnvelope, err := c.CreateTxAncestry(ctx, pTx)
 		if err != nil {
 			return nil, err
 		}
 
-		envelope.Parents[pTxID] = pEnvelope
+		ancestry.Parents[pTxID] = pEnvelope
 	}
 
-	return envelope, nil
+	return ancestry, nil
 }

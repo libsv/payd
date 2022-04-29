@@ -31,7 +31,7 @@ require (
 require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/libsv/go-bc v0.1.10
+	github.com/libsv/go-bc v0.1.11
 	github.com/rs/zerolog v1.26.1
 	github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586
 )

@@ -3,8 +3,8 @@ package spv
 import "github.com/pkg/errors"
 
 var (
-	// ErrNoTxInputs returns if an envelope is attempted to be created from a transaction that has no inputs.
-	ErrNoTxInputs = errors.New("provided tx has no inputs to build envelope from")
+	// ErrNoTxInputs returns if an ancestry is attempted to be created from a transaction that has no inputs.
+	ErrNoTxInputs = errors.New("provided tx has no inputs to build ancestry from")
 
 	// ErrPaymentNotVerified returns if a transaction in the tree provided was missed during verification.
 	ErrPaymentNotVerified = errors.New("a tx was missed during validation")
@@ -18,9 +18,9 @@ var (
 	// ErrTxIDMismatch returns if they key value pair of a transactions input has a mismatch in txID.
 	ErrTxIDMismatch = errors.New("input and proof ID mismatch")
 
-	// ErrNotAllInputsSupplied returns if an unconfirmed transaction in envelope contains inputs which are not
-	// present in the parent envelope.
-	ErrNotAllInputsSupplied = errors.New("a tx input missing in parent envelope")
+	// ErrNotAllInputsSupplied returns if an unconfirmed transaction in ancestry contains inputs which are not
+	// present in the parent ancestor.
+	ErrNotAllInputsSupplied = errors.New("a tx input missing in parent ancestor")
 
 	// ErrNoTxInputsToVerify returns if a transaction has no inputs.
 	ErrNoTxInputsToVerify = errors.New("a tx has no inputs to verify")
@@ -38,7 +38,7 @@ var (
 	ErrFeePaidNotEnough = errors.New("not enough fees paid")
 
 	// ErrCannotCalculateFeePaid returned when fee check is enabled but the tx has no parents.
-	ErrCannotCalculateFeePaid = errors.New("no parents supplied in envelope which means we cannot valdiate " +
+	ErrCannotCalculateFeePaid = errors.New("no parents supplied in ancestry which means we cannot valdiate " +
 		"fees, either ensure parents are supplied or remove fee check")
 
 	// ErrInvalidProof is returned if the merkle proof validation fails.

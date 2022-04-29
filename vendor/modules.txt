@@ -116,7 +116,7 @@ github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/random
-# github.com/libsv/go-bc v0.1.10
+# github.com/libsv/go-bc v0.1.11
 ## explicit; go 1.17
 github.com/libsv/go-bc
 github.com/libsv/go-bc/spv
