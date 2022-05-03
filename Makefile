@@ -62,6 +62,9 @@ run-compose-dev: create-pc-account
 run-compose-local: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up
 
+run-compose-faucet: create-pc-account
+	@docker-compose -f docker-compose.yml  -f docker-compose.faucet.yml up
+
 run-compose-local-d: create-pc-account
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up -d
 
