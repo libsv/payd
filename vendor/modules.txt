@@ -16,13 +16,6 @@ github.com/PuerkitoBio/urlesc
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
-# github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173
-## explicit
-github.com/bitcoinsv/bsvd/bsvec
-github.com/bitcoinsv/bsvd/chaincfg/chainhash
-# github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9
-## explicit
-github.com/bitcoinsv/bsvutil/base58
 # github.com/boombuler/barcode v1.0.1
 ## explicit
 github.com/boombuler/barcode
@@ -128,12 +121,6 @@ github.com/libsv/go-bk/bip32
 github.com/libsv/go-bk/chaincfg
 github.com/libsv/go-bk/crypto
 github.com/libsv/go-bk/envelope
-# github.com/libsv/go-bt v1.0.4
-## explicit; go 1.15
-github.com/libsv/go-bt
-github.com/libsv/go-bt/bscript
-github.com/libsv/go-bt/crypto
-github.com/libsv/go-bt/sighash
 # github.com/libsv/go-bt/v2 v2.1.0-beta.2
 ## explicit; go 1.17
 github.com/libsv/go-bt/v2
@@ -267,7 +254,7 @@ github.com/theflyingcodr/sockets/client
 github.com/theflyingcodr/sockets/internal
 github.com/theflyingcodr/sockets/middleware
 github.com/theflyingcodr/sockets/server
-# github.com/tonicpow/go-minercraft v0.4.0
+# github.com/tonicpow/go-minercraft v0.7.3
 ## explicit; go 1.16
 github.com/tonicpow/go-minercraft
 # github.com/valyala/bytebufferpool v1.0.0

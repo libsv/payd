@@ -5,7 +5,7 @@ import "time"
 const (
 
 	// version is the current package version
-	version = "v0.4.0"
+	version = "v0.7.3"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-minercraft: " + version
@@ -64,7 +64,7 @@ const KnownMiners = `
   },
   {
    "name": "Matterpool",
-   "miner_id": "0211ccfc29e3058b770f3cf3eb34b0b2fd2293057a994d4d275121be4151cdf087",
+   "miner_id": "0253a9b2d017254b91704ba52aad0df5ca32b4fb5cb6b267ada6aefa2bc5833a93",
    "token": "",
    "url": "https://merchantapi.matterpool.io"
   },

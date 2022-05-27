@@ -173,7 +173,15 @@ func (i *internalResult) parsePolicyQuote() (response PolicyQuoteResponse, err e
 
 	// If we have a valid payload
 	if len(response.Payload) > 0 {
-		err = json.Unmarshal([]byte(response.Payload), &response.Quote)
+		if err = json.Unmarshal([]byte(response.Payload), &response.Quote); err != nil {
+			return
+		}
+		if response.Quote != nil &&
+			len(response.Quote.Fees) > 0 &&
+			len(response.Quote.Fees[0].FeeType) == 0 { // This is an issue because go-bt json field is stripping the types
+			response.Quote.Fees[0].FeeType = FeeTypeStandard
+			response.Quote.Fees[1].FeeType = FeeTypeData
+		}
 	}
 	return
 }
