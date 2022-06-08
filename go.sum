@@ -739,6 +739,8 @@ github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e h1:gfO
 github.com/theflyingcodr/migrate/v4 v4.15.1-0.20210927160112-79da889ca18e/go.mod h1:g9qbiDvB47WyrRnNu2t2gMZFNHKnatsYRxsGZbCi4EM=
 github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586 h1:iLfIixptGNYjsK5nxMWro9693mjKt3mzux20409EHzg=
 github.com/theflyingcodr/sockets v0.0.11-beta.0.20220225103542-c6eecb16f586/go.mod h1:u4PMKd3yqHkt9Jn0VgQRZ33PG9ynL8/j53csVO1huyk=
+github.com/theflyingcodr/sockets v0.0.12-beta h1:5x6+7rQtVN0bEhaWdRm10MMvYdp0DPbHe5sB40DlVBk=
+github.com/theflyingcodr/sockets v0.0.12-beta/go.mod h1:lEfw9IoVkWJsuvi5ja5QuusFjfVvpocaJl0RP7iFLRY=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tonicpow/go-minercraft v0.4.0 h1:o7ndFm0NDIWZ6ml5qXGzGIh7xhGDWQhQixjPCJec2PY=
 github.com/tonicpow/go-minercraft v0.4.0/go.mod h1:+mJZAtlRy89vbL/gLAH4kft46lxueHUGMhsBJF2E9Fg=

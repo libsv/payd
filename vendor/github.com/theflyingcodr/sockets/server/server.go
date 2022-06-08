@@ -167,14 +167,14 @@ func (s *SocketServer) channelManager() {
 		case <-s.close:
 			close(s.channelSender)
 			close(s.directSender)
-			log.Info().Msg("closing server")
+			log.Debug().Msg("closing server")
 			for _, c := range s.clientConnections {
 				_ = c.ws.Close()
 			}
 			close(s.unregister)
 			close(s.register)
 
-			log.Info().Msg("connections terminated")
+			log.Debug().Msg("connections terminated")
 			s.done <- struct{}{}
 			return
 		case u := <-s.unregister:
@@ -339,7 +339,7 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 	conn.SetPongHandler(func(string) error { _ = conn.SetReadDeadline(time.Now().Add(s.opts.pongWait)); return nil })
 
 	clientID := uuid.NewString()
-	log.Info().Msgf("receiving new connection with clientID %s", clientID)
+	log.Debug().Msgf("receiving new connection with clientID %s", clientID)
 	c := &connection{
 		ws:       conn,
 		send:     make(chan interface{}, 256),
@@ -371,16 +371,16 @@ func (s *SocketServer) Listen(conn *websocket.Conn, channelID string) error {
 	}
 	s.BroadcastDirect(clientID, sockets.NewMessage(sockets.MessageJoinSuccess, clientID, channelID))
 
-	log.Info().Msgf("connection with clientID %s added, listening for messages", clientID)
+	log.Debug().Msgf("connection with clientID %s added, listening for messages", clientID)
 
 	for {
 		var m *sockets.Message
 		if err := conn.ReadJSON(&m); err != nil {
-			log.Debug().Msg("clsoe error received, handling")
+			log.Debug().Msg("close error received, handling")
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
 				log.Error().Msgf("unexpected client %s close error: %v", clientID, err)
 			} else {
-				log.Info().Msgf("client %s closed connection, exiting listener", clientID)
+				log.Debug().Msgf("client %s closed connection, exiting listener", clientID)
 			}
 			s.unregisterClient(channelID, clientID)
 			break

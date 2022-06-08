@@ -70,7 +70,7 @@ func (s *sqliteStore) TransactionCreate(ctx context.Context, req payd.Transactio
 	// insert tx and utxos
 	if err := handleNamedExec(tx, sqlTransactionCreate, req); err != nil {
 		var sqlErr sqlite3.Error
-		if ok := errors.As(err, sqlErr); ok {
+		if ok := errors.As(err, &sqlErr); ok {
 			if sqlErr.Code == sqlite3.ErrConstraint {
 				return lathos.NewErrDuplicate("D001", "transaction has already been stored")
 			}
