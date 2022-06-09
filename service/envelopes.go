@@ -110,11 +110,9 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 	if err = tx.Change(changeOutput.LockingScript, req.FeeRate); err != nil {
 		return nil, errors.Wrap(err, "failed to set change")
 	}
-	fmt.Println(tx.TotalInputSatoshis())
 	if err = tx.UnlockAll(ctx, signer); err != nil {
 		return nil, errors.Wrapf(err, "failed to sign tx %s", tx.String())
 	}
-	fmt.Println(tx.TotalOutputSatoshis())
 	// Create the spv envelope for the tx.
 	spvEnvelope := &spv.Envelope{
 		TxID:    tx.TxID(),
@@ -133,16 +131,14 @@ func (e *envelopes) Envelope(ctx context.Context, args payd.EnvelopeArgs, req dp
 		TxHex: tx.String(),
 	}
 	// Only insert change utxo if change exists.
-	fmt.Println("checking change")
-	fmt.Println(tx.OutputCount())
 	if changeOutput.LockingScript.Equals(tx.Outputs[tx.OutputCount()-1].LockingScript) {
-		fmt.Println("has change")
 		oo, err := e.destWtr.DestinationsCreate(ctx, payd.DestinationsCreateArgs{},
 			[]payd.DestinationCreate{{
 				Script:         changeOutput.LockingScript.String(),
 				DerivationPath: changeOutput.DerivationPath,
 				UserID:         userID,
 				Satoshis:       tx.Outputs[tx.OutputCount()-1].Satoshis,
+				KeyName:        keyname,
 			}})
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create destination for change output")

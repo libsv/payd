@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/libsv/go-dpp"
@@ -68,7 +69,7 @@ func (p *dppClient) PaymentSend(ctx context.Context, args payd.PayRequest, req d
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusUnprocessableEntity {
 		return nil, p.handleErr(resp)
 	}
 
@@ -76,7 +77,9 @@ func (p *dppClient) PaymentSend(ctx context.Context, args payd.PayRequest, req d
 	if err := json.NewDecoder(resp.Body).Decode(&ack); err != nil {
 		return nil, err
 	}
-
+	if ack.Error > 0 {
+		return nil, errs.NewErrUnprocessable(fmt.Sprintf("%d", ack.Error), ack.Memo)
+	}
 	return &ack, nil
 }
 
@@ -87,11 +90,9 @@ func (p *dppClient) handleErr(resp *http.Response) error {
 		Title   string `json:"title"`
 		Message string `json:"message"`
 	}{}
-
 	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
 		return err
 	}
-
 	switch resp.StatusCode {
 	case http.StatusUnauthorized:
 		return errs.NewErrNotAuthenticated(errResp.Code, errResp.Message)

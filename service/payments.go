@@ -62,6 +62,11 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		Validate("invoiceID", validator.StrLength(args.InvoiceID, 1, 30)).Err(); err != nil {
 		return nil, err
 	}
+
+	ctx = p.transacter.WithTx(ctx)
+	defer func() {
+		_ = p.transacter.Rollback(ctx)
+	}()
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
 	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID})
 	if err != nil || inv.State == "" {
@@ -163,10 +168,6 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 			},
 		}
 	}
-	ctx = p.transacter.WithTx(ctx)
-	defer func() {
-		_ = p.transacter.Rollback(ctx)
-	}()
 	// Store tx
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
 		InvoiceID: args.InvoiceID,
@@ -295,6 +296,10 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 
 // Ack will handle an acknowledgement after a payment has been processed.
 func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) error {
+	ctx = p.transacter.WithTx(ctx)
+	defer func() {
+		_ = p.transacter.Rollback(ctx)
+	}()
 	if err := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: args.TxID}, payd.TransactionStateUpdate{
 		State: func() payd.TxState {
 			if req.Failed {
@@ -334,8 +339,11 @@ func (p *payments) Ack(ctx context.Context, args payd.AckArgs, req payd.Ack) err
 	}); err != nil {
 		return errors.Wrapf(err, "failed to store token '%s' for channel '%s'", args.PeerChannel.Token, args.PeerChannel.ID)
 	}
+	if err := p.pcNotif.Subscribe(ctx, args.PeerChannel); err != nil {
+		return errors.Wrapf(err, "failed to subscribe to channel '%s'", args.PeerChannel.ID)
+	}
 
-	return errors.Wrapf(p.pcNotif.Subscribe(ctx, args.PeerChannel), "failed to subscribe to channel '%s'", args.PeerChannel.ID)
+	return errors.Wrap(p.transacter.Commit(ctx), "failed to commit data store when acking")
 }
 
 func (p *payments) paymentVerifyOpts(verifySPV bool, fq *bt.FeeQuote) []spv.VerifyOpt {

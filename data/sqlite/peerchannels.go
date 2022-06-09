@@ -103,7 +103,14 @@ func (s *sqliteStore) PeerChannelsOpened(ctx context.Context, channelType payd.P
 }
 
 func (s *sqliteStore) PeerChannelCloseChannel(ctx context.Context, channelID string) error {
-	if _, err := s.db.NamedExecContext(ctx, sqlPeerChannelsCloseUpdate, struct {
+	tx, err := s.newTx(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to close peer channel sql")
+	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
+	if _, err := tx.NamedExecContext(ctx, sqlPeerChannelsCloseUpdate, struct {
 		ChannelID string `db:"channel_id"`
 	}{
 		ChannelID: channelID,
@@ -111,5 +118,5 @@ func (s *sqliteStore) PeerChannelCloseChannel(ctx context.Context, channelID str
 		return errors.Wrapf(err, "failed to close channel %s", channelID)
 	}
 
-	return nil
+	return errors.Wrap(commit(ctx, tx), "failed to commit transaction for peerChannelClose")
 }

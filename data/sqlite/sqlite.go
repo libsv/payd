@@ -43,7 +43,6 @@ func commit(ctx context.Context, tx *sqlx.Tx) error {
 			return nil
 		}
 	}
-
 	return tx.Commit()
 }
 
@@ -119,6 +118,10 @@ type Tx struct {
 
 // WithTxContext will add a new empty transaction to the provided context.
 func WithTxContext(ctx context.Context) context.Context {
+	tx := TxFromContext(ctx)
+	if tx != nil {
+		return ctx
+	}
 	return context.WithValue(ctx, exec, &Tx{})
 }
 

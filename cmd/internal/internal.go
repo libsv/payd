@@ -24,19 +24,24 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	echoSwagger "github.com/swaggo/echo-swagger"
+	"github.com/theflyingcodr/sockets"
 	"github.com/theflyingcodr/sockets/client"
 	smw "github.com/theflyingcodr/sockets/middleware"
 	"github.com/theflyingcodr/sockets/server"
 )
 
 // SetupEcho will set up and return an echo server.
-func SetupEcho(l log.Logger) *echo.Echo {
+func SetupEcho(cfg *config.Config, l log.Logger) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
 	// Middleware
 	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Skipper: func(c echo.Context) bool {
+			return cfg.Logging.Level != config.LogDebug
+		},
+	}))
 	e.Use(middleware.RequestID())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -72,10 +77,14 @@ func SetupHTTPEndpoints(cfg config.Config, services *RestDeps, g *echo.Group) {
 
 // SetupSocketClient will setup handlers and socket server.
 func SetupSocketClient(cfg config.Config, deps *SocketDeps, c *client.Client) {
+	lcfg := smw.NewLoggerConfig()
+	lcfg.AddSkipper(func(msg *sockets.Message) bool {
+		return cfg.Logging.Level != config.LogDebug
+	})
 	c.WithMiddleware(smw.PanicHandler,
 		smw.Timeout(smw.NewTimeoutConfig()),
 		smw.Metrics(),
-		smw.Logger(smw.NewLoggerConfig()),
+		smw.Logger(lcfg),
 		socMiddleware.IgnoreMyMessages(cfg.Socket),
 		socMiddleware.WithAppIDPayD()).
 		WithErrorHandler(socMiddleware.ErrorHandler).

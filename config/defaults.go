@@ -27,7 +27,7 @@ func SetupDefaults() {
 
 	// db
 	viper.SetDefault(EnvDb, "sqlite")
-	viper.SetDefault(EnvDbDsn, "file:data/wallet.db?_foreign_keys=true&pooled=true")
+	viper.SetDefault(EnvDbDsn, "file:data/wallet.db?_foreign_keys=true&pooling=true")
 	viper.SetDefault(EnvDbSchema, "data/sqlite/migrations")
 	viper.SetDefault(EnvDbMigrate, true)
 
