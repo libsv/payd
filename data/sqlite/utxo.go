@@ -47,7 +47,9 @@ func (s *sqliteStore) UTXOReserve(ctx context.Context, req payd.UTXOReserve) ([]
 	if err != nil {
 		return nil, errors.Wrap(err, "error creation transaction to get utxos")
 	}
-
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	timestamp := time.Now().UTC()
 	var utxos []payd.UTXO
 	for total := uint64(0); total <= req.Satoshis; {
@@ -79,7 +81,9 @@ func (s *sqliteStore) UTXOUnreserve(ctx context.Context, req payd.UTXOUnreserve)
 	if err != nil {
 		return errors.Wrap(err, "error creation transaction to get utxos")
 	}
-
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	if _, err = tx.ExecContext(ctx, sqlUTXOUnreserve, time.Now().UTC(), req.ReservedFor); err != nil {
 		return errors.Wrap(err, "failed to unreserve utxos")
 	}
@@ -93,7 +97,9 @@ func (s *sqliteStore) UTXOSpend(ctx context.Context, req payd.UTXOSpend) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to create transaction to spend utxos")
 	}
-
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	req.Timestamp = time.Now().UTC()
 	if err := handleNamedExec(tx, sqlUTXOSpend, req); err != nil {
 		return errors.Wrap(err, "failed to mark utxos as spent")

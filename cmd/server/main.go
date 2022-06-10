@@ -75,7 +75,7 @@ func main() {
 	// nolint:errcheck // dont care about error.
 	defer db.Close()
 
-	e := internal.SetupEcho(log)
+	e := internal.SetupEcho(cfg, log)
 
 	if cfg.Server.SwaggerEnabled {
 		internal.SetupSwagger(*cfg.Server, e)

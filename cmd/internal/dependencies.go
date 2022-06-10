@@ -51,11 +51,11 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
 	proofSvc := service.NewProofsService(sqlLiteStore)
 
-	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels)
+	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels, &paydSQL.Transacter{})
 	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
 	pcNotifSvc.RegisterHandler(payd.PeerChannelHandlerTypeProof, proofSvc)
 
-	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
+	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli, l)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		l.Fatal(err, "failed to create spv client")
@@ -138,10 +138,10 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
 	proofSvc := service.NewProofsService(sqlLiteStore)
-	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels)
+	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels, &paydSQL.Transacter{})
 	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
 	pcNotifSvc.RegisterHandler(payd.PeerChannelHandlerTypeProof, proofSvc)
-	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli)
+	mapiStore := mapi.NewMapi(cfg.Mapi, mapiCli, l)
 	spvv, err := spv.NewPaymentVerifier(dataHttp.NewHeaderSVConnection(&http.Client{Timeout: time.Duration(cfg.HeadersClient.Timeout) * time.Second}, cfg.HeadersClient.Address))
 	if err != nil {
 		l.Fatal(err, "failed to create spv client")

@@ -53,10 +53,10 @@ func (c *Client) listen(conn *connection) {
 						return
 					}
 					conn.ws = ws
-					log.Info().Msg("reconnected to server")
+					log.Debug().Msg("reconnected to server")
 					continue
 				}
-				log.Info().
+				log.Debug().
 					Msgf("close message received for channelID '%s', closing connection", channelID)
 				c.LeaveChannel(channelID, nil)
 				return
@@ -87,7 +87,7 @@ func (c *Client) listen(conn *connection) {
 				Msg("new message received")
 			fn := c.listener(msg.Key())
 			if fn == nil {
-				log.Info().Msgf("no handler found for message type '%s'", msg.Key())
+				log.Warn().Msgf("no handler found for message type '%s'", msg.Key())
 				continue
 			}
 			// exec middleware and then handler.

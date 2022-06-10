@@ -240,7 +240,7 @@ func (c *Client) Close() {
 	for _, conn := range c.conn {
 		conn.close()
 	}
-	log.Info().Msg("socket client closed")
+	log.Debug().Msg("socket client closed")
 }
 
 // JoinChannel will connect the client to the supplied host and channelID, returning an error if
@@ -248,7 +248,7 @@ func (c *Client) Close() {
 //
 // If you need to authenticate with the server or send meta, add header/s.
 func (c *Client) JoinChannel(host, channelID string, headers http.Header, params map[string]string) error {
-	log.Info().Msgf("joining channel %s", channelID)
+	log.Debug().Msgf("joining channel %s", channelID)
 	u, err := url.Parse(fmt.Sprintf("%s/%s", host, channelID))
 	if err != nil {
 		return errors.Wrap(err, "failed to parse channel url")
@@ -274,7 +274,7 @@ func (c *Client) JoinChannel(host, channelID string, headers http.Header, params
 		closer:    make(chan bool),
 		done:      make(chan struct{}),
 	}
-	log.Info().Msgf("connected to channel %s", channelID)
+	log.Debug().Msgf("connected to channel %s", channelID)
 	return nil
 }
 

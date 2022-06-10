@@ -11,15 +11,17 @@ import (
 )
 
 type peerChannelsSvc struct {
-	cfg *config.PeerChannels
-	str payd.PeerChannelsStore
+	cfg        *config.PeerChannels
+	str        payd.PeerChannelsStore
+	transacter payd.Transacter
 }
 
 // NewPeerChannelsSvc return a new peer channel service.
-func NewPeerChannelsSvc(str payd.PeerChannelsStore, cfg *config.PeerChannels) payd.PeerChannelsService {
+func NewPeerChannelsSvc(str payd.PeerChannelsStore, cfg *config.PeerChannels, transacter payd.Transacter) payd.PeerChannelsService {
 	return &peerChannelsSvc{
-		cfg: cfg,
-		str: str,
+		cfg:        cfg,
+		str:        str,
+		transacter: transacter,
 	}
 }
 
@@ -66,7 +68,6 @@ func (p peerChannelsSvc) PeerChannelAPITokensCreate(ctx context.Context, reqs ..
 		spvchannels.WithPath(p.cfg.Path),
 		spvchannels.WithNoTLS(),
 	)
-
 	tokens := make([]*spvchannels.TokenCreateReply, 0)
 	for _, req := range reqs {
 		token, err := c.TokenCreate(ctx, req.Request)

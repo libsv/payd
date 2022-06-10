@@ -35,7 +35,7 @@ func (p *payments) create(ctx context.Context, msg *sockets.Message) (*sockets.M
 	resp := msg.NewFrom(RoutePaymentACK)
 	ack, err := p.svc.PaymentCreate(ctx, payd.PaymentCreateArgs{InvoiceID: msg.ChannelID()}, req)
 	if err != nil {
-		log.Err(err).Msg("dpp..led to create payment, returning ack")
+		log.Err(err).Msg("dpp failed to create payment, returning ack")
 		_ = resp.WithBody(dpp.PaymentACK{
 			Memo:  err.Error(),
 			Error: 1,

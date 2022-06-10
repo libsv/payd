@@ -10,17 +10,19 @@ import (
 
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
+	"github.com/libsv/payd/log"
 )
 
 type minercraftMapi struct {
 	client *minercraft.Client
 	cfg    *config.MApi
 	fq     *bt.FeeQuote
+	l      log.Logger
 }
 
 // NewMapi will setup and return a new MAPI minercraftMapi data store.
-func NewMapi(cfg *config.MApi, client *minercraft.Client) *minercraftMapi {
-	return &minercraftMapi{client: client, cfg: cfg, fq: bt.NewFeeQuote()}
+func NewMapi(cfg *config.MApi, client *minercraft.Client, l log.Logger) *minercraftMapi {
+	return &minercraftMapi{client: client, cfg: cfg, fq: bt.NewFeeQuote(), l: l}
 }
 
 // Broadcast will submit a transaction to mapi for inclusion in a block.
@@ -52,6 +54,7 @@ func (m *minercraftMapi) Broadcast(ctx context.Context, args payd.BroadcastArgs,
 		// This should be fixed in MAPI not here, long term.
 		return nil
 	}
+	m.l.Debugf("failed to submit transaction with hex: %s", tx.String())
 	return errors.Errorf("failed to submit transaction %s", resp.Results.ResultDescription)
 }
 

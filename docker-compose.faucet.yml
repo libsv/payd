@@ -8,7 +8,7 @@ services:
       LOG_LEVEL: "info"
       DPP_HOST: "wss://faucet.bitcoinsv.io/dpp/ws"
       MAPI_CALLBACK_HOST: "http://faucet.bitcoinsv.io/dpp"
-      PEERCHANNELS_HOST: "faucet.bitcoinsv.io/peerchannels"
+      PEERCHANNELS_HOST: 'faucet.bitcoinsv.io/peerchannels'
       WALLET_SPVREQUIRED: 'false'
     volumes:
       - ./run/regtest/payd:/paydb

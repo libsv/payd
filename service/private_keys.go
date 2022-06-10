@@ -26,7 +26,7 @@ func NewPrivateKeys(store payd.PrivateKeyReaderWriter, useMainNet bool) *private
 	}
 }
 
-// Create creates a extended private key for a keyName.
+// Create creates an extended private key for a keyName.
 func (svc *privateKey) Create(ctx context.Context, keyName string, userID uint64) error { // get keyname from settings in caller
 	key, err := svc.store.PrivateKey(ctx, payd.KeyArgs{Name: keyName, UserID: userID})
 	if err != nil {
