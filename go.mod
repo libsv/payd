@@ -10,7 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/libsv/go-bk v0.1.6
-	github.com/libsv/go-bt/v2 v2.1.0-beta.2
+	github.com/libsv/go-bt/v2 v2.1.0-beta.4
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/pkg/errors v0.9.1
