@@ -55,7 +55,7 @@ func (p *dppClient) PaymentSend(ctx context.Context, args payd.PayRequest, req d
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, args.PayToURL+"/", bytes.NewBuffer(bb))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, args.PayToURL, bytes.NewBuffer(bb))
 	if err != nil {
 		return nil, err
 	}

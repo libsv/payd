@@ -111,12 +111,15 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 	in := make(chan bool)
 
 	go func() {
-		if _, _, err := sub.Conn.ReadMessage(); err != nil {
-			log.Error().Err(errors.WithStack(err))
-		}
+		for {
+			if _, _, err := sub.Conn.ReadMessage(); err != nil {
+				log.Error().Err(errors.WithStack(err))
+				return
+			}
 
-		log.Debug().Msgf("message received on channel %s", sub.ChannelID)
-		in <- true
+			log.Debug().Msgf("message received on channel %s", sub.ChannelID)
+			in <- true
+		}
 	}()
 
 	for {
