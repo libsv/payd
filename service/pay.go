@@ -129,7 +129,7 @@ func (p *pay) Pay(ctx context.Context, req payd.PayRequest) (*dpp.PaymentACK, er
 		},
 	})
 	if err != nil {
-		if e := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); err != nil {
+		if e := p.txWtr.TransactionUpdateState(ctx, payd.TransactionArgs{TxID: env.TxID}, payd.TransactionStateUpdate{State: payd.StateTxFailed}); e != nil {
 			log.Error().Err(errors.Wrap(e, "failed to update tx after failed broadcast"))
 		}
 		return nil, errors.Wrapf(err, "failed to send payment %s", req.PayToURL)

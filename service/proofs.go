@@ -8,8 +8,8 @@ import (
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-dpp"
 	"github.com/libsv/go-spvchannels"
+	"github.com/libsv/payd/log"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 	validator "github.com/theflyingcodr/govalidator"
 
 	"github.com/libsv/payd"
@@ -17,12 +17,14 @@ import (
 
 type proofs struct {
 	wtr payd.ProofsWriter
+	l   log.Logger
 }
 
 // NewProofsService will setup and return a new merkle proof service.
-func NewProofsService(wtr payd.ProofsWriter) *proofs {
+func NewProofsService(wtr payd.ProofsWriter, l log.Logger) *proofs {
 	return &proofs{
 		wtr: wtr,
+		l:   l,
 	}
 }
 
@@ -51,7 +53,9 @@ func (p *proofs) Create(ctx context.Context, args dpp.ProofCreateArgs, req envel
 }
 
 func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels.MessagesReply) (bool, error) {
+	p.l.Debugf("handling peer channel messages %d", len(msgs))
 	for _, msg := range msgs {
+		p.l.Debugf("handling peer channel message %+v", msg.Received)
 		payload, err := base64.StdEncoding.DecodeString(msg.Payload)
 		if err != nil {
 			return false, errors.Wrap(err, "error decoding payload")
@@ -60,23 +64,24 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 		if err := json.Unmarshal(payload, &env); err != nil {
 			return false, errors.Wrap(err, "error unmarshalling json envelope")
 		}
-
+		p.l.Debugf("handling peer channel message - decoded envelope")
 		mm := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(env.Payload), &mm); err != nil {
 			return false, errors.Wrap(err, "error unmarshalling payload")
 		}
 
 		if mm["callbackReason"].(string) != "merkleProof" {
-			log.Debug().Msgf("skipping msg %#v", msg)
+			p.l.Debugf("skipping msg %#v", msg)
 			continue
 		}
-
+		p.l.Debugf("handling peer channel message - proof received")
 		txID := mm["callbackTxId"].(string)
 		if err := p.Create(ctx, dpp.ProofCreateArgs{
 			TxID: txID,
 		}, env); err != nil {
 			return false, errors.Wrap(err, "failed to store proof msg")
 		}
+		p.l.Debugf("handling peer channel message - stored")
 	}
 	return false, nil
 }

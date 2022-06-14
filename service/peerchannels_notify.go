@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/libsv/go-spvchannels"
 	"github.com/libsv/payd"
 	"github.com/libsv/payd/config"
 	"github.com/pkg/errors"
@@ -47,10 +48,13 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 		channel.CreatedAt = time.Now()
 	}
 
-	log.Debug().Msgf("subscribing to channel %s with token %s at %s%s", channel.ID, channel.Token, channel.Host, channel.Path)
-
+	log.Debug().Msgf("subscribing to channel %s with token %s at %s/%s", channel.ID, channel.Token, channel.Host, channel.Path)
+	scheme := "ws"
+	if p.cfg.TLS {
+		scheme = "wss"
+	}
 	u := url.URL{
-		Scheme: "ws",
+		Scheme: scheme,
 		Host:   channel.Host,
 		Path:   path.Join(channel.Path, "/api/v1/channel", channel.ID, "/notify"),
 	}
@@ -127,20 +131,36 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 }
 
 func (p *peerChannelsNotifySvc) handleNotification(ctx context.Context, sub *payd.PeerChannelSubscription, cancel context.CancelFunc) error {
-	msgs, err := p.pcSvc.PeerChannelsMessage(ctx, &payd.PeerChannelMessageArgs{
-		ChannelID: sub.ChannelID,
-		Host:      sub.Host,
-		Path:      sub.Path,
-		Token:     sub.Token,
-	})
-	if err != nil {
-		log.Error().Err(errors.WithStack(err))
-		return err
+	msgs := spvchannels.MessagesReply{}
+	for i := 0; i < 6; i++ { // give a few attempts to get the message
+		log.Debug().Msgf("channel %s trying %d time", sub.ChannelID, i)
+		mm, err := p.pcSvc.PeerChannelsMessage(ctx, &payd.PeerChannelMessageArgs{
+			ChannelID: sub.ChannelID,
+			Host:      sub.Host,
+			Path:      sub.Path,
+			Token:     sub.Token,
+		})
+		if err != nil {
+			log.Error().Err(errors.WithStack(err))
+			return err
+		}
+		if len(mm) > 0 {
+			log.Debug().Msgf("channel %s got message on %d time", sub.ChannelID, i)
+			msgs = mm
+			break
+		}
+		time.Sleep(10 * time.Second)
 	}
-
+	if len(msgs) == 0 {
+		log.Warn().Msgf("channel %s fetched no messages", sub.ChannelID)
+		return nil
+	}
 	log.Debug().Msgf("channel %s fetched messages: %#v", sub.ChannelID, msgs)
 
 	hdlr := p.handlers[sub.ChannelType]
+	if hdlr == nil {
+		return errors.Errorf("no handler found for channel type %s", sub.ChannelType)
+	}
 	finished, err := hdlr.HandlePeerChannelsMessage(ctx, msgs)
 	if err != nil {
 		log.Error().Err(errors.WithStack(err))

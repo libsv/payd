@@ -5,11 +5,18 @@ services:
     container_name: payd
     image: local.payd
     environment:
-      LOG_LEVEL: "info"
+      DB_DSN: "file:paydb/wallet.db?_foreign_keys=true&pooling=true"
+      DB_SCHEMA_PATH: "migrations"
+      LOG_LEVEL: "debug"
       DPP_HOST: "wss://faucet.bitcoinsv.io/dpp/ws"
       MAPI_CALLBACK_HOST: "http://faucet.bitcoinsv.io/dpp"
-      PEERCHANNELS_HOST: 'faucet.bitcoinsv.io/peerchannels'
-      WALLET_SPVREQUIRED: 'false'
+      MAPI_MINERURL: "https://mapi.taal.com"
+      MAPI_TOKEN: "Bearer testnet_27986b25bffa600482251a19e984f04d"
+      MAPI_MINERNAME: "taal"
+      PEERCHANNELS_HOST: "faucet.bitcoinsv.io"
+      PEERCHANNELS_PATH: "peerchannels"
+      PEERCHANNELS_TLS: 'true'
+      WALLET_SPVREQUIRED: 'true'
     volumes:
       - ./run/regtest/payd:/paydb
 
