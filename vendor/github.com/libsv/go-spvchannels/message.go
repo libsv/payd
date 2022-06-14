@@ -129,6 +129,7 @@ func (c *Client) Messages(ctx context.Context, r MessagesRequest) (MessagesReply
 	q := req.URL.Query()
 	q.Add("unread", fmt.Sprintf("%t", r.UnRead))
 	req.URL.RawQuery = q.Encode()
+
 	res := MessagesReply{}
 	if err := c.sendRequest(req, &res); err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 	"github.com/libsv/go-bc"
 	"github.com/libsv/go-bk/envelope"
 	"github.com/libsv/go-dpp"
+	"github.com/libsv/payd/log"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/libsv/payd/mocks"
@@ -260,7 +261,7 @@ func Test_Proofs_create(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			mockProofWrtr := &mocks.ProofsWriterMock{ProofCreateFunc: test.proofsCreateFn}
-			err := NewProofsService(mockProofWrtr).Create(context.Background(), test.args, test.req)
+			err := NewProofsService(mockProofWrtr, log.Noop{}).Create(context.Background(), test.args, test.req)
 			if test.err != nil {
 				assert.Error(t, err)
 				assert.EqualError(t, err, test.err.Error())
