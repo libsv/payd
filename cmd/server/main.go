@@ -100,13 +100,19 @@ func main() {
 		log.Fatal(err, "failed to create health checks")
 	}
 
-	if err := internal.ResumeActiveChannels(deps); err != nil {
-		log.Fatal(err, "failed to resume active peer channels")
-	}
+	go func() {
+		for {
+			if err := internal.ResumeActiveChannels(deps); err != nil {
+				log.Fatal(err, "failed to resume active peer channels")
+			}
+			// retry channels we are waiting on in case the proof hasn't been received
+			// from the peer channel.
+			time.Sleep(30 * time.Minute)
+		}
+	}()
 	if err := internal.ResumeSocketConnections(deps, cfg.DPP); err != nil {
 		log.Error(err, "failed to reconnect invoices with dpp")
 	}
-
 	if cfg.Deployment.IsDev() {
 		internal.PrintDev(e)
 	}
