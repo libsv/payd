@@ -250,7 +250,7 @@ github.com/swaggo/echo-swagger
 # github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 ## explicit; go 1.15
 github.com/swaggo/files
-# github.com/swaggo/swag v1.8.2
+# github.com/swaggo/swag v1.8.3
 ## explicit; go 1.18
 github.com/swaggo/swag
 # github.com/theflyingcodr/govalidator v0.1.3
