@@ -43,6 +43,7 @@ const (
 	EnvTransportSocketsEnabled  = "transport.sockets.enabled"
 	EnvPeerChannelsHost         = "peerchannels.host"
 	EnvPeerChannelsPath         = "peerchannels.path"
+	EnvPeerChannelsTLS          = "peerchannels.tls"
 	EnvPeerChannelsTTL          = "peerchannels.ttl.minutes"
 
 	LogDebug = "debug"
@@ -173,6 +174,8 @@ type PeerChannels struct {
 	Path string
 	// TTL the life of the peer channel.
 	TTL time.Duration
+	// TLS if true will enable https / wss.
+	TLS bool
 }
 
 // DPP contains information relating to a DPP interactions.

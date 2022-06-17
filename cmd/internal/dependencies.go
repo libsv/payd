@@ -49,7 +49,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 		l.Fatal(err, "failed to setup mapi client")
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	proofSvc := service.NewProofsService(sqlLiteStore)
+	proofSvc := service.NewProofsService(sqlLiteStore, l)
 
 	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels, &paydSQL.Transacter{})
 	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
@@ -77,7 +77,7 @@ func SetupRestDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Clie
 	).Register(
 		service.NewPayChannel(dsoc.NewPaymentChannel(*cfg.Socket, c)), "ws", "wss",
 	)
-	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
+	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore, l)
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.DPP, c), invoiceSvc, cfg.DPP)
@@ -137,7 +137,7 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 		l.Fatal(err, "failed to setup mapi client")
 	}
 	sqlLiteStore := paydSQL.NewSQLiteStore(db)
-	proofSvc := service.NewProofsService(sqlLiteStore)
+	proofSvc := service.NewProofsService(sqlLiteStore, l)
 	pcSvc := service.NewPeerChannelsSvc(sqlLiteStore, cfg.PeerChannels, &paydSQL.Transacter{})
 	pcNotifSvc := service.NewPeerChannelsNotifyService(cfg.PeerChannels, pcSvc)
 	pcNotifSvc.RegisterHandler(payd.PeerChannelHandlerTypeProof, proofSvc)
@@ -164,7 +164,7 @@ func SetupSocketDeps(cfg *config.Config, l log.Logger, db *sqlx.DB, c *client.Cl
 	invoiceSvc := service.NewInvoice(cfg.Server, cfg.Wallet, sqlLiteStore, destSvc, &paydSQL.Transacter{}, service.NewTimestampService())
 	balanceSvc := service.NewBalance(sqlLiteStore)
 	ownerSvc := service.NewOwnerService(sqlLiteStore)
-	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore)
+	paymentReqSvc := service.NewPaymentRequest(cfg.Wallet, destSvc, mapiStore, sqlLiteStore, sqlLiteStore, l)
 	connectService := service.NewConnect(dsoc.NewConnect(cfg.DPP, c), invoiceSvc, cfg.DPP)
 	invoiceSvc.SetConnectionService(connectService)
 	transactionService := service.NewTransactions(&paydSQL.Transacter{}, sqlLiteStore, sqlLiteStore, sqlLiteStore)

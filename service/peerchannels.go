@@ -26,13 +26,18 @@ func NewPeerChannelsSvc(str payd.PeerChannelsStore, cfg *config.PeerChannels, tr
 }
 
 func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels.ChannelCreateRequest) (*payd.PeerChannel, error) {
-	c := spvchannels.NewClient(
+	opts := []spvchannels.SPVConfigFunc{
 		spvchannels.WithUser("username"),
 		spvchannels.WithPassword("password"),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(p.cfg.Host),
 		spvchannels.WithPath(p.cfg.Path),
-		spvchannels.WithNoTLS(),
+	}
+	if !p.cfg.TLS {
+		opts = append(opts, spvchannels.WithNoTLS())
+	}
+	c := spvchannels.NewClient(
+		opts...,
 	)
 	ch, err := c.ChannelCreate(ctx, req)
 	if err != nil {
@@ -60,13 +65,18 @@ func (p *peerChannelsSvc) PeerChannelCreate(ctx context.Context, req spvchannels
 }
 
 func (p peerChannelsSvc) PeerChannelAPITokensCreate(ctx context.Context, reqs ...*payd.PeerChannelAPITokenCreateArgs) ([]*spvchannels.TokenCreateReply, error) {
-	c := spvchannels.NewClient(
+	opts := []spvchannels.SPVConfigFunc{
 		spvchannels.WithUser("username"),
 		spvchannels.WithPassword("password"),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(p.cfg.Host),
 		spvchannels.WithPath(p.cfg.Path),
-		spvchannels.WithNoTLS(),
+	}
+	if !p.cfg.TLS {
+		opts = append(opts, spvchannels.WithNoTLS())
+	}
+	c := spvchannels.NewClient(
+		opts...,
 	)
 	tokens := make([]*spvchannels.TokenCreateReply, 0)
 	for _, req := range reqs {
@@ -93,13 +103,18 @@ func (p peerChannelsSvc) PeerChannelAPITokensCreate(ctx context.Context, reqs ..
 }
 
 func (p *peerChannelsSvc) PeerChannelsMessage(ctx context.Context, args *payd.PeerChannelMessageArgs) (spvchannels.MessagesReply, error) {
-	c := spvchannels.NewClient(
+	opts := []spvchannels.SPVConfigFunc{
 		spvchannels.WithToken(args.Token),
 		spvchannels.WithChannelID(args.ChannelID),
 		spvchannels.WithVersion("v1"),
 		spvchannels.WithBaseURL(args.Host),
 		spvchannels.WithPath(args.Path),
-		spvchannels.WithNoTLS(),
+	}
+	if !p.cfg.TLS {
+		opts = append(opts, spvchannels.WithNoTLS())
+	}
+	c := spvchannels.NewClient(
+		opts...,
 	)
 	msgs, err := c.Messages(ctx, spvchannels.MessagesRequest{
 		ChannelID: args.ChannelID,

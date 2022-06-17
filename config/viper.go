@@ -124,6 +124,7 @@ func (v *ViperConfig) WithPeerChannels() ConfigurationLoader {
 	v.PeerChannels = &PeerChannels{
 		Host: viper.GetString(EnvPeerChannelsHost),
 		Path: viper.GetString(EnvPeerChannelsPath),
+		TLS:  viper.GetBool(EnvPeerChannelsTLS),
 		TTL:  time.Duration(viper.GetInt64(EnvPeerChannelsTTL)) * time.Minute,
 	}
 	return v

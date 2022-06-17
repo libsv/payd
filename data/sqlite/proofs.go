@@ -26,10 +26,13 @@ const (
 
 // ProofsCreate will insert a proof to the database.
 func (s *sqliteStore) ProofCreate(ctx context.Context, req dpp.ProofWrapper) error {
-	tx, err := s.db.BeginTxx(ctx, nil)
+	tx, err := s.newTx(ctx)
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	defer func() {
+		_ = rollback(ctx, tx)
+	}()
 	bb, err := json.Marshal(req.CallbackPayload)
 	if err != nil {
 		return errors.WithStack(err)
@@ -54,7 +57,7 @@ func (s *sqliteStore) ProofCreate(ctx context.Context, req dpp.ProofWrapper) err
 	if rows <= 0 {
 		return errors.Wrap(err, "no rows affected when creating proof")
 	}
-	return errors.WithStack(tx.Commit())
+	return errors.WithStack(commit(ctx, tx))
 }
 
 // MerkleProof will retrieve a proof.

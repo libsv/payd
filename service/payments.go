@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"path"
 	"time"
 
@@ -67,27 +68,33 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	defer func() {
 		_ = p.transacter.Rollback(ctx)
 	}()
+	p.l.Debugf("checking invoice for payment %s", args.InvoiceID)
 	// Check tx pays enough to cover invoice and that invoice hasn't been paid already
 	inv, err := p.invRdr.Invoice(ctx, payd.InvoiceArgs{InvoiceID: args.InvoiceID})
 	if err != nil || inv.State == "" {
 		return nil, errors.Wrapf(err, "failed to get invoice with ID '%s'", args.InvoiceID)
 	}
 	if inv.State != payd.StateInvoicePending {
+		p.l.Debugf("invoice for payment %s is a duplicate", args.InvoiceID)
 		return nil, errs.NewErrDuplicate("D001", fmt.Sprintf("payment already received for invoice ID '%s'", args.InvoiceID))
 	}
 	if !inv.ExpiresAt.ValueOrZero().IsZero() && inv.ExpiresAt.Time.Before(time.Now().UTC()) {
+		p.l.Debugf("invoice for payment %s has expired", args.InvoiceID)
 		return nil, errs.NewErrUnprocessable("E001", "invoice you are attempting to pay has expired")
 	}
+	p.l.Debugf("getting fee quote for payment %s", args.InvoiceID)
 	fq, err := p.feeRdr.FeeQuote(ctx, args.InvoiceID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read fees for payment with id %s", args.InvoiceID)
 	}
 	if fq.Expired() {
+		p.l.Debugf("fee quote for payment %s has expired", args.InvoiceID)
 		return nil, errs.NewErrUnprocessable("E001", "fee quote has expired, please make a new payment request")
 	}
 
 	tx, err := bt.NewTxFromString(*req.RawTx)
 	if err != nil {
+		p.l.Debugf("tx supplied is invalid for payment %s", args.InvoiceID)
 		return nil, errors.Wrap(err, "failed to parse tx")
 	}
 
@@ -100,8 +107,10 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	if inv.SPVRequired {
+		p.l.Debugf("spv required for payment %s", args.InvoiceID)
 		tx, err = p.paymentVerify.VerifyPayment(ctx, tx, ancestors, p.paymentVerifyOpts(inv.SPVRequired, fq)...)
 		if err != nil {
+			p.l.Debugf("error when verify payment for payment %s: %s", args.InvoiceID, err)
 			if errors.Is(err, spv.ErrFeePaidNotEnough) {
 				return nil, validator.ErrValidation{
 					"fees": {
@@ -119,6 +128,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	// get destinations
+	p.l.Debugf("getting destination for payment %s", args.InvoiceID)
 	oo, err := p.destRdr.Destinations(ctx, payd.DestinationsArgs{InvoiceID: args.InvoiceID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get destinations with ID '%s'", args.InvoiceID)
@@ -133,6 +143,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	// get total of outputs that we know about
 	txID := tx.TxID()
 	// TODO: simple dust limit check
+	p.l.Debugf("dust limit check for payment %s", args.InvoiceID)
 	for i, o := range tx.Outputs {
 		if output, ok := outputs[o.LockingScript.String()]; ok {
 			if o.Satoshis != output.Satoshis {
@@ -155,6 +166,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 	// fail if tx doesn't pay invoice in full
 	if total < inv.Satoshis {
+		p.l.Debugf("tx doesn't pay invoice in full for payment %s", args.InvoiceID)
 		return nil, validator.ErrValidation{
 			"transaction": {
 				"tx does not pay enough to cover invoice, ensure all outputs are included, the correct destinations are used and try again",
@@ -162,6 +174,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 	}
 	if len(outputs) > 0 {
+		p.l.Debugf("not all destinations supplied for payment %s", args.InvoiceID)
 		return nil, validator.ErrValidation{
 			"tx.outputs": {
 				fmt.Sprintf("expected '%d' outputs, received '%d', ensure all destinations are supplied", len(oo), len(tx.Outputs)),
@@ -169,6 +182,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		}
 	}
 	// Store tx
+	p.l.Debugf("storing transaction for payment %s", args.InvoiceID)
 	if err := p.txWtr.TransactionCreate(ctx, payd.TransactionCreate{
 		InvoiceID: args.InvoiceID,
 		TxID:      txID,
@@ -180,6 +194,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 	}
 
 	// Create peer channel for merkle proof.
+	p.l.Debugf("creating peer channel for payment %s", args.InvoiceID)
 	ch, err := p.pcSvc.PeerChannelCreate(ctx, spvchannels.ChannelCreateRequest{
 		AccountID:   1,
 		PublicWrite: true,
@@ -195,6 +210,7 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 		return nil, err
 	}
 
+	p.l.Debugf("creating peer channel token for payment %s", args.InvoiceID)
 	tokens, err := p.pcSvc.PeerChannelAPITokensCreate(ctx, &payd.PeerChannelAPITokenCreateArgs{
 		Role:    "mapi",
 		Persist: false,
@@ -231,15 +247,26 @@ func (p *payments) PaymentCreate(ctx context.Context, args payd.PaymentCreateArg
 
 	// Store callbacks if we have any
 	if len(req.ProofCallbacks) > 0 {
+		p.l.Debugf("creating proof callbacks for payment %s", args.InvoiceID)
 		if err := p.callbackWtr.ProofCallBacksCreate(ctx, payd.ProofCallbackArgs{InvoiceID: args.InvoiceID}, req.ProofCallbacks); err != nil {
 			return nil, errors.Wrapf(err, "failed to store proof callbacks for invoiceID '%s'", args.InvoiceID)
 		}
 	}
 
 	// Broadcast the transaction
+	p.l.Debugf("creating peer channel for payment %s", args.InvoiceID)
+	callbackScheme := "http"
+	if p.pCfg.TLS {
+		callbackScheme = "https"
+	}
+	callbackURL := url.URL{
+		Scheme: callbackScheme,
+		Host:   p.pCfg.Host,
+		Path:   path.Join(p.pCfg.Path, "/api/v1/channel/", ch.ID),
+	}
 	if err := p.broadcaster.Broadcast(ctx, payd.BroadcastArgs{
 		InvoiceID:   inv.ID,
-		CallbackURL: fmt.Sprintf("http://%s%s", p.pCfg.Host, path.Join(p.pCfg.Path, "/api/v1/channel/", ch.ID)),
+		CallbackURL: callbackURL.String(),
 		Token:       "Bearer " + tokens[0].Token,
 	}, tx); err != nil {
 		// set as failed
