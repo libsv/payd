@@ -16,7 +16,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.3
+	github.com/stretchr/testify v1.7.4
 	github.com/swaggo/echo-swagger v1.3.3
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/swaggo/swag v1.8.3
