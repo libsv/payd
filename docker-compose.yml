@@ -19,7 +19,7 @@ services:
     volumes:
       - payd-data:/paydb
     ports:
-      - "8443:8443"
+      - "127.0.0.1:8443:8443"
     networks:
       - regtest-stack
 
@@ -43,7 +43,7 @@ services:
     volumes:
       - merchant-data:/paydb
     ports:
-      - "28443:28443"
+      - "127.0.0.1:28443:28443"
     networks:
       - regtest-stack
 
