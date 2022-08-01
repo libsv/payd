@@ -131,7 +131,7 @@ func SetupHealthEndpoint(cfg config.Config, g *echo.Group, c *client.Client, dep
 }
 
 // ResumeActiveChannels resume listening to active peer channels.
-func ResumeActiveChannels(deps *SocketDeps) error {
+func ResumeActiveChannels(deps *SocketDeps, l log.Logger) error {
 	ctx := context.Background()
 	channels, err := deps.PeerChannelsService.ActiveProofChannels(ctx)
 	if err != nil {
@@ -141,7 +141,7 @@ func ResumeActiveChannels(deps *SocketDeps) error {
 	for _, channel := range channels {
 		ch := channel
 		if err := deps.PeerChannelsNotifyService.Subscribe(ctx, &ch); err != nil {
-			return err
+			l.Errorf(err, "failed to re-subscribe to channel %s", ch.ID)
 		}
 	}
 
