@@ -1,4 +1,4 @@
-FROM golang:1.17.1-buster as builder
+FROM golang:1.18.4-buster as builder
 
 # Create appuser.
 ENV USER=appuser
