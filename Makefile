@@ -47,35 +47,32 @@ go-doc-linux:
 	@xdg-open http://localhost:6060 && \
 	godoc -http=:6060
 
-create-pc-account:
-	@docker exec peerchannels ./SPVChannels.API.Rest -createaccount admin username password 2>/dev/null || true
-
-run-compose: create-pc-account
+run-compose:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up
 
-run-compose-d: create-pc-account
+run-compose-d:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml  up -d
 
-run-compose-dev: create-pc-account
+run-compose-dev:
 	@docker-compose -f docker-compose.yml  -f docker-compose.dev.yml up
 
-run-compose-local: create-pc-account
+run-compose-dev-d:
+	@docker-compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up -d
+
+run-compose-local:
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up
 
-run-compose-faucet: create-pc-account
-	@docker-compose -f docker-compose.yml  -f docker-compose.faucet.yml up
-
-run-compose-local-d: create-pc-account
+run-compose-local-d:
 	@docker-compose -f docker-compose.yml  -f docker-compose.local.yml up -d
 
-run-compose-testnet: create-pc-account
+run-compose-faucet:
+	@docker-compose -f docker-compose.yml  -f docker-compose.faucet.yml up
+
+run-compose-testnet:
 	@docker-compose -f docker-compose.yml  -f docker-compose.testnet.yml up
 
 build-image:
 	@docker-compose -f docker-compose.yml -f docker-compose.build.yml build
-
-run-compose-dev-d: create-pc-account
-	@docker-compose -f docker-compose.yml -f docker-compose.build.yml -f docker-compose.dev.yml up -d
 
 stop-compose:
 	@docker-compose down
