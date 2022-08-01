@@ -6,7 +6,6 @@ services:
     image: local.payd
     environment:
       DB_DSN: "file:paydb/wallet.db?_foreign_keys=true&pooling=true"
-      DB_SCHEMA_PATH: "migrations"
       LOG_LEVEL: "debug"
       DPP_HOST: "wss://faucet.bitcoinsv.io/dpp/ws"
       MAPI_CALLBACK_HOST: "http://faucet.bitcoinsv.io/dpp"

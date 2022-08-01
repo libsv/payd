@@ -65,6 +65,7 @@ VOLUME /paydb
 
 USER appuser:appuser
 
+ENV DB_SCHEMA_PATH=/migrations
 EXPOSE 8443
 
 CMD ["server"]
