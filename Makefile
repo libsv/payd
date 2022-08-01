@@ -31,7 +31,7 @@ create-alias:
 	@go run -race main.go create $(alias)
 
 install-linter:
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)bin v1.44.2
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)bin v1.47.3
 
 install-swagger-gen:
 	@go get -d github.com/swaggo/swag/cmd/swag

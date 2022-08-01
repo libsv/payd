@@ -96,7 +96,7 @@ func (p *peerChannelsNotifySvc) Subscribe(ctx context.Context, channel *payd.Pee
 		p.subscriptions[channel.ID] = &sub
 	}()
 
-	go p.listen(lCtx, &sub, cancel)
+	go p.listen(lCtx, &sub, cancel) //nolint:contextcheck // new context needed
 	return nil
 }
 
@@ -125,10 +125,10 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 	for {
 		select {
 		case <-ctx.Done():
-			log.Error().Err(p.pcSvc.CloseChannel(context.Background(), sub.ChannelID))
+			log.Error().Err(p.pcSvc.CloseChannel(context.Background(), sub.ChannelID)) //nolint:contextcheck // new context needed
 			return
 		case <-in:
-			log.Error().Err(errors.WithStack(p.handleNotification(context.Background(), sub, cancel)))
+			log.Error().Err(errors.WithStack(p.handleNotification(context.Background(), sub, cancel))) //nolint:contextcheck // new context needed
 		}
 	}
 }
