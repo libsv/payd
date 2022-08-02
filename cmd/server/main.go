@@ -102,7 +102,7 @@ func main() {
 
 	go func() {
 		for {
-			if err := internal.ResumeActiveChannels(deps); err != nil {
+			if err := internal.ResumeActiveChannels(deps, log); err != nil {
 				log.Fatal(err, "failed to resume active peer channels")
 			}
 			// retry channels we are waiting on in case the proof hasn't been received
