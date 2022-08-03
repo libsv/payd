@@ -83,5 +83,5 @@ func (p *proofs) HandlePeerChannelsMessage(ctx context.Context, msgs spvchannels
 		}
 		p.l.Debugf("handling peer channel message - stored")
 	}
-	return false, nil
+	return true, nil
 }

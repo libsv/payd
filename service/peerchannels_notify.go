@@ -121,7 +121,6 @@ func (p *peerChannelsNotifySvc) listen(ctx context.Context, sub *payd.PeerChanne
 			in <- true
 		}
 	}()
-
 	for {
 		select {
 		case <-ctx.Done():
