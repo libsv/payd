@@ -76,7 +76,7 @@ func (v *ViperConfig) WithHeadersClient() ConfigurationLoader {
 func (v *ViperConfig) WithWallet() ConfigurationLoader {
 	v.Wallet = &Wallet{
 		Network:             NetworkType(viper.GetString(EnvNetwork)),
-		SPVRequired:         viper.GetBool(EnvWalletSpvRequired),
+		SPVRequired:         false, // disabled for now until new proof method is available viper.GetBool(EnvWalletSpvRequired),
 		PaymentExpiryHours:  viper.GetInt64(EnvPaymentExpiry),
 		PayoutLimitEnabled:  viper.GetBool(EnvWalletPayoutLimitEnabled),
 		PayoutLimitSatoshis: viper.GetUint64(EnvWalletPayoutLimitSats),

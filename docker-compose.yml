@@ -3,7 +3,7 @@ version: "3.7"
 services:
   payd:
     container_name: payd
-    image: libsv/payd:0.1.11
+    image: libsv/payd:0.1.13
     environment:
       DB_DSN: "file:paydb/wallet.db?_foreign_keys=true&pooling=true"
       LOG_LEVEL: "info"
@@ -24,7 +24,7 @@ services:
 
   payd-merchant:
     container_name: payd-merchant
-    image: libsv/payd:0.1.11
+    image: libsv/payd:0.1.13
     environment:
       DB_DSN: "file:paydb/merchant-wallet.db?_foreign_keys=true&pooling=true"
       SERVER_HOST: payd-merchant:28443
