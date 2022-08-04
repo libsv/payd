@@ -175,7 +175,7 @@ CREATE TABLE proof_callbacks(
 
 INSERT INTO users(user_id, name, is_owner, avatar_url, email, address, phone_number)
 VALUES(0, 'Userless', 0, '', 'user@example.com', '123 Street Fake', '123456789'),
-      (1, 'BitcoinSV LiteClient', 1, 'https://bitcoinassociation.net/wp-content/uploads/2019/01/BSV_640x320px.png', 'lct@bitcoinsv.io', '1 BSV Avenue', '0800-123-456');
+      (1, 'BitcoinSV LiteClient', 1, 'https://bitcoinassociation.net/wp-content/uploads/2019/09/2-bsv-logo-engtag-full.png', 'https://discord.gg/bsv', '1 BSV Avenue', '0800-123-456');
 
 INSERT INTO users_meta(user_id, key, value)
 VALUES(1, 'example key 1', 'example value 1'),
