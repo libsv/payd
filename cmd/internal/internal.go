@@ -21,6 +21,8 @@ import (
 	paydMiddleware "github.com/libsv/payd/transports/http/middleware"
 	tsoc "github.com/libsv/payd/transports/sockets"
 	socMiddleware "github.com/libsv/payd/transports/sockets/middleware"
+
+	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -47,6 +49,8 @@ func SetupEcho(cfg *config.Config, l log.Logger) *echo.Echo {
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
+	p := prometheus.NewPrometheus("payd", nil)
+	p.Use(e)
 	e.HTTPErrorHandler = paydMiddleware.ErrorHandler(l)
 	return e
 }
