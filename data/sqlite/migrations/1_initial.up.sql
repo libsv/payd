@@ -174,12 +174,12 @@ CREATE TABLE proof_callbacks(
 );
 
 INSERT INTO users(user_id, name, is_owner, avatar_url, email, address, phone_number)
-VALUES(0, 'Userless', 0, '', 'user@less.com', '123 Street Fake', '123456789'),
-      (1, 'Epictetus', 1, 'https://thispersondoesnotexist.com/image', 'epic@nchain.com', '1 Athens Avenue', '0800-call-me');
+VALUES(0, 'Userless', 0, '', 'user@example.com', '123 Street Fake', '123456789'),
+      (1, 'BitcoinSV LiteClient', 1, 'https://bitcoinassociation.net/wp-content/uploads/2019/09/2-bsv-logo-engtag-full.png', 'https://discord.gg/bsv', '1 BSV Avenue', '0800-123-456');
 
 INSERT INTO users_meta(user_id, key, value)
-VALUES(1, 'likes', 'Stoicism & placeholder data'),
-      (1, 'dislikes', 'Malfeasance');
+VALUES(1, 'example key 1', 'example value 1'),
+      (1, 'example key 2', 'example value 2');
 
 INSERT INTO users_peerchannels(user_id, account_id, user_name, password)
 VALUES(0, 0, '', ''), -- userless, for receiving change proofs
