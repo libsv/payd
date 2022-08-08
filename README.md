@@ -89,7 +89,57 @@ Some of the more common commands are listed below:
 
 `make build-image` - builds a local docker image, useful when testing PayD in docker.
 
-`make run-compose` - runs PayD in compose.
+`make run-compose` - runs PayD in compose using the latest available image.
+
+`make run-compose-faucet` - runs a local payD instance that connects to the infra.bitcoinsv.io dpp proxy. Used to receive funds from faucet.bitcoinsv.io.
+
+`make run-compose-local` - will run payd and use a local image built using the above `make build-image` command.
+
+## Using the Faucet
+
+There is a testnet 'faucet' setup at faucet.bitcoinsv.io that can be used to get funds from. 
+
+Because of the new invoice based payments system, this can send funds to any wallet that also supports invoice based payments.
+
+To get funds, simply run `make run-compose-faucet`. This will run a local payd instance and connect it to the faucet infrastructure.
+
+Next, send the following call to your local payd instance:
+
+```curl
+curl --location --request POST 'http://localhost:8443/api/v1/invoices' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data-raw '{
+    "satoshis":1000
+}'
+```
+
+This will create an invoice and also connect your payd to the faucet dpp server which orchestrates the payments.
+
+You will get a response back like this:
+
+```json
+{
+    "createdAt": "2022-08-03T12:41:57.967516Z",
+    "deletedAt": null,
+    "description": null,
+    "expiresAt": "2022-08-04T12:41:57.967516Z",
+    "id": "DBVb00g",
+    "paymentReceivedAt": null,
+    "reference": null,
+    "refundTo": null,
+    "refundedAt": null,
+    "satoshis": 200,
+    "state": "pending",
+    "updatedAt": "2022-08-03T12:41:57Z"
+}
+```
+
+Copy the "id" and then go to faucet.bitcoinsv.io, in the box for the URL enter `https://infra.bitcoinsv.io/dpp/api/v1/payment/DBVb00g` where the id at the end, is the id returned from the above call.
+
+Hit the Pay To URL button and the funds requested will be sent to your local wallet.
+
+For further information view the [Liteclient Documentation](https://docs.bitcoinsv.io/introduction/liteclient).
 
 ## Releases
 
