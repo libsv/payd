@@ -8,7 +8,7 @@
 [![Go](https://img.shields.io/github/go-mod/go-version/tonicpow/go-minercraft?v=1)](https://golang.org/)
 [![mAPI](https://img.shields.io/badge/mAPI-1.4.0-blue.svg)](https://github.com/bitcoin-sv-specs/brfc-merchantapi)
 <br>
-[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/tonicpow/go-minercraft&style=flat&v=1)](https://mergify.io)
+[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/tonicpow/go-minercraft&style=flat&v=1)](https://mergify.io)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&v=1)](https://gitpod.io/#https://github.com/tonicpow/go-minercraft)
 
 <br/>
@@ -129,7 +129,7 @@ vet                   Run the Go vet application
 
 ## Examples & Tests
 All unit tests and [examples](examples) run via [Github Actions](https://github.com/tonicpow/go-minercraft/actions) and
-uses [Go version 1.16.x](https://golang.org/doc/go1.16). View the [configuration file](.github/workflows/run-tests.yml).
+uses [Go version 1.17.x](https://golang.org/doc/go1.17). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script

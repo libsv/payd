@@ -76,13 +76,11 @@ func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs []Tra
 	})
 
 	if response.Error != nil {
-		return nil, err
+		return nil, response.Error
 	}
 
 	var raw RawSubmitTransactionsResponse
-	if err = json.Unmarshal(
-		response.BodyContents, &raw,
-	); err != nil {
+	if err = json.Unmarshal(response.BodyContents, &raw); err != nil {
 		return nil, err
 	}
 
@@ -93,9 +91,7 @@ func (c *Client) SubmitTransactions(ctx context.Context, miner *Miner, txs []Tra
 		MimeType:  raw.MimeType,
 	}
 
-	if err = json.Unmarshal(
-		[]byte(raw.Payload), &result.Payload,
-	); err != nil {
+	if err = json.Unmarshal([]byte(raw.Payload), &result.Payload); err != nil {
 		return nil, err
 	}
 
