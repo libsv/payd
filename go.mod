@@ -17,8 +17,8 @@ require (
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	github.com/swaggo/echo-swagger v1.3.3
-	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
+	github.com/swaggo/echo-swagger v1.3.4
+	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a // indirect
 	github.com/swaggo/swag v1.8.4
 	github.com/theflyingcodr/govalidator v0.1.3
 	github.com/theflyingcodr/lathos v0.0.6
