@@ -77,7 +77,7 @@ func handleExecRows(res sql.Result) error {
 	return nil
 }
 
-// nolint:deadcode,unused // wip
+//nolint:deadcode,unused // wip
 func dbErr(err error, errCode, message string) error {
 	if err == nil {
 		return nil
@@ -88,7 +88,7 @@ func dbErr(err error, errCode, message string) error {
 	return errors.WithMessage(err, message)
 }
 
-// nolint:deadcode,unused // wip
+//nolint:deadcode,unused // wip
 func dbErrf(err error, errCode, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
@@ -108,7 +108,7 @@ type db interface {
 
 type execKey int
 
-// nolint:gochecknoglobals // this variable is fine as it's used for context & is private
+//nolint:gochecknoglobals // this variable is fine as it's used for context & is private
 var exec execKey
 
 // Tx wraps the transaction used in context.

@@ -72,7 +72,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err, "failed to setup database")
 	}
-	// nolint:errcheck // dont care about error.
+	//nolint:errcheck // dont care about error.
 	defer db.Close()
 
 	e := internal.SetupEcho(cfg, log)
