@@ -12,7 +12,7 @@ require (
 	github.com/libsv/go-bk v0.1.6
 	github.com/libsv/go-bt/v2 v2.1.0-beta.2
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-sqlite3 v1.14.10
+	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pkg/errors v0.9.1
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/viper v1.12.0
