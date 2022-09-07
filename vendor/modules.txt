@@ -171,7 +171,7 @@ github.com/mitchellh/mapstructure
 # github.com/pelletier/go-toml v1.9.5
 ## explicit; go 1.12
 github.com/pelletier/go-toml
-# github.com/pelletier/go-toml/v2 v2.0.1
+# github.com/pelletier/go-toml/v2 v2.0.5
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/ast
@@ -224,7 +224,7 @@ github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.12.0
+# github.com/spf13/viper v1.13.0
 ## explicit; go 1.17
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
@@ -242,7 +242,7 @@ github.com/stretchr/objx
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
-# github.com/subosito/gotenv v1.3.0
+# github.com/subosito/gotenv v1.4.1
 ## explicit; go 1.18
 github.com/subosito/gotenv
 # github.com/swaggo/echo-swagger v1.3.3
@@ -353,7 +353,7 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/guregu/null.v3 v3.5.0
 ## explicit
 gopkg.in/guregu/null.v3
-# gopkg.in/ini.v1 v1.66.4
+# gopkg.in/ini.v1 v1.67.0
 ## explicit
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
