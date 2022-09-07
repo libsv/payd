@@ -14,15 +14,15 @@ import (
 	"github.com/gojektech/heimdall/v6/httpclient"
 )
 
-// httpInterface is used for the http client (mocking heimdall)
-type httpInterface interface {
+// HTTPInterface is used for the http client (mocking heimdall)
+type HTTPInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
 // Client is the parent struct that contains the miner clients and list of miners to use
 type Client struct {
-	httpClient httpInterface  // Interface for all HTTP requests
-	Miners     []*Miner       // List of loaded miners
+	httpClient HTTPInterface  // Interface for all HTTP requests
+	miners     []*Miner       // List of loaded miners
 	Options    *ClientOptions // Client options config
 }
 
@@ -62,16 +62,16 @@ func (c *Client) AddMiner(miner Miner) error {
 	miner.URL = parsedURL.String()
 
 	// Append the new miner
-	c.Miners = append(c.Miners, &miner)
+	c.miners = append(c.miners, &miner)
 	return nil
 }
 
 // RemoveMiner will remove a miner from the list
 func (c *Client) RemoveMiner(miner *Miner) bool {
-	for i, m := range c.Miners {
+	for i, m := range c.miners {
 		if m.Name == miner.Name || m.MinerID == miner.MinerID {
-			c.Miners[i] = c.Miners[len(c.Miners)-1]
-			c.Miners = c.Miners[:len(c.Miners)-1]
+			c.miners[i] = c.miners[len(c.miners)-1]
+			c.miners = c.miners[:len(c.miners)-1]
 			return true
 		}
 	}
@@ -81,9 +81,14 @@ func (c *Client) RemoveMiner(miner *Miner) bool {
 
 // MinerByName will return a miner given a name
 func (c *Client) MinerByName(name string) *Miner {
-	for index, miner := range c.Miners {
-		if strings.EqualFold(name, miner.Name) {
-			return c.Miners[index]
+	return MinerByName(c.miners, name)
+}
+
+// MinerByName will return a miner from a given set of miners
+func MinerByName(miners []*Miner, minerName string) *Miner {
+	for index, miner := range miners {
+		if strings.EqualFold(minerName, miner.Name) {
+			return miners[index]
 		}
 	}
 	return nil
@@ -91,9 +96,14 @@ func (c *Client) MinerByName(name string) *Miner {
 
 // MinerByID will return a miner given a miner id
 func (c *Client) MinerByID(minerID string) *Miner {
-	for index, miner := range c.Miners {
+	return MinerByID(c.miners, minerID)
+}
+
+// MinerByID will return a miner from a given set of miners
+func MinerByID(miners []*Miner, minerID string) *Miner {
+	for index, miner := range miners {
 		if strings.EqualFold(minerID, miner.MinerID) {
-			return c.Miners[index]
+			return miners[index]
 		}
 	}
 	return nil
@@ -104,6 +114,16 @@ func (c *Client) MinerUpdateToken(name, token string) {
 	if miner := c.MinerByName(name); miner != nil {
 		miner.Token = token
 	}
+}
+
+// Miners will return the list of miners
+func (c *Client) Miners() []*Miner {
+	return c.miners
+}
+
+// UserAgent will return the user agent
+func (c *Client) UserAgent() string {
+	return c.Options.UserAgent
 }
 
 // ClientOptions holds all the configuration for connection, dialer and transport
@@ -148,24 +168,15 @@ func DefaultClientOptions() (clientOptions *ClientOptions) {
 // clientOptions: inject custom client options on load
 // customHTTPClient: use your own custom HTTP client
 // customMiners: use your own custom list of miners
-func NewClient(clientOptions *ClientOptions, customHTTPClient *http.Client,
-	customMiners []*Miner) (client *Client, err error) {
+func NewClient(clientOptions *ClientOptions, customHTTPClient HTTPInterface,
+	customMiners []*Miner) (client ClientInterface, err error) {
 
 	// Create the new client
-	client = createClient(clientOptions, customHTTPClient)
-
-	// Load custom vs pre-defined
-	if len(customMiners) > 0 {
-		client.Miners = customMiners
-	} else {
-		err = json.Unmarshal([]byte(KnownMiners), &client.Miners)
-	}
-
-	return
+	return createClient(clientOptions, customHTTPClient, customMiners)
 }
 
 // createClient will make a new http client based on the options provided
-func createClient(options *ClientOptions, customHTTPClient *http.Client) (c *Client) {
+func createClient(options *ClientOptions, customHTTPClient HTTPInterface, customMiners []*Miner) (c *Client, err error) {
 
 	// Create a client
 	c = new(Client)
@@ -177,6 +188,15 @@ func createClient(options *ClientOptions, customHTTPClient *http.Client) (c *Cli
 
 	// Set the options
 	c.Options = options
+
+	// Load custom vs pre-defined
+	if len(customMiners) > 0 {
+		c.miners = customMiners
+	} else {
+		if c.miners, err = DefaultMiners(); err != nil {
+			return nil, err
+		}
+	}
 
 	// Is there a custom HTTP client to use?
 	if customHTTPClient != nil {
@@ -228,5 +248,11 @@ func createClient(options *ClientOptions, customHTTPClient *http.Client) (c *Cli
 		}),
 	)
 
+	return
+}
+
+// DefaultMiners will parse the config JSON and return a list of miners
+func DefaultMiners() (miners []*Miner, err error) {
+	err = json.Unmarshal([]byte(KnownMiners), &miners)
 	return
 }

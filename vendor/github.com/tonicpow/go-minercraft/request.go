@@ -10,6 +10,15 @@ import (
 	"net/http"
 )
 
+// ErrorResponse is the response returned from mAPI on error.
+type ErrorResponse struct {
+	Type    string `json:"type"`
+	Title   string `json:"title"`
+	Status  int    `json:"status"`
+	Detail  string `json:"detail"`
+	TraceID string `json:"traceId"`
+}
+
 // RequestResponse is the response from a request
 type RequestResponse struct {
 	BodyContents []byte `json:"body_contents"` // Raw body response
@@ -104,16 +113,15 @@ func httpRequest(ctx context.Context, client *Client,
 		return
 	}
 	// Have a "body" so map to an error type and add to the error message.
-	errBody := struct {
-		Error string `json:"error"`
-	}{}
+	var errBody ErrorResponse
 	if err := json.Unmarshal(response.BodyContents, &errBody); err != nil {
 		response.Error = fmt.Errorf("failed to unmarshal mapi error response: %w", err)
 		return
 	}
 	response.Error = fmt.Errorf(
-		"status code: %d does not match %d, error: %s",
-		resp.StatusCode, http.StatusOK, errBody.Error,
+		"status code: %d does not match %d \n, "+
+			"title: %s \n detail: %s \n traceID: %s",
+		resp.StatusCode, http.StatusOK, errBody.Title, errBody.Detail, errBody.TraceID,
 	)
 	return
 }
