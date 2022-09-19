@@ -213,7 +213,7 @@ func (operation *Operation) ParseMetadata(attribute, lowerAttribute, lineRemaind
 	return nil
 }
 
-var paramPattern = regexp.MustCompile(`(\S+)\s+(\w+)\s+([\S.]+)\s+(\w+)\s+"([^"]+)"`)
+var paramPattern = regexp.MustCompile(`(\S+)\s+(\w+)\s+([\S. ]+?)\s+(\w+)\s+"([^"]+)"`)
 
 func findInSlice(arr []string, target string) bool {
 	for _, str := range arr {
@@ -818,12 +818,16 @@ func findTypeDef(importPath, typeName string) (*ast.TypeSpec, error) {
 	return nil, fmt.Errorf("type spec not found")
 }
 
-var responsePattern = regexp.MustCompile(`^([\w,]+)\s+([\w{}]+)\s+([\w\-.\\{}=,\[\]]+)[^"]*(.*)?`)
+var responsePattern = regexp.MustCompile(`^([\w,]+)\s+([\w{}]+)\s+([\w\-.\\{}=,\[\s\]]+)\s*(".*)?`)
 
 // ResponseType{data1=Type1,data2=Type2}.
 var combinedPattern = regexp.MustCompile(`^([\w\-./\[\]]+){(.*)}$`)
 
 func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File) (*spec.Schema, error) {
+	return parseObjectSchema(operation.parser, refType, astFile)
+}
+
+func parseObjectSchema(parser *Parser, refType string, astFile *ast.File) (*spec.Schema, error) {
 	switch {
 	case refType == NIL:
 		return nil, nil
@@ -838,7 +842,7 @@ func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File)
 	case IsPrimitiveType(refType):
 		return PrimitiveSchema(refType), nil
 	case strings.HasPrefix(refType, "[]"):
-		schema, err := operation.parseObjectSchema(refType[2:], astFile)
+		schema, err := parseObjectSchema(parser, refType[2:], astFile)
 		if err != nil {
 			return nil, err
 		}
@@ -856,17 +860,17 @@ func (operation *Operation) parseObjectSchema(refType string, astFile *ast.File)
 			return spec.MapProperty(nil), nil
 		}
 
-		schema, err := operation.parseObjectSchema(refType, astFile)
+		schema, err := parseObjectSchema(parser, refType, astFile)
 		if err != nil {
 			return nil, err
 		}
 
 		return spec.MapProperty(schema), nil
 	case strings.Contains(refType, "{"):
-		return operation.parseCombinedObjectSchema(refType, astFile)
+		return parseCombinedObjectSchema(parser, refType, astFile)
 	default:
-		if operation.parser != nil { // checking refType has existing in 'TypeDefinitions'
-			schema, err := operation.parser.getTypeSchema(refType, astFile, true)
+		if parser != nil { // checking refType has existing in 'TypeDefinitions'
+			schema, err := parser.getTypeSchema(refType, astFile, true)
 			if err != nil {
 				return nil, err
 			}
@@ -896,13 +900,13 @@ func parseFields(s string) []string {
 	})
 }
 
-func (operation *Operation) parseCombinedObjectSchema(refType string, astFile *ast.File) (*spec.Schema, error) {
+func parseCombinedObjectSchema(parser *Parser, refType string, astFile *ast.File) (*spec.Schema, error) {
 	matches := combinedPattern.FindStringSubmatch(refType)
 	if len(matches) != 3 {
 		return nil, fmt.Errorf("invalid type: %s", refType)
 	}
 
-	schema, err := operation.parseObjectSchema(matches[1], astFile)
+	schema, err := parseObjectSchema(parser, matches[1], astFile)
 	if err != nil {
 		return nil, err
 	}
@@ -912,7 +916,7 @@ func (operation *Operation) parseCombinedObjectSchema(refType string, astFile *a
 	for _, field := range fields {
 		keyVal := strings.SplitN(field, "=", 2)
 		if len(keyVal) == 2 {
-			schema, err := operation.parseObjectSchema(keyVal[1], astFile)
+			schema, err := parseObjectSchema(parser, keyVal[1], astFile)
 			if err != nil {
 				return nil, err
 			}
@@ -978,7 +982,7 @@ func (operation *Operation) ParseResponseComment(commentLine string, astFile *as
 
 	description := strings.Trim(matches[4], "\"")
 
-	schema, err := operation.parseAPIObjectSchema(commentLine, strings.Trim(matches[2], "{}"), matches[3], astFile)
+	schema, err := operation.parseAPIObjectSchema(commentLine, strings.Trim(matches[2], "{}"), strings.TrimSpace(matches[3]), astFile)
 	if err != nil {
 		return err
 	}
@@ -1043,7 +1047,7 @@ func (operation *Operation) ParseResponseHeaderComment(commentLine string, _ *as
 
 	header := newHeaderSpec(strings.Trim(matches[2], "{}"), strings.Trim(matches[4], "\""))
 
-	headerKey := matches[3]
+	headerKey := strings.TrimSpace(matches[3])
 
 	if strings.EqualFold(matches[1], "all") {
 		if operation.Responses.Default != nil {
