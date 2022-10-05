@@ -22,6 +22,7 @@ type Config struct {
 	InstanceName         string
 	DeepLinking          bool
 	PersistAuthorization bool
+	SyntaxHighlight      bool
 
 	// The information for OAuth2 integration, if any.
 	OAuth *OAuthConfig
@@ -51,6 +52,13 @@ func URL(url string) func(*Config) {
 func DeepLinking(deepLinking bool) func(*Config) {
 	return func(c *Config) {
 		c.DeepLinking = deepLinking
+	}
+}
+
+// SyntaxHighlight true, false.
+func SyntaxHighlight(syntaxHighlight bool) func(*Config) {
+	return func(c *Config) {
+		c.SyntaxHighlight = syntaxHighlight
 	}
 }
 
@@ -97,6 +105,7 @@ func newConfig(configFns ...func(*Config)) *Config {
 		InstanceName:         "swagger",
 		DeepLinking:          true,
 		PersistAuthorization: false,
+		SyntaxHighlight:      true,
 	}
 
 	for _, fn := range configFns {
@@ -188,7 +197,6 @@ const indexTemplate = `<!-- HTML for static distribution bundle build -->
 <head>
   <meta charset="UTF-8">
   <title>Swagger UI</title>
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
   <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
@@ -258,6 +266,7 @@ window.onload = function() {
   // Build a system
   const ui = SwaggerUIBundle({
     url: "{{.URL}}",
+    syntaxHighlight: {{.SyntaxHighlight}},
     deepLinking: {{.DeepLinking}},
     docExpansion: "{{.DocExpansion}}",
     persistAuthorization: {{.PersistAuthorization}},
