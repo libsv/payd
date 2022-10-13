@@ -106,11 +106,11 @@ github.com/josharian/intern
 # github.com/labstack/echo-contrib v0.13.0
 ## explicit; go 1.17
 github.com/labstack/echo-contrib/prometheus
-# github.com/labstack/echo/v4 v4.7.2
+# github.com/labstack/echo/v4 v4.9.1
 ## explicit; go 1.17
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
-# github.com/labstack/gommon v0.3.1
+# github.com/labstack/gommon v0.4.0
 ## explicit; go 1.12
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/color
